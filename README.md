@@ -26,3 +26,10 @@ Data for Hawaii was extracted, cleaned to address geolocation errors, and restru
 - [CSV](https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/Statewide%20SNAP%20Retailer%20Locations%202005-2020.csv)
 - [Tableau visualization](https://public.tableau.com/views/Book2_16192056206960/SNAPLocations?:language=en-US&:display_count=n&:origin=viz_share_link)
 - Source Data: Dr Jerry Shannon's [National database of SNAP authorized retailers, 2008-2020](https://github.com/jshannon75/snap_retailers)
+
+
+
+### County Daily Application Received and Approved Data, 4/26/20-4/1/22
+- Data: Applications received, applications approved, date, county
+- [Tableau visualization](https://public.tableau.com/views/Book2_16192056206960/SNAPLocations?:language=en-US&publish=yes&:display_count=n&:origin=viz_share_link)
+- Source Data: [Hawaii Department of Human Services](https://humanservices.hawaii.gov/communications/) “SNAP Data by County Received and Approved” ([4/1/22 release](https://humanservices.hawaii.gov/wp-content/uploads/2022/04/SNAP-Data-4.1.22.xlsx))
