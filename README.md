@@ -1,7 +1,5 @@
 # Compiling and Sharing SNAP Data for Hawaii
 
-The USDA provides various data for download at https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap
-
 ### Statewide Monthly Data, FY89-FY22
 FY69-FY22 data is shared as a .zip file containing numerous .xls files. 
 The dataset covers *Persons, Households, Benefits, and Average Monthly Benefit per Person & Household*, however from 1969-1988 data are only availably at the national level. 
