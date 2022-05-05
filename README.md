@@ -10,7 +10,7 @@ Thus, Hawaii data for FY89-FY22 within these files has been compiled and is now 
 - Data: Date, Households, Persons, Average Monthly Benefit Per Household, Average Monthly Benefit Per Person, Benefits
 - [CSV](https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/Statewide%20Monthly%20SNAP%20FY%2089-22.csv)
 - [Tableau visualization](https://public.tableau.com/views/SNAP_16192081784540/1988-2022MonthlySNAPData?:language=en-US&:display_count=n&:origin=viz_share_link)
-- [Source Data](https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap) “National and/or State Level Monthly and/or Annual Data”
+- Source Data: [USDA FNS SNAP Data Tables](https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap) “National and/or State Level Monthly and/or Annual Data”
 
 ### County Level Bi-Annual Data, FY89-Jan21
 January and July *Participation and Issuance Data* for FY89 through January 2021.
@@ -19,4 +19,12 @@ The January and July data is reported to FNS in May and Dec. respectively.
 - Data: County, SNAP All Persons Public Assistance Participation, SNAP All Persons Non-Public Assistance Participation, Calc: SNAP Total PA and Non-PA People, SNAP All Households Public Assistance Participation, SNAP All Households Non-Public Assistance Participation, Calc: SNAP Total PA and Non-PA Households, SNAP All Total Actual PA & Non-PA Issuance, Date
 - [CSV](https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/County%20Bi-Annual%20SNAP%2089-21.csv)
 - [Tableau visualization](https://public.tableau.com/shared/QTTSR946K?:display_count=n&:origin=viz_share_link)
-- [Source Data:](https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap) “Bi-Annual (January and July) State Project Area/County Level Participation and Issuance Data”
+- Source Data: [USDA FNS SNAP Data Tables](https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap) “Bi-Annual (January and July) State Project Area/County Level Participation and Issuance Data”
+
+### Statewide SNAP Retailers, 2005-2020
+Dr Jerry Shannon has compiled and maintains a [National database of SNAP authorized retailers, 2008-2020]((https://github.com/jshannon75/snap_retailers)).
+Data for Hawaii was extracted, cleaned to address geolocation errors, and restructured.
+- Data: Store Name, Address, Store Type, Geolocation, Year
+- [CSV](https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/Statewide%20SNAP%20Retailer%20Locations%202005-2020.csv)
+- [Tableau visualization](https://public.tableau.com/views/Book2_16192056206960/SNAPLocations?:language=en-US&:display_count=n&:origin=viz_share_link)
+- Source Data: Dr Jerry Shannon's [National database of SNAP authorized retailers, 2008-2020](https://github.com/jshannon75/snap_retailers)
