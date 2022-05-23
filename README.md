@@ -1,5 +1,7 @@
 # Compiling and Sharing SNAP Data for Hawaii
 
+## Federal Data
+
 ### Statewide Monthly Data, FY89-FY22
 FY69-FY22 data is shared as a .zip file containing numerous .xls files. 
 The dataset covers *Persons, Households, Benefits, and Average Monthly Benefit per Person & Household*, however from 1969-1988 data are only availably at the national level. 
@@ -19,15 +21,24 @@ The January and July data is reported to FNS in May and Dec. respectively.
 - [Tableau visualization](https://public.tableau.com/shared/QTTSR946K?:display_count=n&:origin=viz_share_link)
 - Source Data: [USDA FNS SNAP Data Tables](https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap) “Bi-Annual (January and July) State Project Area/County Level Participation and Issuance Data”
 
-### Statewide SNAP Retailers, 2005-2020
-Dr Jerry Shannon has compiled and maintains a [National database of SNAP authorized retailers, 2008-2020]((https://github.com/jshannon75/snap_retailers)).
+### Statewide SNAP Retailers Time Series, 2005-2020
+Dr Jerry Shannon compiled and maintained a [National database of SNAP authorized retailers, 2008-2020]((https://github.com/jshannon75/snap_retailers)).
 Data for Hawaii was extracted, cleaned to address geolocation errors, and restructured.
 - Data: Store Name, Address, Store Type, Geolocation, Year
 - [CSV](https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/Statewide%20SNAP%20Retailer%20Locations%202005-2020.csv)
 - [Tableau visualization](https://public.tableau.com/views/Book2_16192056206960/SNAPLocations?:language=en-US&:display_count=n&:origin=viz_share_link)
 - Source Data: Dr Jerry Shannon's [National database of SNAP authorized retailers, 2008-2020](https://github.com/jshannon75/snap_retailers)
 
+### Statewide SNAP Retailers Time Window, 1990-2021
+As of late 2021, USDA FNS provides historicical retailer data. 
+- Data: Store Name, Store Type, Street Address, Latitude/Longitude, Authorization Date, End Date
+- [CSV](
+https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/Statewide%20SNAP%20Retailers%20Historical-%20FNS.csv)
+- [Tableau visualization])
+- Source Data: [Historical SNAP Retailer Locator Data](https://www.fns.usda.gov/snap/retailer/historicaldata)
 
+
+## State Data
 
 ### County Daily Application Received and Approved Data, 4/26/20-4/1/22
 - Data: Applications received, applications approved, date, county
