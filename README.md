@@ -26,7 +26,7 @@ Dr Jerry Shannon compiled and maintained a [National database of SNAP authorized
 Data for Hawaii was extracted, cleaned to address geolocation errors, and restructured.
 - Data: Store Name, Address, Store Type, Geolocation, Year
 - [CSV](https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/Statewide%20SNAP%20Retailer%20Locations%202005-2020.csv)
-- [Tableau visualization](https://public.tableau.com/views/Book2_16192056206960/SNAPLocations?:language=en-US&:display_count=n&:origin=viz_share_link)
+- [Tableau visualization](https://public.tableau.com/shared/CRTRFNQ8F?:display_count=n&:origin=viz_share_link)
 - Source Data: Dr Jerry Shannon's [National database of SNAP authorized retailers, 2008-2020](https://github.com/jshannon75/snap_retailers)
 
 ### Statewide SNAP Retailers Time Window, 1990-2021
