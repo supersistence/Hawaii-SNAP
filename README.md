@@ -34,7 +34,7 @@ As of late 2021, USDA FNS provides historical retailer data.
 - Data: Store Name, Store Type, Street Address, Latitude/Longitude, Authorization Date, End Date
 - [CSV](
 https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/Statewide%20SNAP%20Retailers%20Historical-%20FNS.csv)
-- [Tableau visualization])
+- [Tableau visualization](https://public.tableau.com/shared/X8WPDN7WP?:display_count=n&:origin=viz_share_link)
 - Source Data: [Historical SNAP Retailer Locator Data](https://www.fns.usda.gov/snap/retailer/historicaldata)
 
 
