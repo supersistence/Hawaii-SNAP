@@ -30,7 +30,7 @@ Data for Hawaii was extracted, cleaned to address geolocation errors, and restru
 - Source Data: Dr Jerry Shannon's [National database of SNAP authorized retailers, 2008-2020](https://github.com/jshannon75/snap_retailers)
 
 ### Statewide SNAP Retailers Time Window, 1990-2021
-As of late 2021, USDA FNS provides historicical retailer data. 
+As of late 2021, USDA FNS provides historical retailer data. 
 - Data: Store Name, Store Type, Street Address, Latitude/Longitude, Authorization Date, End Date
 - [CSV](
 https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/Statewide%20SNAP%20Retailers%20Historical-%20FNS.csv)
