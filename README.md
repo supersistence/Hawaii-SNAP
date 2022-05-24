@@ -25,7 +25,7 @@ The January and July data is reported to FNS in May and Dec. respectively.
 ### Statewide SNAP Retailers Time Window, 1990-2021
 As of late 2021, USDA FNS provides [Historical SNAP Retailer Locator Data](https://www.fns.usda.gov/snap/retailer/historicaldata). However, of the 4099 data points for Hawaii 1614 have location data outside of the state. 
 - Data: Store Name, Store Type, Street Address, Latitude/Longitude, Authorization Date, End Date
-- [CSV](https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/County%20Weekly%20Applications%204:2020-3:2022.csv)
+- [CSV](
 https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/Statewide%20SNAP%20Retailers%20Historical-%20FNS.csv)
 - [Tableau visualization](https://public.tableau.com/shared/X8WPDN7WP?:display_count=n&:origin=viz_share_link)
 - Source Data: [Historical SNAP Retailer Locator Data](https://www.fns.usda.gov/snap/retailer/historicaldata)
@@ -44,6 +44,6 @@ Data for Hawaii was extracted, cleaned to address geolocation errors, and restru
 
 ### County Daily Application Received and Approved Data, 4/26/20-4/1/22
 - Data: Applications received, applications approved, date, county
-- [CSV](
+- [CSV](https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/County%20Weekly%20Applications%204:2020-3:2022.csv)
 - [Tableau visualization](https://public.tableau.com/views/Book2_16192056206960/SNAPLocations?:language=en-US&publish=yes&:display_count=n&:origin=viz_share_link)
 - Source Data: [Hawaii Department of Human Services](https://humanservices.hawaii.gov/communications/) “SNAP Data by County Received and Approved” ([4/1/22 release](https://humanservices.hawaii.gov/wp-content/uploads/2022/04/SNAP-Data-4.1.22.xlsx))
