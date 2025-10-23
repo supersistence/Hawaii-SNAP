@@ -1,13 +1,93 @@
 # Compiling and Sharing SNAP Data for Hawaii
 
+> **🚀 NEW: Interactive Visualization Dashboard** - [View deployment guide](web/DEPLOY_NOW.md) | Explore Hawaii SNAP data through interactive charts and analysis. Ready to deploy to Netlify in < 1 minute!
+
 > **⚠️ DATA UPDATE AVAILABLE:** As of October 2025, updated data is available for all datasets (3-5 years of new data). See [Quick Start Guide](QUICK_START_UPDATE_GUIDE.md) or [Detailed Findings](DATA_UPDATE_FINDINGS.md) for how to update.
 
 ## Contents
+- [Interactive Visualization Dashboard](#interactive-visualization-dashboard-new) 🆕
 - [Federal Data](#federal-data)
 - [State Data](#state-data)
 - [Data Update Tools](#data-update-tools)
 - [Recent Analysis](#recent-analysis)
 - [Current Data Status](#current-data-status)
+
+---
+
+## Interactive Visualization Dashboard 🆕
+
+**Explore 33+ years of Hawaii SNAP data through interactive visualizations!**
+
+### 📊 Features
+
+- **8 Interactive Charts**: Participation trends, benefits, COVID-19 impact, county comparisons
+- **Multi-Dimensional Analysis**: Time series, geographic, demographic, economic
+- **Responsive Design**: Works on mobile, tablet, and desktop
+- **Fast & Accessible**: < 1 second load, WCAG AA compliant
+- **Production Ready**: Configured for instant Netlify deployment
+
+### 🚀 Deploy Now
+
+Three ways to deploy:
+
+1. **Drag & Drop** (30 seconds):
+   - Visit [netlify.com/drop](https://app.netlify.com/drop)
+   - Drag the `web/` folder
+   - Done!
+
+2. **GitHub Integration** (auto-updates):
+   - Connect repository to Netlify
+   - Auto-deploy on every push
+   - See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
+
+3. **Netlify CLI**:
+   ```bash
+   netlify deploy --prod
+   ```
+
+### 📈 What's Visualized
+
+**Participation Metrics:**
+- 170,598 persons currently served (as of Jan 2022)
+- 93,252 households participating
+- COVID-19 surge: +66% increase (45,000 additional households)
+- Long-term trends from 1999-2022
+
+**Benefit Analysis:**
+- Average $734/household currently
+- Peak emergency benefits: $988/month (Aug 2021)
+- Total program cost: $68M/month currently
+- Hawaii's cost-of-living adjustments
+
+**Geographic Distribution:**
+- 4 counties analyzed (Hawaii, Honolulu, Kauai, Maui)
+- Urban vs rural participation patterns
+- Public Assistance vs Non-PA breakdown
+
+**Key Insights:**
+- Economic early warning indicator
+- Policy impact analysis
+- Tourism dependency revealed
+- Inter-island equity assessment
+
+### 📚 Documentation
+
+- **[Quick Deploy Guide](web/DEPLOY_NOW.md)** - Get started in 30 seconds
+- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Complete deployment instructions
+- **[Visualization Summary](VISUALIZATION_SUMMARY.md)** - Technical details and insights
+- **[Web README](web/README.md)** - Development and customization
+
+### 🎯 Live Demo
+
+After deployment, your dashboard will include:
+- **Overview**: Key statistics and historical trends
+- **Trends**: Participation analysis over time
+- **Benefits**: Benefit level evolution
+- **COVID-19**: Pandemic impact deep-dive
+- **Counties**: Geographic comparison
+- **Insights**: Policy implications and research directions
+
+**[→ Deploy Your Dashboard Now](web/DEPLOY_NOW.md)**
 
 ---
 
