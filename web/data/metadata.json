@@ -1,0 +1,20 @@
+{
+  "generated": "2025-10-23T23:29:04.478526",
+  "dataVersion": "2022-01",
+  "note": "Data current through January 2022. Updated data available through May 2025.",
+  "sources": {
+    "monthly": "USDA FNS SNAP Data Tables",
+    "county": "USDA FNS Bi-Annual County Data",
+    "repository": "https://github.com/supersistence/Hawaii-SNAP"
+  },
+  "summary": {
+    "startDate": "1988-10-01",
+    "endDate": "2022-01-01",
+    "totalMonths": 400,
+    "latestHouseholds": 93252,
+    "latestPersons": 170598,
+    "latestAvgBenefitPerHousehold": 733.94,
+    "latestAvgBenefitPerPerson": 401.19,
+    "latestTotalCost": 68441525
+  }
+}

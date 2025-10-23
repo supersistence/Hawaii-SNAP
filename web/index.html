@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hawaii SNAP Program Analysis | Data Visualizations</title>
+    <meta name="description" content="Interactive visualizations and analysis of Hawaii's Supplemental Nutrition Assistance Program (SNAP) participation, benefits, and trends from 1989-2022.">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Hawaii SNAP Program Analysis</h1>
+            <p class="subtitle">Interactive Data Visualizations & Insights</p>
+            <div class="data-status">
+                <span class="status-badge">Data: October 1988 - January 2022</span>
+                <span class="update-available">⚠️ Updated data available through May 2025</span>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav-tabs">
+        <div class="container">
+            <button class="tab-button active" data-tab="overview">Overview</button>
+            <button class="tab-button" data-tab="trends">Participation Trends</button>
+            <button class="tab-button" data-tab="benefits">Benefit Analysis</button>
+            <button class="tab-button" data-tab="covid">COVID-19 Impact</button>
+            <button class="tab-button" data-tab="counties">County Comparison</button>
+            <button class="tab-button" data-tab="implications">Key Insights</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Loading indicator -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading data...</p>
+        </div>
+
+        <!-- Overview Tab -->
+        <section id="overview" class="tab-content active">
+            <h2>Program Overview</h2>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-value" id="stat-persons">--</div>
+                    <div class="stat-label">Persons Participating</div>
+                    <div class="stat-date" id="stat-persons-date">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏠</div>
+                    <div class="stat-value" id="stat-households">--</div>
+                    <div class="stat-label">Households Served</div>
+                    <div class="stat-date" id="stat-households-date">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-value" id="stat-benefit">--</div>
+                    <div class="stat-label">Avg Benefit/Household</div>
+                    <div class="stat-date" id="stat-benefit-date">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value" id="stat-cost">--</div>
+                    <div class="stat-label">Monthly Program Cost</div>
+                    <div class="stat-date" id="stat-cost-date">--</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>Participation Over Time (1999-2022)</h3>
+                <canvas id="overviewChart"></canvas>
+            </div>
+
+            <div class="insight-box">
+                <h4>📈 Key Findings</h4>
+                <ul>
+                    <li>Hawaii's SNAP program has served an average of <strong id="avg-persons">--</strong> people per month over the past two decades</li>
+                    <li>Peak participation occurred in <strong id="peak-date">--</strong> with <strong id="peak-persons">--</strong> individuals</li>
+                    <li>The COVID-19 pandemic drove participation to historic highs, with significant increases in both enrollment and benefit levels</li>
+                    <li>As of January 2022, the program was serving <strong id="latest-persons">--</strong> individuals across <strong id="latest-households">--</strong> households</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Trends Tab -->
+        <section id="trends" class="tab-content">
+            <h2>Participation Trends</h2>
+
+            <div class="chart-container">
+                <h3>Households Participating in SNAP</h3>
+                <p class="chart-description">Monthly household participation from 1999-2022, showing long-term trends and economic cycle impacts.</p>
+                <canvas id="householdsChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3>Individual Participation</h3>
+                <p class="chart-description">Number of persons receiving SNAP benefits over time.</p>
+                <canvas id="personsChart"></canvas>
+            </div>
+
+            <div class="insight-box">
+                <h4>💡 Implications</h4>
+                <div class="implication-grid">
+                    <div class="implication-card">
+                        <h5>Economic Indicator</h5>
+                        <p>SNAP participation serves as a real-time indicator of economic hardship. Sharp increases often precede or coincide with economic downturns, making this data valuable for policy planning.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Long-term Stability</h5>
+                        <p>The data shows a baseline of 50,000-60,000 households needing food assistance even during economic growth periods, indicating persistent food insecurity challenges in Hawaii.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Growth Trajectory</h5>
+                        <p>Year-over-year analysis reveals <strong id="yoy-change">--</strong> change in participation, reflecting current economic conditions and policy changes.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Benefits Tab -->
+        <section id="benefits" class="tab-content">
+            <h2>Benefit Level Analysis</h2>
+
+            <div class="chart-container">
+                <h3>Average Monthly Benefit Per Household</h3>
+                <p class="chart-description">Evolution of average benefit levels adjusted for program changes and cost of living.</p>
+                <canvas id="benefitChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3>Total Monthly Program Costs</h3>
+                <p class="chart-description">Total federal expenditure on SNAP benefits in Hawaii by month.</p>
+                <canvas id="costChart"></canvas>
+            </div>
+
+            <div class="insight-box">
+                <h4>💡 Implications</h4>
+                <div class="implication-grid">
+                    <div class="implication-card">
+                        <h5>Hawaii's Higher Costs</h5>
+                        <p>Average benefits in Hawaii significantly exceed national averages due to the state's high cost of living. This reflects both higher food costs and adjusted federal allotment levels for the islands.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Policy Impact</h5>
+                        <p>Notable spikes in benefit levels (particularly in 2021) correlate with emergency COVID-19 allotments and expanded eligibility, demonstrating the program's responsiveness to crisis.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Purchasing Power</h5>
+                        <p>The dramatic increase in average benefits during the pandemic period (reaching $733-$988/household) represents a major boost to household food budgets, with significant multiplier effects on Hawaii's economy.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Budget Implications</h5>
+                        <p>Peak monthly costs exceeded $111 million in August 2021, highlighting the substantial federal investment in Hawaii's food security and the potential fiscal impact of benefit changes.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- COVID-19 Impact Tab -->
+        <section id="covid" class="tab-content">
+            <h2>COVID-19 Pandemic Impact</h2>
+
+            <div class="covid-stats-grid">
+                <div class="stat-card highlight">
+                    <div class="stat-label">Pre-COVID Average</div>
+                    <div class="stat-value" id="pre-covid-households">--</div>
+                    <div class="stat-sublabel">households/month</div>
+                </div>
+                <div class="stat-card highlight">
+                    <div class="stat-label">Peak Pandemic</div>
+                    <div class="stat-value" id="peak-covid-households">--</div>
+                    <div class="stat-sublabel">households (<span id="peak-covid-date">--</span>)</div>
+                </div>
+                <div class="stat-card highlight">
+                    <div class="stat-label">Increase</div>
+                    <div class="stat-value success" id="covid-increase">--</div>
+                    <div class="stat-sublabel">households added</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>Pandemic Period Analysis (2019-2022)</h3>
+                <p class="chart-description">Participation and benefit levels before, during, and after pandemic emergency measures.</p>
+                <canvas id="covidChart"></canvas>
+            </div>
+
+            <div class="insight-box">
+                <h4>💡 Implications</h4>
+                <div class="implication-grid">
+                    <div class="implication-card">
+                        <h5>Rapid Response Success</h5>
+                        <p>The <strong id="covid-increase-pct">--</strong>% increase in participation demonstrates the program's ability to rapidly expand during economic crisis, serving as a crucial safety net for Hawaii's tourism-dependent economy.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Tourism Sector Impact</h5>
+                        <p>Hawaii's spike was particularly pronounced due to the near-total shutdown of tourism in March-April 2020, affecting service workers who typically live paycheck-to-paycheck.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Emergency Allotments</h5>
+                        <p>The unprecedented benefit levels in 2021 (averaging $700-900/household) reflect federal emergency allotments that temporarily maximized benefits for all recipients.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Recovery Patterns</h5>
+                        <p>The decline from peak in late 2021 shows economic recovery as tourism returned, though participation remains elevated above pre-pandemic levels, suggesting lasting economic impacts.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-note">
+                <strong>⚠️ Data Gap:</strong> Repository data ends January 2022. Updated data through May 2025 would reveal the complete pandemic wind-down, benefit reduction impacts, and new policy effects. See the <a href="https://github.com/supersistence/Hawaii-SNAP">GitHub repository</a> for update tools.
+            </div>
+        </section>
+
+        <!-- Counties Tab -->
+        <section id="counties" class="tab-content">
+            <h2>County-Level Comparison</h2>
+            <p class="section-description">Distribution of SNAP participation across Hawaii's four counties (as of July 2020).</p>
+
+            <div class="chart-container">
+                <h3>Participation by County</h3>
+                <canvas id="countyChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3>Public Assistance vs. Non-Public Assistance</h3>
+                <p class="chart-description">Breakdown of SNAP participants by public assistance status in each county.</p>
+                <canvas id="paChart"></canvas>
+            </div>
+
+            <div class="county-details" id="county-details">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <div class="insight-box">
+                <h4>💡 Implications</h4>
+                <div class="implication-grid">
+                    <div class="implication-card">
+                        <h5>Urban-Rural Divide</h5>
+                        <p>Honolulu (Oahu) dominates participation by volume, but rural counties show higher per-capita rates, reflecting limited economic opportunities outside urban centers.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Geographic Challenges</h5>
+                        <p>Inter-island differences highlight unique challenges: Hawaii County's large geographic area, Kauai's isolation, and Maui County's multi-island jurisdiction all affect program administration and access.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Economic Diversity</h5>
+                        <p>The ratio of Public Assistance to Non-PA participants varies by county, reflecting different economic structures and employment patterns across the islands.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Resource Allocation</h5>
+                        <p>County-level data informs targeted outreach, application assistance, and retailer network development to ensure equitable access across all islands.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-note">
+                <strong>⚠️ Data Currency:</strong> County bi-annual data ends July 2020 (5+ years ago). Updated county-level analysis would reveal pandemic impacts by island and current participation patterns.
+            </div>
+        </section>
+
+        <!-- Implications Tab -->
+        <section id="implications" class="tab-content">
+            <h2>Key Insights & Implications</h2>
+
+            <div class="insights-container">
+                <div class="insight-card featured">
+                    <div class="insight-icon">🎯</div>
+                    <h3>Policy & Planning</h3>
+                    <ul>
+                        <li><strong>Early Warning System:</strong> SNAP participation trends can signal economic distress 3-6 months before other indicators, valuable for state budget planning</li>
+                        <li><strong>Benefit Adequacy:</strong> Hawaii's high cost of living requires ongoing attention to benefit levels; even maximum allotments may not cover true food costs</li>
+                        <li><strong>Work Requirements:</strong> The 2025 OBBBA policy changes will likely affect participation rates; baseline data here provides comparison points</li>
+                        <li><strong>Disaster Preparedness:</strong> COVID-19 demonstrated the program's capacity for rapid expansion during crisis; lessons apply to natural disasters</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card featured">
+                    <div class="insight-icon">💰</div>
+                    <h3>Economic Impact</h3>
+                    <ul>
+                        <li><strong>Local Multiplier Effect:</strong> Every $1 in SNAP benefits generates approximately $1.50-1.80 in local economic activity, supporting Hawaii retailers and farmers</li>
+                        <li><strong>Tourism Dependency:</strong> Sharp pandemic spike reveals vulnerability of service sector workers; diversification efforts warranted</li>
+                        <li><strong>Federal Investment:</strong> Peak monthly costs of $111M represent substantial federal support to Hawaii's economy, with ripple effects throughout food supply chain</li>
+                        <li><strong>Benefit Reductions:</strong> The 3-year decline in maximum allotments (2024-2026) will reduce purchasing power; monitor food security impacts</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card featured">
+                    <div class="insight-icon">🌺</div>
+                    <h3>Hawaii-Specific Considerations</h3>
+                    <ul>
+                        <li><strong>Island Geography:</strong> Inter-island disparities require tailored approaches; one-size-fits-all policies may not serve rural counties effectively</li>
+                        <li><strong>Food Costs:</strong> Import dependence drives high food prices; SNAP benefit adequacy must account for 30-50% higher costs than mainland</li>
+                        <li><strong>Retailer Network:</strong> ~39% of historical retailer records have invalid coordinates, suggesting data quality issues that affect service delivery mapping</li>
+                        <li><strong>Cultural Factors:</strong> Strong family support networks may reduce participation relative to need; stigma reduction efforts important</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card featured">
+                    <div class="insight-icon">📊</div>
+                    <h3>Data & Research Needs</h3>
+                    <ul>
+                        <li><strong>Update Gap:</strong> 3-5 year data gap (2022-2025) obscures critical post-pandemic period; see repository for update tools</li>
+                        <li><strong>Missing Dimensions:</strong> Demographic breakdowns, household composition, and reasons for participation would enhance understanding</li>
+                        <li><strong>Outcome Measures:</strong> Link SNAP participation to food security, health, and educational outcomes to demonstrate program impact</li>
+                        <li><strong>County Granularity:</strong> More frequent county-level updates would enable targeted interventions and equity monitoring</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card featured">
+                    <div class="insight-icon">🔮</div>
+                    <h3>Future Outlook</h3>
+                    <ul>
+                        <li><strong>Benefit Trajectory:</strong> Three consecutive years of decreases (2024-2026) will test program adequacy against rising food costs</li>
+                        <li><strong>Work Requirements:</strong> November 2025 OBBBA changes may reduce participation; November data will be critical benchmark</li>
+                        <li><strong>Economic Recovery:</strong> Tourism rebound vs. cost of living increases create competing pressures on participation</li>
+                        <li><strong>Climate Impacts:</strong> Increasing natural disasters may drive periodic spikes; program flexibility essential</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="cta-box">
+                <h3>Access the Data</h3>
+                <p>All data, analysis tools, and update procedures are available on GitHub:</p>
+                <a href="https://github.com/supersistence/Hawaii-SNAP" class="cta-button" target="_blank">
+                    View Repository →
+                </a>
+                <p class="cta-note">Includes automated tools to download and integrate data through May 2025</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Data Sources</h4>
+                    <ul>
+                        <li><a href="https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap" target="_blank">USDA FNS SNAP Data Tables</a></li>
+                        <li><a href="https://humanservices.hawaii.gov/" target="_blank">Hawaii Department of Human Services</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Repository</h4>
+                    <ul>
+                        <li><a href="https://github.com/supersistence/Hawaii-SNAP" target="_blank">GitHub Repository</a></li>
+                        <li><a href="https://github.com/supersistence/Hawaii-SNAP/blob/main/QUICK_START_UPDATE_GUIDE.md" target="_blank">Update Guide</a></li>
+                        <li><a href="https://github.com/supersistence/Hawaii-SNAP/blob/main/DATA_UPDATE_FINDINGS.md" target="_blank">Available Updates</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>About</h4>
+                    <p>This visualization dashboard presents Hawaii SNAP program data compiled from federal and state sources.</p>
+                    <p class="data-current">Data current through January 2022. Updated data available through May 2025.</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Hawaii SNAP Data Project | Data compiled from public government sources</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
