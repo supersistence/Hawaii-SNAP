@@ -4,8 +4,8 @@
   # Base directory for the build
   base = "/"
 
-  # Build command - generate JSON data from CSV files
-  command = "python scripts/prepare_web_data.py"
+  # Build command - install minimal dependencies and generate JSON data
+  command = "pip install -r requirements-build.txt && python scripts/prepare_web_data.py"
 
   # Directory to deploy (contains index.html)
   publish = "web"

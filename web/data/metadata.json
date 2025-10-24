@@ -1,7 +1,7 @@
 {
-  "generated": "2025-10-23T19:17:11.087663",
-  "dataVersion": "2025-05",
-  "note": "Data current through May 2025. Last updated October 2025.",
+  "generated": "2025-10-24T11:42:22.340715",
+  "dataVersion": "2022-01",
+  "note": "Data current through January 2022. Updated data available through May 2025.",
   "sources": {
     "monthly": "USDA FNS SNAP Data Tables",
     "county": "USDA FNS Bi-Annual County Data",

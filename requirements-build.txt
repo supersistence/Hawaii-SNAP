@@ -1,0 +1,6 @@
+# Minimal requirements for Netlify build
+# Only includes dependencies needed for prepare_web_data.py
+
+# Core data processing
+pandas>=2.0.0
+numpy>=1.24.0
