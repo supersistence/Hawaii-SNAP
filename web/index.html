@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hawaii SNAP Program Analysis | Data Visualizations</title>
-    <meta name="description" content="Interactive visualizations and analysis of Hawaii's Supplemental Nutrition Assistance Program (SNAP) participation, benefits, and trends from 1989-2022.">
+    <meta name="description" content="Interactive visualizations and analysis of Hawaii's Supplemental Nutrition Assistance Program (SNAP) participation, benefits, and trends from 1989-2025.">
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -19,8 +19,8 @@
             <h1>Hawaii SNAP Program Analysis</h1>
             <p class="subtitle">Interactive Data Visualizations & Insights</p>
             <div class="data-status">
-                <span class="status-badge">Data: October 1988 - January 2022</span>
-                <span class="update-available">⚠️ Updated data available through May 2025</span>
+                <span class="status-badge">Data: October 1988 - May 2025</span>
+                <span class="update-available success">✅ Latest data included</span>
             </div>
         </div>
     </header>
@@ -31,6 +31,8 @@
             <button class="tab-button" data-tab="trends">Participation Trends</button>
             <button class="tab-button" data-tab="benefits">Benefit Analysis</button>
             <button class="tab-button" data-tab="covid">COVID-19 Impact</button>
+            <button class="tab-button" data-tab="shutdown">2025 Federal Shutdown</button>
+            <button class="tab-button" data-tab="retailers">Retailer Network</button>
             <button class="tab-button" data-tab="counties">County Comparison</button>
             <button class="tab-button" data-tab="implications">Key Insights</button>
         </div>
@@ -75,7 +77,7 @@
             </div>
 
             <div class="chart-container">
-                <h3>Participation Over Time (1999-2022)</h3>
+                <h3>Participation Over Time (1999-2025)</h3>
                 <canvas id="overviewChart"></canvas>
             </div>
 
@@ -85,7 +87,7 @@
                     <li>Hawaii's SNAP program has served an average of <strong id="avg-persons">--</strong> people per month over the past two decades</li>
                     <li>Peak participation occurred in <strong id="peak-date">--</strong> with <strong id="peak-persons">--</strong> individuals</li>
                     <li>The COVID-19 pandemic drove participation to historic highs, with significant increases in both enrollment and benefit levels</li>
-                    <li>As of January 2022, the program was serving <strong id="latest-persons">--</strong> individuals across <strong id="latest-households">--</strong> households</li>
+                    <li>As of May 2025, the program was serving <strong id="latest-persons">--</strong> individuals across <strong id="latest-households">--</strong> households</li>
                 </ul>
             </div>
         </section>
@@ -96,7 +98,7 @@
 
             <div class="chart-container">
                 <h3>Households Participating in SNAP</h3>
-                <p class="chart-description">Monthly household participation from 1999-2022, showing long-term trends and economic cycle impacts.</p>
+                <p class="chart-description">Monthly household participation from 1999-2025, showing long-term trends and economic cycle impacts.</p>
                 <canvas id="householdsChart"></canvas>
             </div>
 
@@ -187,7 +189,7 @@
             </div>
 
             <div class="chart-container">
-                <h3>Pandemic Period Analysis (2019-2022)</h3>
+                <h3>Pandemic Period Analysis (2019-2025)</h3>
                 <p class="chart-description">Participation and benefit levels before, during, and after pandemic emergency measures.</p>
                 <canvas id="covidChart"></canvas>
             </div>
@@ -211,11 +213,476 @@
                         <h5>Recovery Patterns</h5>
                         <p>The decline from peak in late 2021 shows economic recovery as tourism returned, though participation remains elevated above pre-pandemic levels, suggesting lasting economic impacts.</p>
                     </div>
+                    <div class="implication-card">
+                        <h5>New Baseline Established</h5>
+                        <p>As of May 2025, participation has stabilized at approximately <strong>13% above pre-pandemic levels</strong>, indicating the pandemic created a new normal with higher structural food insecurity.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Benefit Cliff Impact</h5>
+                        <p>Post-emergency benefit levels declined 11.1% from peak but remain 43% above 2019, showing lasting federal commitment even after emergency allotments ended in 2023.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-box warning">
+                <h4>📉 Post-Pandemic Recovery Analysis (2019-2025)</h4>
+                <p><strong>Peak:</strong> July 2021 - 206,226 persons (111,900 households)</p>
+                <p><strong>Current:</strong> May 2025 - 163,576 persons (84,333 households)</p>
+                <p><strong>Decline from Peak:</strong> -20.7% in persons, -24.6% in households</p>
+                <p><strong>New Baseline:</strong> Stabilized ~13% above pre-pandemic (Feb 2020) levels</p>
+
+                <div class="implication-grid" style="margin-top: 1rem;">
+                    <div class="implication-card">
+                        <h5>Four Recovery Phases Identified</h5>
+                        <ul style="margin-top: 0.5rem; font-size: 0.9em;">
+                            <li><strong>Pre-Pandemic (2019-Feb 2020):</strong> Stable baseline averaging 144,812 persons/month</li>
+                            <li><strong>Pandemic Surge (Mar 2020-Dec 2020):</strong> Rapid 27.4% increase as tourism collapsed</li>
+                            <li><strong>Peak Emergency (Jan 2021-Dec 2021):</strong> Maximum participation with emergency allotments</li>
+                            <li><strong>Recovery & Stabilization (2022-2025):</strong> Gradual decline settling at new elevated baseline</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
             <div class="data-note">
-                <strong>⚠️ Data Gap:</strong> Repository data ends January 2022. Updated data through May 2025 would reveal the complete pandemic wind-down, benefit reduction impacts, and new policy effects. See the <a href="https://github.com/supersistence/Hawaii-SNAP">GitHub repository</a> for update tools.
+                <strong>✅ Complete Recovery Data:</strong> Data now includes the complete pandemic recovery period through May 2025, revealing benefit reduction impacts and participation stabilization following emergency measure wind-down. Full analysis available in <a href="https://github.com/supersistence/Hawaii-SNAP/blob/main/ANALYSIS_SUMMARY_2025.md" target="_blank">ANALYSIS_SUMMARY_2025.md</a>.
+            </div>
+        </section>
+
+        <!-- Federal Shutdown Tab -->
+        <section id="shutdown" class="tab-content">
+            <h2>2025 Federal Shutdown Impact</h2>
+            <p class="section-description">Analysis of potential federal government shutdown impacts on SNAP and food security in Hawaii, and state response measures.</p>
+
+            <div class="stats-grid">
+                <div class="stat-card highlight">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-value">165,000</div>
+                    <div class="stat-label">People on SNAP</div>
+                    <div class="stat-date">85,000 households</div>
+                </div>
+                <div class="stat-card highlight">
+                    <div class="stat-icon">🏛️</div>
+                    <div class="stat-value">31,000</div>
+                    <div class="stat-label">Federal Employee Households</div>
+                    <div class="stat-date">24K civilian + 44K military</div>
+                </div>
+                <div class="stat-card highlight">
+                    <div class="stat-icon">💵</div>
+                    <div class="stat-value">$110M</div>
+                    <div class="stat-label">State Relief Program</div>
+                    <div class="stat-date">~2 month cushion</div>
+                </div>
+                <div class="stat-card highlight">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-value">30%</div>
+                    <div class="stat-label">Food Insecurity Rate</div>
+                    <div class="stat-date">1 in 3 households (2023)</div>
+                </div>
+            </div>
+
+            <div class="insight-box warning">
+                <h4>🚨 Immediate Shutdown Threats (As of October 2025)</h4>
+                <p><strong>Timeline:</strong> SNAP benefits may stop as early as <strong>November 1, 2025</strong> if Congress doesn't reopen the government</p>
+
+                <div class="implication-grid" style="margin-top: 1rem;">
+                    <div class="implication-card">
+                        <h5>SNAP Disruption Risk</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>165,000 people</strong> (85,000 households) currently receive SNAP benefits</li>
+                            <li><strong>$50 million/month</strong> in federal benefits at risk</li>
+                            <li>Benefits confirmed through October only; November uncertain</li>
+                            <li>WIC benefits may cease in November</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Federal Worker Impact</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>24,000 civilian federal employees</strong> face missed paychecks</li>
+                            <li><strong>44,000 active-duty military</strong> members potentially affected</li>
+                            <li>~7,000 federal contractors at risk</li>
+                            <li><strong>Hawaii = 2nd highest</strong> federal civilian employees per capita (after Maryland)</li>
+                            <li><strong>Highest military concentration</strong> of all U.S. states</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Food Bank Crisis Preparation</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li>Hawaii Foodbank bringing in <strong>$500,000 worth of emergency food</strong></li>
+                            <li>Food takes over a week to arrive from mainland</li>
+                            <li>Anticipating crisis similar to COVID pandemic</li>
+                            <li>173,000 people served monthly (Q3 FY25) - already near pandemic levels</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h4>🏛️ Hawaii State Response: $110 Million Relief Program</h4>
+                <p><strong>Governor Josh Green's emergency plan taps TANF funds to provide temporary assistance</strong></p>
+
+                <div class="implication-grid" style="margin-top: 1rem;">
+                    <div class="implication-card">
+                        <h5>Program Details</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>Funding Source:</strong> $110M from Temporary Assistance for Needy Families (TANF) grant</li>
+                            <li><strong>Coverage:</strong> Will help at least one-third of SNAP beneficiaries</li>
+                            <li><strong>Duration:</strong> Approximately 2-month cushion</li>
+                            <li><strong>Primary Focus:</strong> Families with dependent children</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Eligibility Requirements</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>Income threshold:</strong> Up to 300% of federal poverty level</li>
+                            <li><strong>Single adult:</strong> Up to $46,000/year</li>
+                            <li><strong>Family of four:</strong> Up to $90,000/year</li>
+                            <li><strong>Note:</strong> Not everyone will be eligible - primarily families with dependent children</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Assistance Types</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li>Housing cost assistance</li>
+                            <li>Utility payment support</li>
+                            <li>Coordination with other programs: WIC, DA BUX, school meals</li>
+                            <li>Food bank network mobilization</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Limitations</h5>
+                        <p style="font-size: 0.9em; margin-top: 0.5rem;"><strong>Governor Green:</strong> "My program will give us probably about a two-month cushion... but that can't go on forever."</p>
+                        <p style="font-size: 0.9em; margin-top: 0.5rem;"><strong>Scott Morishige (DHS):</strong> "Not everyone will be eligible... primarily for families with a dependent child."</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h4>📊 Food Insecurity in Hawaii (2023 Hawaii Foodbank Study)</h4>
+
+                <div class="implication-grid">
+                    <div class="implication-card">
+                        <h5>Overall Crisis Level</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>30% of households</strong> experienced food insecurity in 2023</li>
+                            <li><strong>37% of all households</strong> anxious about running out of food</li>
+                            <li><strong>11%</strong> categorized as low food security</li>
+                            <li><strong>19%</strong> as very low food security</li>
+                            <li><strong>10% of households</strong> went a whole day without food some or most months</li>
+                            <li>Another 14% were marginally food secure</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Child Food Insecurity</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>29% of households with children</strong> faced food insecurity</li>
+                            <li><strong>9%</strong> had children skipping meals due to lack of money</li>
+                            <li><strong>6%</strong> had children go a whole day without food</li>
+                            <li><strong>38% of adults</strong> in households with children experienced food insecurity</li>
+                            <li><strong>Parents sacrifice their own food security</strong> before letting children go without</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Geographic Disparities</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>Hawaii Island: 40%</strong> food insecurity (highest)</li>
+                            <li><strong>Maui: 31%</strong></li>
+                            <li><strong>Oahu: 28%</strong></li>
+                            <li><strong>Kauai: 23%</strong> (lowest, but still critical)</li>
+                            <li>Food insecurity consistently high across all islands (23-40% range)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h4>🏪 Hawaii's Food Bank Network Response</h4>
+
+                <div class="implication-grid">
+                    <div class="implication-card">
+                        <h5>Statewide Capacity (FY2025)</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>500+ agency partners and pantries</strong> statewide</li>
+                            <li><strong>29.1 million pounds</strong> of food distributed (FY2025)</li>
+                            <li><strong>1,319 mobile distributions</strong> across the state</li>
+                            <li><strong>173,000 individuals served monthly</strong> (Q3 FY25) - already at pandemic-era levels</li>
+                            <li>Hawaii Foodbank: $105M worth of food at retail cost</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Island-by-Island Network</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>Oahu:</strong> 211 partners, 20.1M lbs food, 752 mobile distributions</li>
+                            <li><strong>Kauai:</strong> 64 partners, 2.1M lbs food, 110 mobile distributions</li>
+                            <li><strong>Maui:</strong> 129 partners, 7.6M lbs food, 93 mobile distributions</li>
+                            <li><strong>Hawaii Island:</strong> 100 partners, 2.8M lbs food, 364 mobile distributions</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Efficiency & Local Support</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>5.3x purchasing power</strong> - $1 donated = $5.30 food value</li>
+                            <li><strong>$4+ million spent</strong> with local farmers and producers (FY2025)</li>
+                            <li><strong>77% of produce budget</strong> spent with local farmers (Oahu)</li>
+                            <li>Supporting local agriculture while feeding families</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Federal Funding at Risk</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>20% of food distributed</strong> comes from USDA commodity programs</li>
+                            <li><strong>TEFAP CCC program ended Spring 2025:</strong> $4M loss</li>
+                            <li>This represented 7% of all food distributed by Hawaii's food banks in 2024</li>
+                            <li>Additional TEFAP/CSFP disruptions possible during shutdown</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h4>📉 Recent SNAP Policy Changes Adding to Pressure</h4>
+
+                <div class="implication-grid">
+                    <div class="implication-card">
+                        <h5>October 2025: Benefit Reduction</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>2% benefit cut</strong> effective October 1, 2025</li>
+                            <li><strong>$36/month reduction</strong> for family of four</li>
+                            <li><strong>$1M monthly impact</strong> statewide</li>
+                            <li>Compounds existing benefit adequacy concerns in high-cost Hawaii</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>November 2025: OBBBA Work Requirements</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>Potentially 16,000 individuals</strong> could lose benefits</li>
+                            <li><strong>$5M/month impact</strong> estimated</li>
+                            <li><strong>Affected groups:</strong>
+                                <ul style="margin-left: 1rem;">
+                                    <li>16,000 individuals aged 55-64</li>
+                                    <li>10,000 households with dependent child aged 14+</li>
+                                    <li>Homeless individuals</li>
+                                    <li>Veterans</li>
+                                    <li>Youth aged 18-24 transitioning from foster care</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-box warning">
+                <h4>⚠️ Nutrition Program Status During Federal Shutdown</h4>
+
+                <div class="implication-grid">
+                    <div class="implication-card">
+                        <h5>SNAP (Food Stamps)</h5>
+                        <p style="font-size: 0.9em;"><strong>Status:</strong> Benefits delivered in full through October. <strong>November uncertain.</strong></p>
+                        <p style="font-size: 0.9em; margin-top: 0.5rem;">165,000 people (85,000 households) depend on $50M/month in benefits.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>WIC (Women, Infants, Children)</h5>
+                        <p style="font-size: 0.9em;"><strong>Status:</strong> Available through October. <strong>Benefits may cease in November.</strong></p>
+                        <p style="font-size: 0.9em; margin-top: 0.5rem;">Critical nutrition support for pregnant women, new mothers, and young children at highest risk.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>TEFAP & CSFP (Emergency Food)</h5>
+                        <p style="font-size: 0.9em;"><strong>Status:</strong> Orders placed before shutdown anticipated to be delivered. Administrative funds may be disrupted.</p>
+                        <p style="font-size: 0.9em; margin-top: 0.5rem;">Note: TEFAP CCC program already ended Spring 2025 ($4M annual loss).</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Child Nutrition Programs</h5>
+                        <p style="font-size: 0.9em;"><strong>Status:</strong> No disruption through October. More flexibility due to reimbursement model.</p>
+                        <p style="font-size: 0.9em; margin-top: 0.5rem;">School meals reimbursed 30 days after service month, providing buffer period.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h4>🎯 Estimated Total Population at Risk</h4>
+                <p style="font-size: 0.95em; margin-bottom: 1rem;"><strong>Hawaii Foodbank planning estimates (October 2025):</strong></p>
+
+                <div class="implication-grid">
+                    <div class="implication-card">
+                        <h5>Households Potentially Impacted</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>24,000</strong> civilian federal employee households</li>
+                            <li><strong>44,000</strong> active-duty military households (crossed out in estimates - may have different protections)</li>
+                            <li><strong>~7,000</strong> federal contractor households</li>
+                            <li><strong>Total: 31,000 households at risk</strong> (15% of Hawaii's population)</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Food Insecurity Projections</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li>At 1/3 food insecurity rate: <strong>10,000 households (31,000 individuals)</strong></li>
+                            <li>At 45% ALICE or below: <strong>14,000 households (42,000 individuals)</strong></li>
+                            <li>These households may need emergency food assistance if paychecks are missed</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Compounding Crises</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>165,000 on SNAP</strong> facing potential benefit disruption</li>
+                            <li><strong>+31,000 federal workers</strong> facing missed paychecks</li>
+                            <li><strong>Already 30% food insecurity rate</strong> statewide (2023)</li>
+                            <li><strong>Food bank demand already at 173,000</strong> (near pandemic peak)</li>
+                            <li><strong>TEFAP CCC program lost</strong> ($4M/year)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h4>💰 SNAP's Economic Impact on Hawaii Food Retailers</h4>
+                <p style="font-size: 0.95em; margin-bottom: 1rem;"><strong>Understanding SNAP's role in Hawaii's retail food economy:</strong></p>
+
+                <div class="implication-grid">
+                    <div class="implication-card">
+                        <h5>Total SNAP Spending in Hawaii</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>~$60+ million/month</strong> in SNAP benefits (2024-2025)</li>
+                            <li><strong>~$720+ million/year</strong> flowing to Hawaii food retailers</li>
+                            <li><strong>130,000 households</strong> enrolled (2024 data)</li>
+                            <li><strong>Additional $40-45M/year</strong> expected from policy changes (2024)</li>
+                            <li>Provides stable, predictable revenue stream for retailers</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>SNAP Share of Retailer Sales (National Data)</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>Grocery stores: 20%</strong> of sales from SNAP</li>
+                            <li><strong>Convenience stores: 23%</strong> of sales from SNAP</li>
+                            <li><strong>Dollar stores: 34%</strong> of sales from SNAP</li>
+                            <li><strong>Mass retailers: 25%</strong> of sales from SNAP</li>
+                            <li><strong>Some stores in low-income areas: 50%+</strong> SNAP sales</li>
+                            <li>Overall: <strong>8-12%</strong> of all U.S. household food purchases</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Retailer Vulnerability</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>Over 80%</strong> of SNAP benefits spent at larger stores (supermarkets, superstores)</li>
+                            <li><strong>Small retailers</strong> particularly vulnerable in high-poverty areas</li>
+                            <li>Convenience stores (48.6% of new Hawaii authorizations) heavily SNAP-dependent</li>
+                            <li><strong>Rural stores</strong> may rely on SNAP for survival in food desert areas</li>
+                            <li>20% SNAP benefit cut could force closure of high-dependency stores</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Economic Multiplier Effect</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>$1 in SNAP = $1.50-$1.80</strong> in local economic activity</li>
+                            <li><strong>GDP multiplier: 1.54x</strong> during economic downturns</li>
+                            <li>Every $1 billion in SNAP supports <strong>13,560 jobs</strong></li>
+                            <li>In 2020: SNAP supported <strong>199,000 jobs</strong> in independent grocery + 45,000 in related industries</li>
+                            <li>Benefits ripple through agriculture, manufacturing, transportation, services</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Hawaii's Unique Considerations</h5>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li>Hawaii's <strong>high cost of living</strong> means higher benefit levels per recipient</li>
+                            <li><strong>Island geography</strong> limits competition; store closures create food deserts</li>
+                            <li><strong>Import-dependent</strong> food system amplifies economic multiplier effects</li>
+                            <li><strong>Tourism economy</strong> volatility makes SNAP countercyclical support critical</li>
+                            <li>Shutdown could remove $60M+/month from Hawaii's food retail economy</li>
+                        </ul>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Shutdown Impact on Retailers</h5>
+                        <p style="font-size: 0.9em; margin-top: 0.5rem;">If November SNAP benefits are disrupted:</p>
+                        <ul style="font-size: 0.9em; margin-top: 0.5rem;">
+                            <li><strong>$60+ million loss</strong> in monthly revenue for Hawaii food retailers</li>
+                            <li><strong>20-50% revenue drop</strong> for SNAP-dependent small stores</li>
+                            <li>Risk of <strong>store closures</strong> in high-poverty neighborhoods</li>
+                            <li><strong>Job losses</strong> in retail, distribution, food service sectors</li>
+                            <li><strong>$90-108M economic impact</strong> (including multiplier effects)</li>
+                            <li>Permanent damage to rural/underserved food access infrastructure</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-note">
+                <strong>📰 Sources:</strong>
+                <a href="https://www.hawaiinewsnow.com/2025/10/23/hawaii-set-offer-aid-snap-families-federal-shutdown-threatens-disrupt-food-stamp-program/" target="_blank">Hawaii News Now (Oct 23, 2025)</a> |
+                <a href="https://www.kitv.com/news/hawaii-food-banks-prepare-for-the-worst-as-federal-cuts-loom-workers-miss-paychecks/article_b6243a4a-a902-47d4-9b62-0e60ef35b950.html" target="_blank">KITV (Oct 2025)</a> |
+                <a href="https://www.capitol.hawaii.gov/CommitteeFiles/senate/JDC/JDCfiles/INFO_TESTIMONY_JDC-AEN_10-16-25_FOODBANK.pdf" target="_blank">Hawaii Foodbank Legislative Testimony (Oct 16, 2025)</a>
+            </div>
+
+            <div class="data-note warning" style="border-color: #e74c3c;">
+                <strong>⚠️ Current Status:</strong> This information reflects the situation as of late October 2025. Federal funding status may change rapidly. Check with Hawaii Department of Human Services and local news for latest updates on SNAP and WIC benefit status.
+            </div>
+        </section>
+
+        <!-- Retailer Network Tab -->
+        <section id="retailers" class="tab-content">
+            <h2>SNAP Retailer Network Analysis</h2>
+            <p class="section-description">Analysis of authorized SNAP retailers in Hawaii from 2004-2024, showing network evolution and food access patterns.</p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🏪</div>
+                    <div class="stat-value">2,641</div>
+                    <div class="stat-label">Total Retailer Records</div>
+                    <div class="stat-date">2004-2024</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📍</div>
+                    <div class="stat-value">94.8%</div>
+                    <div class="stat-label">Valid Hawaii Coordinates</div>
+                    <div class="stat-date">2,503 locations</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-value">+6</div>
+                    <div class="stat-label">Net Change (2020-2024)</div>
+                    <div class="stat-date">370 new, 364 closed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🌾</div>
+                    <div class="stat-value">19</div>
+                    <div class="stat-label">New Farmers' Markets</div>
+                    <div class="stat-date">5.1% of new authorizations</div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h4>📊 Retailer Network Evolution (2020-2024)</h4>
+                <div class="implication-grid">
+                    <div class="implication-card">
+                        <h5>High Turnover, Stable Size</h5>
+                        <p>Despite 370 new authorizations and 364 closures, the network remained essentially flat (+6 retailers, 0.7% growth). This indicates a mature, stable retailer network with natural business turnover.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Convenience Store Dominance</h5>
+                        <p><strong>48.6%</strong> of new authorizations were convenience stores (180 stores), reflecting Hawaii's dispersed geography and need for neighborhood food access. Only 31 new supermarkets were authorized.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Geographic Distribution</h5>
+                        <p>Retailers mirror population: <strong>Honolulu 56.2%</strong>, Hawaii County 19.7%, Maui 15.4%, Kauai 8.6%. Rural areas rely more heavily on convenience stores for SNAP access.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Local Food Systems Growth</h5>
+                        <p>Farmers' markets and direct-to-consumer options grew from 19 new authorizations, supporting local agriculture and fresher food options for SNAP recipients.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h4>🎯 Policy Implications</h4>
+                <ul>
+                    <li><strong>Food Desert Monitoring:</strong> High closure rates require ongoing monitoring to prevent food deserts, especially in rural areas dependent on single stores</li>
+                    <li><strong>Healthy Food Access:</strong> Convenience store dominance raises questions about access to fresh, healthy options vs. processed foods</li>
+                    <li><strong>Local Food Support:</strong> Growing farmers' market participation (5.1% of new authorizations) suggests opportunity to expand farm-to-SNAP programs</li>
+                    <li><strong>Data Quality:</strong> 5.2% of records with invalid coordinates (138 retailers) indicate need for improved location data verification</li>
+                    <li><strong>Retailer Retention:</strong> 364 closures over 4 years (91/year) suggest need for retailer support programs, especially for small businesses</li>
+                </ul>
+            </div>
+
+            <div class="data-note">
+                <strong>📌 Data Source:</strong> Historical SNAP Retailer Locator Data from USDA FNS, extracted via Wayback Machine (archived September 2024). Dataset includes store name, type, address, authorization dates, and coordinates for all Hawaii SNAP-authorized retailers.
             </div>
         </section>
 
@@ -262,7 +729,7 @@
             </div>
 
             <div class="data-note">
-                <strong>⚠️ Data Currency:</strong> County bi-annual data ends July 2020 (5+ years ago). Updated county-level analysis would reveal pandemic impacts by island and current participation patterns.
+                <strong>⚠️ Note on County Data:</strong> County bi-annual data ends July 2020. Statewide monthly data is current through May 2025. More frequent county-level updates would reveal pandemic impacts by island.
             </div>
         </section>
 
@@ -299,7 +766,8 @@
                     <ul>
                         <li><strong>Island Geography:</strong> Inter-island disparities require tailored approaches; one-size-fits-all policies may not serve rural counties effectively</li>
                         <li><strong>Food Costs:</strong> Import dependence drives high food prices; SNAP benefit adequacy must account for 30-50% higher costs than mainland</li>
-                        <li><strong>Retailer Network:</strong> ~39% of historical retailer records have invalid coordinates, suggesting data quality issues that affect service delivery mapping</li>
+                        <li><strong>Retailer Network:</strong> 2,641 authorized retailers (2004-2024) with 94.8% valid coordinates; stable network with high turnover (370 new, 364 closed 2020-2024)</li>
+                        <li><strong>Convenience Store Dependence:</strong> 48.6% of new retailer authorizations are convenience stores, reflecting dispersed geography but raising healthy food access questions</li>
                         <li><strong>Cultural Factors:</strong> Strong family support networks may reduce participation relative to need; stigma reduction efforts important</li>
                     </ul>
                 </div>
@@ -308,8 +776,10 @@
                     <div class="insight-icon">📊</div>
                     <h3>Data & Research Needs</h3>
                     <ul>
-                        <li><strong>Update Gap:</strong> 3-5 year data gap (2022-2025) obscures critical post-pandemic period; see repository for update tools</li>
+                        <li><strong>Current Data:</strong> Updated through May 2025, capturing complete post-pandemic recovery period and recent policy changes</li>
+                        <li><strong>New 2025 Analyses:</strong> Post-pandemic recovery trajectory (2019-2025) and retailer network evolution (2020-2024) now available</li>
                         <li><strong>Missing Dimensions:</strong> Demographic breakdowns, household composition, and reasons for participation would enhance understanding</li>
+                        <li><strong>Spending Patterns:</strong> SNAP expenditure data by retailer type would reveal food purchasing behavior and healthy food access</li>
                         <li><strong>Outcome Measures:</strong> Link SNAP participation to food security, health, and educational outcomes to demonstrate program impact</li>
                         <li><strong>County Granularity:</strong> More frequent county-level updates would enable targeted interventions and equity monitoring</li>
                     </ul>
@@ -327,13 +797,24 @@
                 </div>
             </div>
 
+            <div class="insight-card featured">
+                <div class="insight-icon">📈</div>
+                <h3>Recent Analyses (2025)</h3>
+                <p>Comprehensive analysis reports now available:</p>
+                <ul>
+                    <li><strong><a href="https://github.com/supersistence/Hawaii-SNAP/blob/main/ANALYSIS_SUMMARY_2025.md" target="_blank">Post-Pandemic Recovery Analysis (2019-2025)</a></strong> - Four-phase trajectory from baseline through peak emergency to new stabilized baseline (+13% above pre-pandemic)</li>
+                    <li><strong><a href="https://github.com/supersistence/Hawaii-SNAP/blob/main/ANALYSIS_SUMMARY_2025.md" target="_blank">Retailer Network Evolution (2020-2024)</a></strong> - Network stability analysis showing 370 authorizations, 364 closures, convenience store dominance, and local food growth</li>
+                    <li><strong>Visualizations:</strong> Analysis charts available in <code>/Data/</code> directory showing participation trends, benefit changes, retailer patterns, and county distribution</li>
+                </ul>
+            </div>
+
             <div class="cta-box">
                 <h3>Access the Data</h3>
                 <p>All data, analysis tools, and update procedures are available on GitHub:</p>
                 <a href="https://github.com/supersistence/Hawaii-SNAP" class="cta-button" target="_blank">
                     View Repository →
                 </a>
-                <p class="cta-note">Includes automated tools to download and integrate data through May 2025</p>
+                <p class="cta-note">Includes automated tools to download and integrate data through May 2025, plus analysis scripts and comprehensive documentation</p>
             </div>
         </section>
     </main>
@@ -352,14 +833,15 @@
                     <h4>Repository</h4>
                     <ul>
                         <li><a href="https://github.com/supersistence/Hawaii-SNAP" target="_blank">GitHub Repository</a></li>
+                        <li><a href="https://github.com/supersistence/Hawaii-SNAP/blob/main/ANALYSIS_SUMMARY_2025.md" target="_blank">2025 Analysis Report</a></li>
                         <li><a href="https://github.com/supersistence/Hawaii-SNAP/blob/main/QUICK_START_UPDATE_GUIDE.md" target="_blank">Update Guide</a></li>
-                        <li><a href="https://github.com/supersistence/Hawaii-SNAP/blob/main/DATA_UPDATE_FINDINGS.md" target="_blank">Available Updates</a></li>
+                        <li><a href="https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/README.md" target="_blank">Data Documentation</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>About</h4>
                     <p>This visualization dashboard presents Hawaii SNAP program data compiled from federal and state sources.</p>
-                    <p class="data-current">Data current through January 2022. Updated data available through May 2025.</p>
+                    <p class="data-current">Data current through May 2025. Last updated: October 2025.</p>
                 </div>
             </div>
             <div class="footer-bottom">

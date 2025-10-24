@@ -15,7 +15,7 @@ def process_monthly_data():
     """Process statewide monthly data for web charts."""
     print("Processing monthly data...")
 
-    df = pd.read_csv(DATA_DIR / "Statewide Monthly SNAP FY 89-22.csv")
+    df = pd.read_csv(DATA_DIR / "Statewide Monthly SNAP FY 89-25.csv")
     df['Date'] = pd.to_datetime(df['Date'])
 
     # Sort by date
@@ -154,7 +154,7 @@ def process_recent_trends():
     """Extract recent trends and COVID impact."""
     print("Processing recent trends...")
 
-    df = pd.read_csv(DATA_DIR / "Statewide Monthly SNAP FY 89-22.csv")
+    df = pd.read_csv(DATA_DIR / "Statewide Monthly SNAP FY 89-25.csv")
     df['Date'] = pd.to_datetime(df['Date'])
     df = df.sort_values('Date')
 

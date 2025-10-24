@@ -55,3 +55,19 @@ node_modules/
 
 # Netlify
 .netlify/
+
+# Reports
+2022 Report
+
+# Large raw data files (download from source instead)
+Data/source/
+Data/archive/
+
+# Source data files that can be re-downloaded
+Data/Historical*.csv
+
+# Old/superseded data files
+Data/**/*FY*89-22.csv
+
+# Script archives
+scripts/archive/
