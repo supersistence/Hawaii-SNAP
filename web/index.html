@@ -6,6 +6,20 @@
     <title>Hawaii SNAP Program Analysis | Data Visualizations</title>
     <meta name="description" content="Interactive visualizations and analysis of Hawaii's Supplemental Nutrition Assistance Program (SNAP) participation, benefits, and trends from 1989-2025.">
 
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hawaii-snap.netlify.app/">
+    <meta property="og:title" content="Hawaii SNAP Program Analysis | 1989-2025 Data">
+    <meta property="og:description" content="Comprehensive analysis of Hawaii's SNAP program: 165K people served, $720M/year in benefits, pandemic recovery trends, and 2025 federal shutdown impacts. Interactive visualizations from 1989-2025.">
+    <meta property="og:image" content="https://hawaii-snap.netlify.app/social-card.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://hawaii-snap.netlify.app/">
+    <meta property="twitter:title" content="Hawaii SNAP Program Analysis | 1989-2025 Data">
+    <meta property="twitter:description" content="Comprehensive analysis of Hawaii's SNAP program: 165K people served, $720M/year in benefits, pandemic recovery trends, and 2025 federal shutdown impacts.">
+    <meta property="twitter:image" content="https://hawaii-snap.netlify.app/social-card.png">
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
@@ -21,6 +35,19 @@
             <div class="data-status">
                 <span class="status-badge">Data: October 1988 - May 2025</span>
                 <span class="update-available success">✅ Latest data included</span>
+            </div>
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <a href="https://pais-benefits.dhs.hawaii.gov" target="_blank" rel="noopener noreferrer"
+                   style="display: inline-block; background: #27ae60; color: white; padding: 1rem 2rem;
+                          border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 1.1rem;
+                          box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.3s ease;"
+                   onmouseover="this.style.background='#229954'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.15)'"
+                   onmouseout="this.style.background='#27ae60'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.1)'">
+                    📋 Apply for SNAP Benefits in Hawaii →
+                </a>
+                <p style="margin-top: 0.75rem; font-size: 0.9rem; color: rgba(255,255,255,0.9);">
+                    Check eligibility and apply online through Hawaii DHS
+                </p>
             </div>
         </div>
     </header>
@@ -614,6 +641,29 @@
             <div class="data-note warning" style="border-color: #e74c3c;">
                 <strong>⚠️ Current Status:</strong> This information reflects the situation as of late October 2025. Federal funding status may change rapidly. Check with Hawaii Department of Human Services and local news for latest updates on SNAP and WIC benefit status.
             </div>
+
+            <div class="cta-box" style="margin-top: 2rem; background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white; border: none;">
+                <h3 style="color: white;">Need SNAP Benefits?</h3>
+                <p style="color: rgba(255,255,255,0.95); font-size: 1.05rem;">If you or your family are facing food insecurity, you may be eligible for SNAP assistance.</p>
+                <a href="https://pais-benefits.dhs.hawaii.gov" class="cta-button" target="_blank" rel="noopener noreferrer"
+                   style="background: white; color: #27ae60; font-weight: bold; padding: 1rem 2.5rem; font-size: 1.1rem;">
+                    Apply for SNAP Benefits →
+                </a>
+                <p class="cta-note" style="color: rgba(255,255,255,0.9); margin-top: 1rem;">
+                    <strong>Hawaii DHS Online Application Portal</strong><br>
+                    Check eligibility, apply online, and manage your benefits at pais-benefits.dhs.hawaii.gov
+                </p>
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.3);">
+                    <p style="color: rgba(255,255,255,0.95); font-size: 0.95rem; margin-bottom: 0.75rem;">
+                        <strong>Other Resources:</strong>
+                    </p>
+                    <ul style="color: rgba(255,255,255,0.9); text-align: left; max-width: 600px; margin: 0 auto;">
+                        <li><strong>Hawaii Foodbank:</strong> Call 2-1-1 or visit <a href="https://hawaiifoodbank.org" target="_blank" style="color: white; text-decoration: underline;">hawaiifoodbank.org</a></li>
+                        <li><strong>DHS Hotline:</strong> (808) 643-1643</li>
+                        <li><strong>WIC Program:</strong> <a href="https://health.hawaii.gov/wic/" target="_blank" style="color: white; text-decoration: underline;">health.hawaii.gov/wic</a></li>
+                    </ul>
+                </div>
+            </div>
         </section>
 
         <!-- Retailer Network Tab -->
@@ -689,7 +739,7 @@
         <!-- Counties Tab -->
         <section id="counties" class="tab-content">
             <h2>County-Level Comparison</h2>
-            <p class="section-description">Distribution of SNAP participation across Hawaii's four counties (as of July 2020).</p>
+            <p class="section-description">Distribution of SNAP participation across Hawaii's four counties (as of January 2021).</p>
 
             <div class="chart-container">
                 <h3>Participation by County</h3>
@@ -729,7 +779,7 @@
             </div>
 
             <div class="data-note">
-                <strong>⚠️ Note on County Data:</strong> County bi-annual data ends July 2020. Statewide monthly data is current through May 2025. More frequent county-level updates would reveal pandemic impacts by island.
+                <strong>⚠️ Note on County Data:</strong> County bi-annual data ends January 2021. Statewide monthly data is current through May 2025. More frequent county-level updates would reveal complete pandemic recovery impacts by island.
             </div>
         </section>
 
