@@ -161,6 +161,7 @@ function initializeCharts() {
     createCovidChart();
     createCountyChart();
     createPAChart();
+    createFoodHubsChart();
 }
 
 // Chart configurations
@@ -767,5 +768,92 @@ function formatDate(dateString) {
         year: 'numeric',
         month: 'long',
         day: undefined
+    });
+}
+
+function createFoodHubsChart() {
+    const ctx = document.getElementById('foodHubsChart');
+    if (!ctx) return; // Chart container doesn't exist yet
+
+    // Food hubs data from Fardkhales, Lincoln, and Heaivilin (forthcoming)
+    const foodHubsData = {
+        labels: ['2021', '2022', '2023', '2024'],
+        snapBenefits: [136000, 723000, 931000, 1117000],
+        doubleBucks: [109000, 261000, 358000, 479000],
+        totalImpact: [245000, 984000, 1289000, 1596000]
+    };
+
+    charts.foodHubs = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: foodHubsData.labels,
+            datasets: [
+                {
+                    label: 'SNAP Benefits',
+                    data: foodHubsData.snapBenefits,
+                    backgroundColor: 'rgba(37, 99, 235, 0.7)',
+                    borderColor: '#2563eb',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Double Bucks',
+                    data: foodHubsData.doubleBucks,
+                    backgroundColor: 'rgba(5, 150, 105, 0.7)',
+                    borderColor: '#059669',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Total Impact',
+                    data: foodHubsData.totalImpact,
+                    backgroundColor: 'rgba(217, 119, 6, 0.7)',
+                    borderColor: '#d97706',
+                    borderWidth: 1,
+                    type: 'line',
+                    fill: false,
+                    borderWidth: 3
+                }
+            ]
+        },
+        options: {
+            ...chartDefaults,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Sales ($)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + (value / 1000).toFixed(0) + 'K';
+                        }
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Year'
+                    }
+                }
+            },
+            plugins: {
+                ...chartDefaults.plugins,
+                title: {
+                    display: true,
+                    text: 'Food Hubs SNAP & Double Bucks Sales Growth (2021-2024)',
+                    font: {
+                        size: 16
+                    }
+                },
+                tooltip: {
+                    ...chartDefaults.plugins.tooltip,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': $' + formatNumber(context.parsed.y);
+                        }
+                    }
+                }
+            }
+        }
     });
 }
