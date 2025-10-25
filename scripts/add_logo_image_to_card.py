@@ -10,7 +10,7 @@ import os
 script_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(script_dir)
 social_card_path = os.path.join(project_root, 'web', 'social-card.png')
-logo_path = os.path.join(project_root, 'web', 'Supersistence_logo.png')
+logo_path = os.path.join(project_root, 'web', 'SUPERSISTENCE logo copy.png')
 
 print("Opening images...")
 social_card = Image.open(social_card_path)
