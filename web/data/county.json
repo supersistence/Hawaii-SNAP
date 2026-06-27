@@ -1,71 +1,82 @@
 {
-  "asOfDate": "2021-01-01",
+  "asOfDate": "2025-01-01",
+  "populationYear": 2024,
   "counties": [
     {
       "name": "HAWAII",
       "fips": 1500101,
+      "population": 209790,
+      "participationRate": 19.0,
       "persons": {
-        "publicAssistance": 2550,
-        "nonPublicAssistance": 45113,
-        "total": 47663
+        "publicAssistance": 5588,
+        "nonPublicAssistance": 34241,
+        "total": 39829
       },
       "households": {
-        "publicAssistance": 824,
-        "nonPublicAssistance": 25103,
-        "total": 25927
+        "publicAssistance": 4500,
+        "nonPublicAssistance": 16539,
+        "total": 21039
       },
-      "totalIssuance": 18604084
+      "totalIssuance": 14485393
     },
     {
       "name": "HONOLULU",
       "fips": 1500306,
+      "population": 998747,
+      "participationRate": 9.1,
       "persons": {
-        "publicAssistance": 5980,
-        "nonPublicAssistance": 106150,
-        "total": 112130
+        "publicAssistance": 12836,
+        "nonPublicAssistance": 78474,
+        "total": 91310
       },
       "households": {
-        "publicAssistance": 1953,
-        "nonPublicAssistance": 57802,
-        "total": 59755
+        "publicAssistance": 10616,
+        "nonPublicAssistance": 36738,
+        "total": 47354
       },
-      "totalIssuance": 43672952
+      "totalIssuance": 33150404
     },
     {
       "name": "KAUAI",
       "fips": 1500701,
+      "population": 73840,
+      "participationRate": 10.8,
       "persons": {
-        "publicAssistance": 644,
-        "nonPublicAssistance": 10059,
-        "total": 10703
+        "publicAssistance": 737,
+        "nonPublicAssistance": 7221,
+        "total": 7958
       },
       "households": {
-        "publicAssistance": 204,
-        "nonPublicAssistance": 5488,
-        "total": 5692
+        "publicAssistance": 662,
+        "nonPublicAssistance": 3562,
+        "total": 4224
       },
-      "totalIssuance": 4167691
+      "totalIssuance": 2880770
     },
     {
       "name": "MAUI",
       "fips": 1500901,
+      "population": 163769,
+      "participationRate": 10.2,
       "persons": {
-        "publicAssistance": 1439,
-        "nonPublicAssistance": 21826,
-        "total": 23265
+        "publicAssistance": 1721,
+        "nonPublicAssistance": 14965,
+        "total": 16686
       },
       "households": {
-        "publicAssistance": 467,
-        "nonPublicAssistance": 12133,
-        "total": 12600
+        "publicAssistance": 1394,
+        "nonPublicAssistance": 7318,
+        "total": 8712
       },
-      "totalIssuance": 9091544
+      "totalIssuance": 6071239
     }
   ],
   "stateTotal": {
-    "persons": 193761,
-    "households": 103974,
-    "totalIssuance": 75536271
+    "persons": 155783,
+    "households": 81329,
+    "totalIssuance": 56587806,
+    "population": 1446146,
+    "participationRate": 10.8
   },
   "timeSeries": {
     "HAWAII": {
@@ -135,7 +146,15 @@
         "2019-07-01",
         "2020-01-01",
         "2020-07-01",
-        "2021-01-01"
+        "2021-01-01",
+        "2021-07-01",
+        "2022-01-01",
+        "2022-07-01",
+        "2023-01-01",
+        "2023-07-01",
+        "2024-01-01",
+        "2024-07-01",
+        "2025-01-01"
       ],
       "persons": [
         17545,
@@ -203,7 +222,15 @@
         42882,
         40466,
         45329,
-        47663
+        47663,
+        50033,
+        41617,
+        39051,
+        39521,
+        5538,
+        41905,
+        39809,
+        39829
       ],
       "households": [
         6950,
@@ -271,7 +298,15 @@
         22424,
         21414,
         25394,
-        25927
+        25927,
+        27547,
+        22848,
+        23485,
+        22422,
+        4343,
+        22777,
+        21612,
+        21039
       ]
     },
     "HONOLULU": {
@@ -340,7 +375,15 @@
         "2019-07-01",
         "2020-01-01",
         "2020-07-01",
-        "2021-01-01"
+        "2021-01-01",
+        "2021-07-01",
+        "2022-01-01",
+        "2022-07-01",
+        "2023-01-01",
+        "2023-07-01",
+        "2024-01-01",
+        "2024-07-01",
+        "2025-01-01"
       ],
       "persons": [
         54313,
@@ -407,7 +450,15 @@
         93011,
         89405,
         102865,
-        112130
+        112130,
+        119810,
+        101169,
+        94770,
+        90710,
+        13564,
+        97014,
+        92018,
+        91310
       ],
       "households": [
         21327,
@@ -474,7 +525,15 @@
         47235,
         45841,
         55769,
-        59755
+        59755,
+        64606,
+        55008,
+        55808,
+        50754,
+        11053,
+        51685,
+        49016,
+        47354
       ]
     },
     "KAUAI": {
@@ -544,7 +603,15 @@
         "2019-07-01",
         "2020-01-01",
         "2020-07-01",
-        "2021-01-01"
+        "2021-01-01",
+        "2021-07-01",
+        "2022-01-01",
+        "2022-07-01",
+        "2023-01-01",
+        "2023-07-01",
+        "2024-01-01",
+        "2024-07-01",
+        "2025-01-01"
       ],
       "persons": [
         3217,
@@ -612,7 +679,15 @@
         8015,
         7409,
         8952,
-        10703
+        10703,
+        11444,
+        8916,
+        8182,
+        8161,
+        857,
+        8605,
+        8130,
+        7958
       ],
       "households": [
         1392,
@@ -680,7 +755,15 @@
         4192,
         3880,
         5233,
-        5692
+        5692,
+        6152,
+        4897,
+        4951,
+        4597,
+        697,
+        4602,
+        4357,
+        4224
       ]
     },
     "MAUI": {
@@ -750,7 +833,15 @@
         "2019-07-01",
         "2020-01-01",
         "2020-07-01",
-        "2021-01-01"
+        "2021-01-01",
+        "2021-07-01",
+        "2022-01-01",
+        "2022-07-01",
+        "2023-01-01",
+        "2023-07-01",
+        "2024-01-01",
+        "2024-07-01",
+        "2025-01-01"
       ],
       "persons": [
         5588,
@@ -818,7 +909,15 @@
         18352,
         16354,
         19373,
-        23265
+        23265,
+        24939,
+        18896,
+        17231,
+        16085,
+        1868,
+        16730,
+        16395,
+        16686
       ],
       "households": [
         2266,
@@ -886,7 +985,15 @@
         9510,
         8492,
         10986,
-        12600
+        12600,
+        13595,
+        10499,
+        10684,
+        9211,
+        1505,
+        9089,
+        8787,
+        8712
       ]
     }
   }

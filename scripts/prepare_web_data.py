@@ -102,23 +102,38 @@ def process_county_data():
     df = pd.read_csv(DATA_DIR / "County Bi-Annual SNAP 89-25.csv")
     df['Date'] = pd.to_datetime(df['Date'])
 
+    # County population (for per-capita normalization). Without this, county
+    # maps just restyle the population map — Honolulu dominates by volume while
+    # actual SNAP burden (% of residents) is highest on the Big Island.
+    pop_df = pd.read_csv(DATA_DIR / "county_population.csv")
+    pop = dict(zip(pop_df['County'], pop_df['Population']))
+    pop_year = int(pop_df['Year'].iloc[0])
+
     # Get latest data for each county
     latest_date = df['Date'].max()
     latest = df[df['Date'] == latest_date].copy()
 
     data = {
         'asOfDate': latest_date.strftime('%Y-%m-%d'),
+        'populationYear': pop_year,
         'counties': []
     }
 
     for _, row in latest.iterrows():
+        persons_total = int(row['Calc: SNAP Total PA and Non-PA People'])
+        population = pop.get(row['County'])
+        # Share of residents receiving SNAP — the per-capita measure that
+        # reveals divergence from raw population.
+        rate = round(persons_total / population * 100, 1) if population else None
         data['counties'].append({
             'name': row['County'],
             'fips': row['FIPS'],
+            'population': population,
+            'participationRate': rate,
             'persons': {
                 'publicAssistance': int(row['SNAP All Persons Public Assistance Participation']),
                 'nonPublicAssistance': int(row['SNAP All Persons Non-Public Assistance Participation']),
-                'total': int(row['Calc: SNAP Total PA and Non-PA People'])
+                'total': persons_total
             },
             'households': {
                 'publicAssistance': int(row['SNAP All Households Public Assistance Participation']),
@@ -129,10 +144,14 @@ def process_county_data():
         })
 
     # Calculate totals
+    state_persons = sum(c['persons']['total'] for c in data['counties'])
+    state_pop = sum(v for v in pop.values())
     data['stateTotal'] = {
-        'persons': sum(c['persons']['total'] for c in data['counties']),
+        'persons': state_persons,
         'households': sum(c['households']['total'] for c in data['counties']),
-        'totalIssuance': sum(c['totalIssuance'] for c in data['counties'])
+        'totalIssuance': sum(c['totalIssuance'] for c in data['counties']),
+        'population': state_pop,
+        'participationRate': round(state_persons / state_pop * 100, 1) if state_pop else None
     }
 
     # Calculate county time series

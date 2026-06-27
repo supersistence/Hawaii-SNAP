@@ -121,14 +121,28 @@ function populateCountyDetails() {
     const container = document.getElementById('county-details');
     container.innerHTML = '';
 
-    countyData.counties.forEach(county => {
+    // Sort by per-capita participation (highest SNAP burden first) rather than
+    // raw volume — otherwise Honolulu always leads simply because it's biggest.
+    const counties = [...countyData.counties].sort(
+        (a, b) => (b.participationRate || 0) - (a.participationRate || 0));
+
+    counties.forEach(county => {
         const card = document.createElement('div');
         card.className = 'county-card';
+        const rate = county.participationRate;
         card.innerHTML = `
             <h4>${county.name} County</h4>
+            <div class="county-stat" style="font-weight:600">
+                <span class="county-stat-label">% of Residents on SNAP</span>
+                <span class="county-stat-value">${rate != null ? rate + '%' : '—'}</span>
+            </div>
             <div class="county-stat">
                 <span class="county-stat-label">Total Persons</span>
                 <span class="county-stat-value">${formatNumber(county.persons.total)}</span>
+            </div>
+            <div class="county-stat">
+                <span class="county-stat-label">Population (${countyData.populationYear})</span>
+                <span class="county-stat-value">${formatNumber(county.population)}</span>
             </div>
             <div class="county-stat">
                 <span class="county-stat-label">Total Households</span>
