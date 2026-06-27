@@ -33,8 +33,10 @@ import pandas as pd
 # Configuration
 DATA_DIR = Path(__file__).parent.parent / "Data"
 BACKUP_DIR = DATA_DIR / "backups"
+SOURCES_PATH = DATA_DIR / "SOURCES.json"  # provenance manifest (committed)
 
-# Data source URLs
+# Landing pages that link the actual data files. We scrape these for the
+# current resource-file URL so version bumps (…-6.zip → …-7.zip) don't break us.
 URLS = {
     "monthly": "https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap",
     "retailers": "https://www.fns.usda.gov/snap/retailer/historical-data",
@@ -42,11 +44,23 @@ URLS = {
     "hawaii_dhs": "https://humanservices.hawaii.gov/communications/"
 }
 
-# Expected file names
+# Substring that identifies each dataset's file among the page's resource links.
+SOURCE_FILE_PATTERNS = {
+    "monthly": "snap-zip-fy69tocurrent",      # ZIP of per-FY Excel files (FY69..current)
+    "retailers": "retailer-locator-data",     # Historical SNAP Retailer Locator ZIP
+}
+
+# Hawaii coordinate bounds, used to flag bad geolocation in retailer data.
+HI_BOUNDS = {"lat": (18.9, 22.2), "lon": (-160.2, -154.8)}
+
+# Akamai fronts fns.usda.gov and rejects requests without a browser UA.
+USER_AGENT = "Mozilla/5.0 (compatible; Hawaii-SNAP-data-updater/1.0)"
+
+# Expected file names (current naming)
 FILES = {
-    "monthly": "Statewide Monthly SNAP FY 89-22.csv",
-    "retailers": "Statewide SNAP Retailers Historical- FNS.csv",
-    "county": "County Bi-Annual SNAP 89-21.csv",
+    "monthly": "Statewide Monthly SNAP FY 89-25.csv",
+    "retailers": "hawaii_snap_retailers_2004-2024_valid_coords.csv",
+    "county": "County Bi-Annual SNAP 89-25.csv",
     "applications": "County Weekly Applications 4:2020-3:2022.csv"
 }
 
@@ -67,13 +81,71 @@ def backup_existing_data(file_path):
     print(f"✓ Backed up to: {backup_path}")
 
 
+def read_asof_date(fy_file_path):
+    """Read USDA's 'data as of' date from an FY file's title row (or None)."""
+    try:
+        import openpyxl
+        wb = openpyxl.load_workbook(fy_file_path, read_only=True, data_only=True)
+        ws = wb[wb.sheetnames[0]]
+        for row in ws.iter_rows(min_row=1, max_row=3, values_only=True):
+            for cell in row:
+                if isinstance(cell, datetime):
+                    return cell.strftime("%Y-%m-%d")
+    except Exception:
+        pass
+    return None
+
+
+def write_provenance(key, entry):
+    """Merge one dataset's provenance into the committed Data/SOURCES.json."""
+    import json
+    try:
+        manifest = json.loads(SOURCES_PATH.read_text()) if SOURCES_PATH.exists() else {}
+    except Exception:
+        manifest = {}
+    manifest[key] = {**manifest.get(key, {}), **entry}
+    SOURCES_PATH.write_text(json.dumps(manifest, indent=2) + "\n")
+    print(f"✓ Recorded provenance in {SOURCES_PATH.name} "
+          f"(revision {entry.get('revision', '?')}, "
+          f"as of {entry.get('dataAsOf', '?')})")
+
+
+def discover_file_url(page_url, name_contains):
+    """Scrape a USDA landing page for the current resource-file link.
+
+    Returns an absolute URL whose path contains `name_contains`, or None.
+    This keeps us resilient to USDA's file-revision suffixes (…-6.zip).
+    """
+    import re
+    from urllib.parse import urljoin
+
+    try:
+        resp = requests.get(page_url, timeout=40, headers={"User-Agent": USER_AGENT})
+        resp.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"✗ Could not load page {page_url}: {e}")
+        return None
+
+    hrefs = re.findall(r'href="([^"]+)"', resp.text)
+    matches = [h for h in hrefs if name_contains in h and
+               h.lower().endswith((".zip", ".xlsx", ".xls", ".csv"))]
+    if not matches:
+        print(f"✗ No '{name_contains}' file link found on {page_url}")
+        return None
+
+    url = urljoin(page_url, matches[0])
+    print(f"✓ Found source file: {url}")
+    return url
+
+
 def download_file(url, destination):
     """Download a file from URL to destination."""
     print(f"Downloading from: {url}")
     print(f"Saving to: {destination}")
 
     try:
-        response = requests.get(url, stream=True, timeout=30)
+        response = requests.get(url, stream=True, timeout=120,
+                                headers={"User-Agent": USER_AGENT})
         response.raise_for_status()
 
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -103,92 +175,110 @@ def update_monthly_data():
 
     file_path = DATA_DIR / FILES["monthly"]
 
-    # Backup existing data
-    backup_existing_data(file_path)
-
-    # Instructions for manual download
-    print("\nMANUAL DOWNLOAD REQUIRED:")
-    print("1. Visit: https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap")
-    print("2. Look for 'National and/or State Level Monthly and/or Annual Data'")
-    print("3. Download the ZIP file containing data through May 2025")
-    print("4. Extract and locate the Hawaii state data")
-    print("5. Save the file to: downloads/snap_monthly_update.xlsx")
-    print("\nPress Enter when download is complete, or 'skip' to skip...")
-
-    response = input().strip().lower()
-    if response == 'skip':
-        print("Skipping monthly data update")
+    # 1. Find and download the current per-FY ZIP straight from USDA.
+    url = discover_file_url(URLS["monthly"], SOURCE_FILE_PATTERNS["monthly"])
+    if not url:
+        print("✗ Could not locate the monthly source file. Aborting.")
         return
 
-    # Process downloaded file
-    download_path = Path("downloads/snap_monthly_update.xlsx")
-    if not download_path.exists():
-        print(f"✗ File not found: {download_path}")
-        print("  Please download the file and try again")
+    download_path = Path("downloads/snap-zip-fy69tocurrent.zip")
+    if not download_file(url, download_path):
         return
 
+    # 2. Extract Hawaii monthly records from every FY file in the ZIP.
     try:
-        # Read existing data
-        existing_df = pd.read_csv(file_path)
-        existing_df['Date'] = pd.to_datetime(existing_df['Date'])
-        print(f"✓ Loaded existing data: {len(existing_df)} records")
-        print(f"  Date range: {existing_df['Date'].min()} to {existing_df['Date'].max()}")
-
-        # Read new data (implementation depends on actual file structure)
-        print("\n⚠ Reading new data - structure may vary")
-        print("  You may need to adjust column mappings")
-
-        new_df = pd.read_excel(download_path)
-        print(f"✓ Loaded new data: {len(new_df)} records")
-
-        # Filter for Hawaii
-        if 'State' in new_df.columns:
-            new_df = new_df[new_df['State'] == 'HI']
-            print(f"✓ Filtered for Hawaii: {len(new_df)} records")
-
-        # Standardize column names (adjust as needed)
-        column_mapping = {
-            # Map new column names to existing column names
-            # Example: 'Households Participating': 'Household'
-        }
-        if column_mapping:
-            new_df = new_df.rename(columns=column_mapping)
-
-        # Get only new records (after last existing date)
-        last_date = existing_df['Date'].max()
-        new_df['Date'] = pd.to_datetime(new_df['Date'])
-        new_records = new_df[new_df['Date'] > last_date]
-
-        if len(new_records) == 0:
-            print("✓ No new records to add (data is up to date)")
-            return
-
-        print(f"✓ Found {len(new_records)} new records")
-        print(f"  New date range: {new_records['Date'].min()} to {new_records['Date'].max()}")
-
-        # Merge and save
-        updated_df = pd.concat([existing_df, new_records], ignore_index=True)
-        updated_df = updated_df.sort_values('Date')
-
-        # Update filename to reflect new date range
-        new_filename = f"Statewide Monthly SNAP FY 89-25.csv"
-        new_file_path = DATA_DIR / new_filename
-
-        updated_df.to_csv(new_file_path, index=False)
-        print(f"✓ Saved updated data: {new_file_path}")
-        print(f"  Total records: {len(updated_df)}")
-        print(f"  Date range: {updated_df['Date'].min()} to {updated_df['Date'].max()}")
-
-        # Keep old file for reference if different name
-        if new_filename != FILES["monthly"]:
-            print(f"\n⚠ Note: Created new file with updated name")
-            print(f"  Old file still exists: {FILES['monthly']}")
-            print(f"  New file: {new_filename}")
-
+        extracted = _extract_hawaii_monthly(download_path)
     except Exception as e:
-        print(f"✗ Error processing data: {e}")
+        print(f"✗ Extraction failed: {e}")
         import traceback
         traceback.print_exc()
+        return
+
+    if extracted is None or extracted.empty:
+        print("✗ No Hawaii records extracted from the downloaded ZIP. Aborting.")
+        return
+    print(f"✓ Extracted {len(extracted)} Hawaii monthly records "
+          f"({extracted['Date'].min().date()} to {extracted['Date'].max().date()})")
+
+    # 3. Compare against existing data — only ever move FORWARD.
+    existing_df = pd.read_csv(file_path)
+    existing_df['Date'] = pd.to_datetime(existing_df['Date'])
+    last_date = existing_df['Date'].max()
+    print(f"  Existing data ends: {last_date.date()}")
+
+    new_records = extracted[extracted['Date'] > last_date]
+    if new_records.empty:
+        print("✓ No new months available upstream — local data is already current.")
+        print("  (USDA's published file is not newer than what you have; "
+              "nothing written.)")
+        return
+
+    # 4. New data exists: back up, merge forward, save.
+    backup_existing_data(file_path)
+    updated_df = pd.concat([existing_df, new_records], ignore_index=True)
+    updated_df = updated_df.drop_duplicates(subset=['Date'], keep='last')
+    updated_df = updated_df.sort_values('Date')
+    updated_df.to_csv(file_path, index=False)
+
+    print(f"✓ Added {len(new_records)} new months "
+          f"(through {new_records['Date'].max().date()})")
+    print(f"  Saved: {file_path}  ({len(updated_df)} total records)")
+
+    # 5. Stamp provenance so the source is self-documenting from here on.
+    import re as _re
+    rev_match = _re.search(r'-(\d+)\.zip$', url)
+    write_provenance("monthly", {
+        "dataset": FILES["monthly"],
+        "publisher": "USDA/FNS",
+        "sourcePage": URLS["monthly"],
+        "sourceFile": url.rsplit("/", 1)[-1],
+        "revision": f"-{rev_match.group(1)}" if rev_match else None,
+        "dataAsOf": getattr(extracted, "attrs", {}).get("asOf"),
+        "downloadedAt": datetime.now().strftime("%Y-%m-%d"),
+        "extractedBy": "scripts/extract_hawaii_snap.py",
+        "coverageStart": str(updated_df['Date'].min().date()),
+        "coverageEnd": str(updated_df['Date'].max().date()),
+        "provenanceSource": "automated-pull",
+    })
+    print("  → Re-run scripts/prepare_web_data.py to refresh the dashboard JSON.")
+
+
+def _extract_hawaii_monthly(zip_path):
+    """Extract a clean Hawaii monthly DataFrame from the per-FY ZIP.
+
+    Reuses the parsing logic in extract_hawaii_snap.py so there is a single
+    source of truth for the (quirky) USDA Excel layouts.
+    """
+    import glob
+    import tempfile
+    from extract_hawaii_snap import (extract_hawaii_from_fy_file,
+                                      parse_month_to_date)
+
+    with zipfile.ZipFile(zip_path) as zf:
+        tmpdir = tempfile.mkdtemp(prefix="snap_fy_")
+        zf.extractall(tmpdir)
+
+    files = sorted(glob.glob(f"{tmpdir}/**/FY*.xls", recursive=True)) + \
+        sorted(glob.glob(f"{tmpdir}/**/FY*.xlsx", recursive=True))
+
+    records = []
+    as_of = None
+    for f in files:
+        recs = extract_hawaii_from_fy_file(f)
+        if recs:
+            records.extend(recs)
+            as_of = read_asof_date(f) or as_of  # latest FY file's "as of" date
+
+    if not records:
+        return None
+
+    df = pd.DataFrame(records)
+    df['Date'] = pd.to_datetime(df['Month'].apply(parse_month_to_date))
+    df = df[df['Date'].notna()]
+    df = df[['Date', 'Household', 'Persons', 'Per Household', 'Per Person', 'Cost']]
+    df = df.sort_values('Date')
+    df.attrs["asOf"] = as_of  # carried to the provenance stamp
+    return df
 
 
 def update_retailer_data():
@@ -202,82 +292,139 @@ def update_retailer_data():
     print("UPDATING SNAP RETAILER HISTORICAL DATA")
     print("="*60)
 
-    file_path = DATA_DIR / FILES["retailers"]
-    backup_existing_data(file_path)
+    # Find the most recent existing Hawaii retailer file (name carries a year
+    # range, e.g. 2004-2024 → 2005-2025, so glob rather than hardcode).
+    import glob as _glob
+    prior = sorted(_glob.glob(str(DATA_DIR / "hawaii_snap_retailers_*_valid_coords.csv")))
+    existing_path = Path(prior[-1]) if prior else DATA_DIR / FILES["retailers"]
+    existing_count = 0
+    if existing_path.exists():
+        try:
+            existing_count = len(pd.read_csv(existing_path))
+        except Exception:
+            pass
+    print(f"Existing Hawaii retailer records: {existing_count} "
+          f"({existing_path.name if existing_count else 'none'})")
 
-    print("\nMANUAL DOWNLOAD REQUIRED:")
-    print("1. Visit: https://www.fns.usda.gov/snap/retailer/historical-data")
-    print("2. Download the zipped CSV file (current as of Dec 31, 2024)")
-    print("3. Extract the CSV file")
-    print("4. Save to: downloads/snap_retailers_historical.csv")
-    print("\nPress Enter when download is complete, or 'skip' to skip...")
-
-    response = input().strip().lower()
-    if response == 'skip':
-        print("Skipping retailer data update")
+    # 1. Find and download the current retailer ZIP straight from USDA.
+    url = discover_file_url(URLS["retailers"], SOURCE_FILE_PATTERNS["retailers"])
+    if not url:
+        print("✗ Could not locate the retailer source file. Aborting.")
         return
 
-    download_path = Path("downloads/snap_retailers_historical.csv")
-    if not download_path.exists():
-        print(f"✗ File not found: {download_path}")
+    download_path = Path("downloads/snap-retailer-locator-data.zip")
+    if not download_file(url, download_path):
         return
 
+    # 2. Extract the CSV from the ZIP and filter to Hawaii.
     try:
-        # Read new retailer data
-        print("Loading retailer data...")
-        df = pd.read_csv(download_path, low_memory=False)
-        print(f"✓ Loaded: {len(df)} total records")
-
-        # Filter for Hawaii
-        if 'State' in df.columns:
-            hi_df = df[df['State'] == 'HI'].copy()
-        elif 'store_state' in df.columns:
-            hi_df = df[df['store_state'] == 'HI'].copy()
-        else:
-            print("✗ Cannot find State column")
-            print(f"  Available columns: {df.columns.tolist()}")
+        import tempfile, glob
+        tmpdir = tempfile.mkdtemp(prefix="snap_retail_")
+        with zipfile.ZipFile(download_path) as zf:
+            zf.extractall(tmpdir)
+        csvs = glob.glob(f"{tmpdir}/**/*.csv", recursive=True)
+        if not csvs:
+            print("✗ No CSV found inside the retailer ZIP. Aborting.")
             return
-
-        print(f"✓ Filtered for Hawaii: {len(hi_df)} records")
-
-        # Clean geolocation data (known issue: ~39% bad coordinates)
-        if 'Latitude' in hi_df.columns and 'Longitude' in hi_df.columns:
-            # Hawaii coordinates: roughly 18°-23°N, 154°-161°W
-            bad_coords = (
-                (hi_df['Latitude'] < 18) | (hi_df['Latitude'] > 23) |
-                (hi_df['Longitude'] < -161) | (hi_df['Longitude'] > -154)
-            )
-            print(f"⚠ Found {bad_coords.sum()} records with invalid Hawaii coordinates ({bad_coords.sum()/len(hi_df)*100:.1f}%)")
-
-            # Flag bad coordinates
-            hi_df['Valid_Coords'] = ~bad_coords
-
-        # Save updated data
-        new_filename = "Statewide SNAP Retailers Historical- FNS 2024.csv"
-        new_file_path = DATA_DIR / new_filename
-
-        hi_df.to_csv(new_file_path, index=False)
-        print(f"✓ Saved: {new_file_path}")
-        print(f"  Total records: {len(hi_df)}")
-        if 'Valid_Coords' in hi_df.columns:
-            print(f"  Valid coordinates: {hi_df['Valid_Coords'].sum()} ({hi_df['Valid_Coords'].sum()/len(hi_df)*100:.1f}%)")
-
-        # Summary statistics
-        if 'Authorization Date' in hi_df.columns or 'auth_date' in hi_df.columns:
-            date_col = 'Authorization Date' if 'Authorization Date' in hi_df.columns else 'auth_date'
-            hi_df[date_col] = pd.to_datetime(hi_df[date_col], errors='coerce')
-            print(f"  Authorization dates: {hi_df[date_col].min()} to {hi_df[date_col].max()}")
-
-        if 'Store Type' in hi_df.columns or 'store_type' in hi_df.columns:
-            type_col = 'Store Type' if 'Store Type' in hi_df.columns else 'store_type'
-            print(f"\n  Store types:")
-            for store_type, count in hi_df[type_col].value_counts().head(10).items():
-                print(f"    {store_type}: {count}")
-
+        # utf-8-sig strips the byte-order mark USDA prepends (else the first
+        # column header comes through as "﻿Record ID").
+        df = pd.read_csv(csvs[0], encoding="utf-8-sig", low_memory=False)
     except Exception as e:
-        print(f"✗ Error: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"✗ Could not read retailer ZIP: {e}")
+        return
+
+    state_col = "State" if "State" in df.columns else (
+        "store_state" if "store_state" in df.columns else None)
+    if not state_col:
+        print(f"✗ No State column. Columns: {df.columns.tolist()[:10]}")
+        return
+    hi_new = df[df[state_col] == "HI"].copy()
+    print(f"✓ Filtered for Hawaii: {len(hi_new)} records (this release)")
+
+    # Normalize date columns to ISO so keys/output are format-consistent. The
+    # raw USDA file uses M/D/YYYY while prior repo files are already ISO — without
+    # this, the merge key never matches and every store gets duplicated.
+    def _norm_dates(frame):
+        for col in ("Authorization Date", "End Date"):
+            if col in frame.columns:
+                frame[col] = pd.to_datetime(frame[col], errors="coerce").dt.strftime("%Y-%m-%d")
+        return frame
+    hi_new = _norm_dates(hi_new)
+
+    # 3. UNION with existing — retailer data is a cumulative history, and each
+    # USDA release spans only a rolling ~20-year window, so a plain replace would
+    # silently drop stores that closed before the window (e.g. Hawaii stores that
+    # closed in 2004). A store appears once per authorization period, so
+    # (Record ID, Authorization Date) is the true primary key.
+    key = [c for c in ["Record ID", "Authorization Date"] if c in hi_new.columns]
+    prior_all = sorted(_glob.glob(str(DATA_DIR / "hawaii_snap_retailers_*_all.csv")))
+    if prior_all and key:
+        try:
+            old_df = _norm_dates(pd.read_csv(prior_all[-1], encoding="utf-8-sig",
+                                             low_memory=False))
+            before = len(hi_new)
+            # New release wins on conflicts (keep='last'); old-only rows survive.
+            hi_df = pd.concat([old_df, hi_new], ignore_index=True)
+            hi_df = hi_df.drop_duplicates(subset=key, keep="last")
+            preserved = len(hi_df) - before
+            print(f"  Unioned with {prior_all[-1].split('/')[-1]}: "
+                  f"+{max(preserved,0)} historical record(s) the new release dropped "
+                  f"(total {len(hi_df)})")
+        except Exception as e:
+            print(f"  ⚠ Could not union with prior file ({e}); using this release only")
+            hi_df = hi_new
+    else:
+        hi_df = hi_new
+
+    # Regression guard: the union must never be smaller than what we had.
+    if existing_count and len(hi_df) < existing_count:
+        print(f"✗ Union ({len(hi_df)}) smaller than existing ({existing_count}). "
+              f"Refusing to regress; nothing written.")
+        return
+
+    # 4. Coordinate validation → write both an "all" file and a valid-coords file.
+    lat_lo, lat_hi = HI_BOUNDS["lat"]
+    lon_lo, lon_hi = HI_BOUNDS["lon"]
+    if "Latitude" in hi_df.columns and "Longitude" in hi_df.columns:
+        valid = ((hi_df["Latitude"] >= lat_lo) & (hi_df["Latitude"] <= lat_hi) &
+                 (hi_df["Longitude"] >= lon_lo) & (hi_df["Longitude"] <= lon_hi))
+        print(f"  Valid Hawaii coordinates: {valid.sum()}/{len(hi_df)} "
+              f"({valid.sum()/len(hi_df)*100:.1f}%)")
+    else:
+        valid = pd.Series(True, index=hi_df.index)
+
+    # Derive the coverage span from the actual data (End Date years) so the
+    # filename reflects what's really in the unioned file, not the USDA window.
+    ed_years = pd.to_datetime(hi_df.get("End Date"), errors="coerce").dt.year.dropna()
+    if len(ed_years):
+        span = f"{int(ed_years.min())}-{int(ed_years.max())}"
+    else:
+        span = "latest"
+    all_path = DATA_DIR / f"hawaii_snap_retailers_{span}_all.csv"
+    valid_path = DATA_DIR / f"hawaii_snap_retailers_{span}_valid_coords.csv"
+
+    backup_existing_data(existing_path)
+    hi_df.to_csv(all_path, index=False)
+    hi_df[valid].to_csv(valid_path, index=False)
+    print(f"✓ Saved {all_path.name} ({len(hi_df)}) and "
+          f"{valid_path.name} ({valid.sum()})")
+
+    # 5. Stamp provenance.
+    write_provenance("retailers", {
+        "dataset": valid_path.name,
+        "publisher": "USDA/FNS",
+        "sourcePage": URLS["retailers"],
+        "sourceFile": url.rsplit("/", 1)[-1],
+        "downloadedAt": datetime.now().strftime("%Y-%m-%d"),
+        "coverageStart": span.split("-")[0],
+        "coverageEnd": span.split("-")[-1],
+        "hawaiiRecords": int(len(hi_df)),
+        "validCoordRecords": int(valid.sum()),
+        "note": ("Unioned across USDA releases to preserve history beyond USDA's "
+                 "rolling ~20-year window (which drops stores that closed long ago)."),
+        "provenanceSource": "automated-pull",
+    })
+    print("  → Re-run scripts/prepare_web_data.py to refresh the dashboard JSON.")
 
 
 def update_county_data():
@@ -303,21 +450,16 @@ def update_county_data():
     except Exception as e:
         print(f"Error reading existing data: {e}")
 
-    print("\nMANUAL DOWNLOAD REQUIRED:")
-    print("1. Visit: https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap")
-    print("2. Look for 'Bi-Annual (January and July) State Project Area/County Level'")
-    print("3. Download the data file")
-    print("4. Extract and save to: downloads/snap_county_biannual.xlsx")
-    print("\nPress Enter when download is complete, or 'skip' to skip...")
-
-    response = input().strip().lower()
-    if response == 'skip':
-        print("Skipping county data update")
-        return
-
-    # Processing would follow similar pattern to monthly data
-    print("⚠ County data update not yet fully implemented")
-    print("  Please review downloaded file structure and update this function")
+    # County bi-annual (Jan/Jul) project-area data is no longer a direct file
+    # link on the SNAP data page, so it can't be auto-discovered like the others.
+    # Skip non-interactively (so --all never blocks) with a clear pointer.
+    print("\n⚠ SKIPPED — no auto-discoverable source.")
+    print("  The bi-annual county/project-area file isn't published as a direct")
+    print("  download on the SNAP data page. To update manually, obtain the")
+    print("  'Bi-Annual (Jan & Jul) State Project Area/County Level' data from")
+    print("  USDA FNS, save the Hawaii rows in the existing CSV's schema, and")
+    print("  append periods after "
+          f"{existing_df['Date'].max().date() if 'existing_df' in dir() else 'the latest date'}.")
 
 
 def generate_summary_report(output_path=None):
@@ -422,6 +564,10 @@ def main():
     if args.all or args.county:
         update_county_data()
 
+    # Rebuild the dashboard JSON so a full run updates data AND site together.
+    if args.all or args.monthly:
+        rebuild_web_data()
+
     # Generate final report
     print("\n" + "="*60)
     generate_summary_report()
@@ -430,10 +576,25 @@ def main():
     print("UPDATE COMPLETE")
     print("="*60)
     print("\nNext steps:")
-    print("1. Review the DATA_STATUS_REPORT.md file")
-    print("2. Update README.md with new date ranges")
-    print("3. Update Tableau visualizations")
-    print("4. Commit changes to git")
+    print("1. Review DATA_STATUS_REPORT.md and Data/SOURCES.json (provenance)")
+    print("2. git add/commit/push  → Netlify redeploys the dashboard automatically")
+
+
+def rebuild_web_data():
+    """Regenerate web/data/*.json so the dashboard reflects updated CSVs."""
+    print("\n" + "="*60)
+    print("REBUILDING DASHBOARD DATA (web/data/*.json)")
+    print("="*60)
+    import subprocess
+    script = Path(__file__).parent / "prepare_web_data.py"
+    result = subprocess.run([sys.executable, str(script)],
+                            capture_output=True, text=True)
+    if result.returncode == 0:
+        print("✓ Dashboard JSON rebuilt")
+    else:
+        print("✗ prepare_web_data.py failed:")
+        print(result.stdout[-1500:])
+        print(result.stderr[-1500:])
 
 
 if __name__ == "__main__":

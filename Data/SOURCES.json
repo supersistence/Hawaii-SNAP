@@ -1,0 +1,51 @@
+{
+  "_comment": "Provenance manifest for the datasets in this repo. Written automatically by scripts/download_and_update.py on each pull and read by scripts/prepare_web_data.py into web/data/metadata.json. The 'monthly' entry below was backfilled by inspecting the source .xlsx internals on 2026-06-22 (Data/source/ is gitignored, so this manifest is the committed record of where the data came from).",
+  "monthly": {
+    "dataset": "Statewide Monthly SNAP FY 89-25.csv",
+    "publisher": "USDA/FNS",
+    "sourcePage": "https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap",
+    "sourceFile": "snap-zip-fy69tocurrent-8.zip",
+    "revision": "-8",
+    "fileTitle": "National Data Bank Version 8.2 PUBLIC - SNAP Monthly State Participation and Benefit Summary, FY2025",
+    "dataAsOf": "2025-08-08",
+    "downloadedAt": "2025-10-23",
+    "extractedBy": "scripts/extract_hawaii_snap.py",
+    "coverageStart": "1988-10-01",
+    "coverageEnd": "2025-05-01",
+    "provenanceSource": "backfilled-by-inspection-2026-06-22",
+    "note": "USDA later rolled the published file back to revision -6 (coverage ends 2025-03-01), so this repo is two months ahead of what USDA currently serves."
+  },
+  "retailers": {
+    "dataset": "hawaii_snap_retailers_2004-2025_valid_coords.csv",
+    "publisher": "USDA/FNS",
+    "sourcePage": "https://www.fns.usda.gov/snap/retailer/historical-data",
+    "sourceFile": "snap-retailer-locator-data2005-2025.zip",
+    "downloadedAt": "2026-06-22",
+    "coverageStart": "2004",
+    "coverageEnd": "2025",
+    "provenanceSource": "automated-pull",
+    "hawaiiRecords": 2686,
+    "validCoordRecords": 2548,
+    "note": "Unioned across USDA releases to preserve history beyond USDA's rolling ~20-year window (which drops stores that closed long ago)."
+  },
+  "population": {
+    "dataset": "county_population.csv",
+    "publisher": "Hawaii State Census (DBEDT)",
+    "sourcePage": "https://census.hawaii.gov/main/2024-county-population-estimates/",
+    "vintage": "July 1 2024 resident population estimate",
+    "coverageEnd": "2024",
+    "provenanceSource": "manual-2026-06-22",
+    "note": "Used by prepare_web_data.py to compute per-capita SNAP participationRate per county. Needed because raw-count county maps otherwise just mirror population density."
+  },
+  "applications": {
+    "dataset": "County Weekly Applications 4:2020-3:2022.csv",
+    "publisher": "Hawaii DHS (Department of Human Services)",
+    "sourcePage": "https://humanservices.hawaii.gov/communications/",
+    "originalSourceFiles": "Weekly press-release spreadsheets, e.g. wp-content/uploads/2022/04/SNAP-Data-4.1.22.xlsx ('SNAP Data by County Received and Approved')",
+    "coverageStart": "2020-04-26",
+    "coverageEnd": "2022-04-01",
+    "status": "discontinued",
+    "provenanceSource": "investigated-2026-06-22",
+    "note": "The only State-of-Hawaii-sourced dataset (all others are USDA/FNS). A COVID-era weekly series: the 4/1/2022 file still resolves but the next week (4/8/2022) and all later dates 404; the page that hosted it now serves Maui wildfire content; DHS still issues SNAP press releases but no longer this weekly applications-by-county data, and no ongoing equivalent was found. Not updatable. Note: USDA FNS monthly participation already covers caseloads; only this weekly applications granularity is gone."
+  }
+}

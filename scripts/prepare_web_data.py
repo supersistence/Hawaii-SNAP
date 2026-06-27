@@ -234,15 +234,33 @@ def main():
     print(f"✓ Saved trends.json")
 
     # Create a combined metadata file
+    # Derive version/note from the actual data so they never go stale.
+    monthly_end = monthly_data['metadata']['endDate']  # e.g. '2025-05-01'
+    data_version = monthly_end[:7]  # 'YYYY-MM'
+    monthly_end_label = datetime.strptime(monthly_end, '%Y-%m-%d').strftime('%B %Y')
+    county_end = county_data.get('asOfDate')
+    if county_end:
+        county_end_label = datetime.strptime(county_end, '%Y-%m-%d').strftime('%B %Y')
+        note = (f'Monthly statewide data current through {monthly_end_label}. '
+                f'County bi-annual data current through {county_end_label}.')
+    else:
+        note = f'Monthly statewide data current through {monthly_end_label}.'
+    # Pull full provenance from the committed manifest so the dashboard's
+    # metadata records exactly where each dataset came from (publisher,
+    # source file/revision, "data as of" date, when it was downloaded).
+    sources_path = DATA_DIR / 'SOURCES.json'
+    try:
+        provenance = json.loads(sources_path.read_text())
+        provenance.pop('_comment', None)
+    except (FileNotFoundError, ValueError):
+        provenance = {}
+
     metadata = {
         'generated': datetime.now().isoformat(),
-        'dataVersion': '2022-01',
-        'note': 'Data current through January 2022. Updated data available through May 2025.',
-        'sources': {
-            'monthly': 'USDA FNS SNAP Data Tables',
-            'county': 'USDA FNS Bi-Annual County Data',
-            'repository': 'https://github.com/supersistence/Hawaii-SNAP'
-        },
+        'dataVersion': data_version,
+        'note': note,
+        'repository': 'https://github.com/supersistence/Hawaii-SNAP',
+        'provenance': provenance,
         'summary': monthly_data['metadata']
     }
 
