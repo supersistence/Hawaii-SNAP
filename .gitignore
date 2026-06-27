@@ -56,6 +56,12 @@ node_modules/
 # Netlify
 .netlify/
 
+# Playwright MCP scratch screenshots
+.playwright-mcp/
+
+# Auto-generated status report
+DATA_STATUS_REPORT.md
+
 # Reports
 2022 Report
 

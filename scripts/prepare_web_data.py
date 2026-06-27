@@ -99,7 +99,7 @@ def process_county_data():
     """Process county bi-annual data for geographic comparisons."""
     print("Processing county data...")
 
-    df = pd.read_csv(DATA_DIR / "County Bi-Annual SNAP 89-21.csv")
+    df = pd.read_csv(DATA_DIR / "County Bi-Annual SNAP 89-25.csv")
     df['Date'] = pd.to_datetime(df['Date'])
 
     # Get latest data for each county
