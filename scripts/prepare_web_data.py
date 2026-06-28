@@ -11,12 +11,50 @@ from datetime import datetime
 DATA_DIR = Path(__file__).parent.parent / "Data"
 WEB_DIR = Path(__file__).parent.parent / "web" / "data"
 
-def process_monthly_data():
-    """Process statewide monthly data for web charts."""
-    print("Processing monthly data...")
+def _dhs_statewide_monthly():
+    """DHS statewide monthly rows shaped like the USDA CSV (Household, Persons,
+    Per Household, Per Person, Cost). Uses the pre-aggregated 'STATE' rows so
+    there's no island double-counting; Cost = BenefitsIssued."""
+    path = DATA_DIR / "dhs_snap_participation_by_island.csv"
+    if not path.exists():
+        return None
+    s = pd.read_csv(path)
+    s = s[s['Island'] == 'STATE'].copy()
+    if s.empty:
+        return None
+    s['Date'] = pd.to_datetime(s['Date'])
+    out = pd.DataFrame({
+        'Date': s['Date'],
+        'Household': s['Households'].astype(int),
+        'Persons': s['Participants'].astype(int),
+        'Cost': s['BenefitsIssued'].astype(int),
+    })
+    out['Per Household'] = (out['Cost'] / out['Household']).round(2)
+    out['Per Person'] = (out['Cost'] / out['Persons']).round(2)
+    return out.sort_values('Date')
 
-    df = pd.read_csv(DATA_DIR / "Statewide Monthly SNAP FY 89-25.csv")
-    df['Date'] = pd.to_datetime(df['Date'])
+
+def process_monthly_data():
+    """Process the statewide monthly series for web charts.
+
+    SPLICED series: USDA federal for the long history (1989–2008), then Hawai‘i
+    DHS state data from 2008 onward. States report SNAP figures TO USDA, so the
+    two are the same data — 92% of overlapping months are byte-identical — but
+    DHS is ~a year more current (through May 2026) and is the original source.
+    Splicing gives one continuous line that's both complete AND current; we
+    prefer DHS wherever the two overlap."""
+    print("Processing monthly data (USDA pre-2008 + DHS 2008–present)...")
+
+    usda = pd.read_csv(DATA_DIR / "Statewide Monthly SNAP FY 89-25.csv")
+    usda['Date'] = pd.to_datetime(usda['Date'])
+    dhs = _dhs_statewide_monthly()
+    if dhs is not None and len(dhs):
+        splice_date = dhs['Date'].min()
+        df = pd.concat([usda[usda['Date'] < splice_date], dhs], ignore_index=True)
+        splice_iso = splice_date.strftime('%Y-%m-%d')
+    else:
+        df = usda
+        splice_iso = None
 
     # Sort by date
     df = df.sort_values('Date')
@@ -39,7 +77,10 @@ def process_monthly_data():
             'latestPersons': int(df.iloc[-1]['Persons']),
             'latestAvgBenefitPerHousehold': float(df.iloc[-1]['Per Household']),
             'latestAvgBenefitPerPerson': float(df.iloc[-1]['Per Person']),
-            'latestTotalCost': int(df.iloc[-1]['Cost'])
+            'latestTotalCost': int(df.iloc[-1]['Cost']),
+            'spliceDate': splice_iso,
+            'source': ('USDA FNS (pre-2008) + Hawai‘i DHS (2008–present)'
+                       if splice_iso else 'USDA FNS')
         }
     }
 

@@ -35,19 +35,19 @@ function updateDataCurrency() {
         const iso = d.length === 10 ? d + 'T12:00:00' : d;  // avoid TZ slip on date-only
         return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
     };
-    const fed = monthYear(metadata && metadata.summary && metadata.summary.endDate) || 'May 2025';
-    const dhs = monthYear(dhsData && dhsData.asOfDate);
+    const sum = (metadata && metadata.summary) || {};
+    const end = monthYear(sum.endDate) || 'May 2026';
+    const spliceYr = sum.spliceDate ? new Date(sum.spliceDate + 'T12:00:00').getFullYear() : null;
     const gen = monthYear(metadata && metadata.generated);
 
     const badge = document.getElementById('data-badge');
-    if (badge) badge.textContent = dhs
-        ? `USDA federal → ${fed} · DHS state → ${dhs}`
-        : `Current through ${fed}`;
+    if (badge) badge.textContent = spliceYr ? `1989–${end} · USDA + DHS` : `Through ${end}`;
 
     const foot = document.getElementById('footer-currency');
     if (foot) {
-        let t = `Federal (USDA) series current through <strong>${fed}</strong>`;
-        if (dhs) t += ` · state (DHS) series through <strong>${dhs}</strong>`;
+        let t = spliceYr
+            ? `Participation series: <strong>USDA federal</strong> (1989–${spliceYr}) + <strong>Hawai‘i DHS</strong> (${spliceYr}–${end})`
+            : `Series current through <strong>${end}</strong>`;
         if (gen) t += `. Page data regenerated ${gen}.`;
         foot.innerHTML = t;
     }
@@ -320,7 +320,9 @@ function setupScrolly() {
         { range: ['1989-01-01', '2008-01-01'], n: '~110K',  note: 'stable',  noteL: '1989–2008 floor' },
         { range: ['2008-01-01', '2014-06-01'], n: '188K',   note: '+70%',    noteL: 'recession climb'   },
         { range: ['2020-03-01', '2021-12-01'], n: '206,226',note: 'peak',    noteL: 'July 2021'         },
-        { range: ['2022-01-01', '2025-05-01'], n: formatNumber(latest), note: '+13%', noteL: 'vs. 2019 baseline' },
+        { range: ['2022-01-01', monthlyData.metadata.endDate], n: formatNumber(latest),
+          note: '+' + Math.round((latest / trendsData.periods.preCovidAvg.persons - 1) * 100) + '%',
+          noteL: 'vs. 2019 baseline' },
     ];
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -401,28 +403,22 @@ function showError(message) {
 function populateStats() {
     const { metadata: meta, summary, yearOverYear } = monthlyData;
 
-    // Overview stats — caseload counts lead with the most-current series (DHS,
-    // through May 2026); benefit/cost stay on USDA (DHS doesn't publish them).
-    // Each card's date sub-label names its source so the mix is explicit.
-    const dhsCur = (dhsData && dhsData.statewideMonthly) ? {
-        persons: dhsData.statewideMonthly.participants[dhsData.statewideMonthly.participants.length - 1],
-        households: dhsData.statewideMonthly.households[dhsData.statewideMonthly.households.length - 1],
-        date: dhsData.asOfDate || dhsData.statewideMonthly.dates[dhsData.statewideMonthly.dates.length - 1],
-    } : null;
-    const cur = dhsCur || { persons: meta.latestPersons, households: meta.latestHouseholds, date: meta.endDate };
-    const curSrc = dhsCur ? 'DHS' : 'USDA';
+    // Overview stats — all from the spliced series (USDA pre-2008 + DHS since),
+    // so the latest month is current (May 2026) and DHS-sourced. One label.
+    const src = (meta.spliceDate && meta.endDate >= meta.spliceDate) ? 'DHS' : 'USDA';
+    const dateLabel = `${src} · ${formatDate(meta.endDate)}`;
 
-    document.getElementById('stat-persons').textContent = formatNumber(cur.persons);
-    document.getElementById('stat-persons-date').textContent = `${curSrc} · ${formatDate(cur.date)}`;
+    document.getElementById('stat-persons').textContent = formatNumber(meta.latestPersons);
+    document.getElementById('stat-persons-date').textContent = dateLabel;
 
-    document.getElementById('stat-households').textContent = formatNumber(cur.households);
-    document.getElementById('stat-households-date').textContent = `${curSrc} · ${formatDate(cur.date)}`;
+    document.getElementById('stat-households').textContent = formatNumber(meta.latestHouseholds);
+    document.getElementById('stat-households-date').textContent = dateLabel;
 
     document.getElementById('stat-benefit').textContent = `$${formatNumber(meta.latestAvgBenefitPerHousehold)}`;
-    document.getElementById('stat-benefit-date').textContent = `USDA · ${formatDate(meta.endDate)}`;
+    document.getElementById('stat-benefit-date').textContent = dateLabel;
 
     document.getElementById('stat-cost').textContent = `$${formatMoney(meta.latestTotalCost)}`;
-    document.getElementById('stat-cost-date').textContent = `USDA · ${formatDate(meta.endDate)}`;
+    document.getElementById('stat-cost-date').textContent = dateLabel;
 
     // Populate text content
     document.getElementById('avg-persons').textContent = formatNumber(summary.averages.persons);

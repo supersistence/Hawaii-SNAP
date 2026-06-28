@@ -1,7 +1,7 @@
 {
-  "generated": "2026-06-27T20:02:28.257849",
-  "dataVersion": "2025-05",
-  "note": "Monthly statewide data current through May 2025. County bi-annual data current through January 2025.",
+  "generated": "2026-06-27T21:40:51.506244",
+  "dataVersion": "2026-05",
+  "note": "Monthly statewide data current through May 2026. County bi-annual data current through January 2025.",
   "repository": "https://github.com/supersistence/Hawaii-SNAP",
   "provenance": {
     "monthly": {
@@ -86,12 +86,14 @@
   },
   "summary": {
     "startDate": "1988-10-01",
-    "endDate": "2025-05-01",
-    "totalMonths": 440,
-    "latestHouseholds": 84333,
-    "latestPersons": 163576,
-    "latestAvgBenefitPerHousehold": 701.7196,
-    "latestAvgBenefitPerPerson": 361.7775,
-    "latestTotalCost": 59178123
+    "endDate": "2026-05-01",
+    "totalMonths": 450,
+    "latestHouseholds": 78458,
+    "latestPersons": 157954,
+    "latestAvgBenefitPerHousehold": 649.09,
+    "latestAvgBenefitPerPerson": 322.41,
+    "latestTotalCost": 50925976,
+    "spliceDate": "2008-07-01",
+    "source": "USDA FNS (pre-2008) + Hawai\u2018i DHS (2008\u2013present)"
   }
 }
