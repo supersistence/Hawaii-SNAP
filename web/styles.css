@@ -23,7 +23,8 @@
 /* Per-section accent — informs each section, used only for meaning markers.
    Every value verified ≥4.5:1 on paper (WCAG AA for text). */
 #overview     {--accent:#1d6b3f;--accent-soft:#4f9268}  /* taro green  */
-#trends       {--accent:#075985;--accent-soft:#3b82a6}  /* ocean blue  6.4:1 */
+#trends       {--accent:#1d6b3f;--accent-soft:#4f9268}  /* green (the arc) */
+#recipients   {--accent:#075985;--accent-soft:#3b82a6}  /* ocean blue  6.4:1 */
 #benefits     {--accent:#b45309;--accent-soft:#d97706}  /* amber       5.0:1 */
 #covid        {--accent:#6243a4;--accent-soft:#8b6fc4}  /* SNAP purple 6.7:1 */
 #shutdown     {--accent:#b3201f;--accent-soft:#d6453f}  /* alert red   5.7:1 */

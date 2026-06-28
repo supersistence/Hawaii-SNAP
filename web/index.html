@@ -56,13 +56,12 @@
     <nav class="nav-tabs">
         <div class="container">
             <a class="tab-button active" href="#overview" data-tab="overview">Overview</a>
-            <a class="tab-button" href="#arc" data-tab="arc">The arc</a>
-            <a class="tab-button" href="#trends" data-tab="trends">Participation</a>
+            <a class="tab-button" href="#trends" data-tab="trends">Trends</a>
+            <a class="tab-button" href="#recipients" data-tab="recipients">Recipients</a>
             <a class="tab-button" href="#benefits" data-tab="benefits">Benefits</a>
-            <a class="tab-button" href="#disruptions" data-tab="disruptions">Disruptions</a>
+            <a class="tab-button" href="#disruptions" data-tab="disruptions">Shocks</a>
             <a class="tab-button" href="#retailers" data-tab="retailers">Retailers</a>
             <a class="tab-button" href="#counties" data-tab="counties">Counties</a>
-            <a class="tab-button" href="#dhs" data-tab="dhs">DHS State Data</a>
             <a class="tab-button" href="#implications" data-tab="implications">Key Insights</a>
         </div>
     </nav>
@@ -133,8 +132,8 @@
         </section>
 
         <!-- The arc: unified 1989–2026 scrollytelling sequence -->
-        <section id="arc" class="tab-content">
-            <span class="kicker">The arc</span>
+        <section id="trends" class="tab-content">
+            <span class="kicker">Trends</span>
             <h2>Thirty-seven years in six acts — <span class="em">every shock left a higher floor.</span></h2>
             <p class="section-description">One continuous line, 1989 to today (USDA federal, then Hawai‘i DHS). Scroll to walk it: a stable floor, then each crisis resetting participation upward and rarely falling back.</p>
 
@@ -151,7 +150,7 @@
                     <div class="step is-active" data-step="0">
                         <div class="act">Act 1 · 1989–2008</div>
                         <h3>A stable floor</h3>
-                        <p>For two decades, participation held in a steady band — roughly 100,000–120,000 people in any given month. The safety net was load-bearing even in good years.</p>
+                        <p>For two decades, participation held in a steady band — roughly 100,000–120,000 people in any given month. The one sharp exception: <strong>September 1992</strong>, when Hurricane Iniki devastated Kaua‘i and disaster SNAP briefly pushed enrollment up about 30%.</p>
                     </div>
                     <div class="step" data-step="1">
                         <div class="act">Act 2 · 2008–2013</div>
@@ -184,8 +183,8 @@
 
 
         <!-- Trends Tab -->
-        <section id="trends" class="tab-content">
-            <span class="kicker">Participation</span>
+        <section id="recipients" class="tab-content">
+            <span class="kicker">Recipients</span>
             <h2>Households and individuals move together — and both sit <span class="em">well above their pre-pandemic floor.</span></h2>
 
             <div class="chart-container">
@@ -216,6 +215,13 @@
                         <p>Year-over-year analysis reveals <strong id="yoy-change">--</strong> change in participation, reflecting current economic conditions and policy changes.</p>
                     </div>
                 </div>
+            </div>
+
+            <h3 class="sub-divider">Getting on: application processing</h3>
+            <div class="chart-container">
+                <h3>SNAP Application Processing Timeliness</h3>
+                <p class="chart-description">Monthly applications received and the % processed on time (within 30 days, or 7 for expedited), FFY 2009–present, backfilled from DHS archives. Note the application spike and the dip in on-time processing during the post-pandemic period. Gaps reflect source files DHS published only as images or partial-year summaries.</p>
+                <canvas id="dhsTimelinessChart"></canvas>
             </div>
         </section>
 
@@ -805,35 +811,11 @@
             <div class="data-note">
                 <strong>County Data Updated:</strong> County bi-annual data now current through January 2025. Statewide monthly data is current through May 2025. This updated data reveals pandemic recovery patterns across all four islands.
             </div>
-        </section>
 
-        <!-- DHS State Data Tab -->
-        <section id="dhs" class="tab-content">
-            <span class="kicker">DHS State Data</span>
-            <h2>A second, more current series — <span class="em">monthly and by island, running a year ahead</span> of the federal data.</h2>
-            <p class="section-description">Sourced directly from the <a href="https://humanservices.hawaii.gov/bessd/snap/" target="_blank" rel="noopener">Hawaii Department of Human Services</a>, this is a separate series from the USDA federal data — <strong>monthly, island-level, and more current (through May 2026)</strong>. Kept distinct because DHS uses its own State-Fiscal-Year reporting and methodology; figures may differ slightly from the USDA series.</p>
-
-            <div class="chart-container">
-                <h3>Monthly SNAP Participation, Statewide</h3>
-                <p class="chart-description">~17 years of monthly data (SFY 2009–present), backfilled from DHS archives. Note the Great Recession rise to a 2014 peak, decline, the COVID-19 surge (peak 206,226 in July 2021), and recovery.</p>
-                <canvas id="dhsChart"></canvas>
-            </div>
-
-            <div class="chart-container">
-                <h3>SNAP Application Processing Timeliness</h3>
-                <p class="chart-description">Monthly applications received and the % processed on time (within 30 days, or 7 for expedited), FFY 2009–present, backfilled from DHS archives. Note the application spike and the dip in on-time processing during the post-pandemic period. Gaps reflect source files DHS published only as images or partial-year summaries.</p>
-                <canvas id="dhsTimelinessChart"></canvas>
-            </div>
-
-            <h3>Latest Month by County (per-capita)</h3>
-            <p class="chart-description">Most recent DHS month, normalized by 2024 population. Sub-island branches (Molokai, Lanai) roll up into Maui County. Same pattern as the federal data: the Big Island carries the highest per-capita burden, Honolulu the lowest.</p>
+            <h3 class="sub-divider">Latest month by county · DHS · May 2026</h3>
+            <p class="chart-description">The most current DHS month, normalized by 2024 population — a year ahead of the bi-annual federal county snapshots above. Sub-island branches (Moloka‘i, Lāna‘i) roll up into Maui County.</p>
             <div id="dhs-counties" class="county-details"></div>
-
-            <div class="data-note">
-                <strong>Most current data available:</strong> DHS publishes monthly by-island participation and application-timeliness data, currently through <strong>May 2026</strong> — about a year ahead of the USDA federal series.
-            </div>
         </section>
-
         <!-- Implications Tab -->
         <section id="implications" class="tab-content">
             <span class="kicker">Key Insights</span>

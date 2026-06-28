@@ -426,7 +426,10 @@ function initializeCharts() {
     createCountyChart();
     createPAChart();
     createFoodHubsChart();
-    if (dhsData) { createDHSChart(); createDHSTimelinessChart(); populateDHSCounties(); }
+    // The statewide DHS line is now part of the spliced main charts; the DHS
+    // section is gone. Only its unique pieces remain: timeliness (in Recipients)
+    // and latest-month-by-county (in Counties).
+    if (dhsData) { createDHSTimelinessChart(); populateDHSCounties(); }
 }
 
 // DHS application timeliness: applications received (bars) + % timely (line)
