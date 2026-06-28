@@ -5,6 +5,7 @@ let monthlyData = null;
 let countyData = null;
 let trendsData = null;
 let metadata = null;
+let dhsData = null;
 
 // Chart instances
 const charts = {};
@@ -56,6 +57,14 @@ async function loadData() {
         countyData = await countyRes.json();
         trendsData = await trendsRes.json();
         metadata = await metadataRes.json();
+
+        // DHS data is optional (separate source); don't fail the page if absent.
+        try {
+            const dhsRes = await fetch('data/dhs.json');
+            if (dhsRes.ok) dhsData = await dhsRes.json();
+        } catch (e) {
+            console.warn('DHS data not available:', e);
+        }
 
         console.log('Data loaded successfully');
     } catch (error) {
@@ -176,6 +185,60 @@ function initializeCharts() {
     createCountyChart();
     createPAChart();
     createFoodHubsChart();
+    if (dhsData) { createDHSChart(); populateDHSCounties(); }
+}
+
+// DHS state-data view: monthly statewide participation (2008-present) + per-island
+function createDHSChart() {
+    const el = document.getElementById('dhsChart');
+    if (!el) return;
+    const s = dhsData.statewideMonthly;
+    charts.dhs = new Chart(el, {
+        type: 'line',
+        data: {
+            labels: s.dates,
+            datasets: [
+                { label: 'Participants', data: s.participants, borderColor: '#2563eb',
+                  backgroundColor: 'rgba(37,99,235,0.1)', fill: true, pointRadius: 0, borderWidth: 2 },
+                { label: 'Households', data: s.households, borderColor: '#16a34a',
+                  backgroundColor: 'rgba(22,163,74,0.08)', fill: true, pointRadius: 0, borderWidth: 2 },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            scales: { x: { ticks: { maxTicksLimit: 12 } },
+                      y: { beginAtZero: false, ticks: { callback: v => formatNumber(v) } } },
+            plugins: { legend: { position: 'top' },
+                       title: { display: true,
+                                text: 'Hawaii DHS — Monthly SNAP Participation, Statewide (SFY 2009–present)' } }
+        }
+    });
+}
+
+function populateDHSCounties() {
+    const c = document.getElementById('dhs-counties');
+    if (!c) return;
+    c.innerHTML = '';
+    dhsData.latestByCounty.forEach(county => {
+        const card = document.createElement('div');
+        card.className = 'county-card';
+        card.innerHTML = `
+            <h4>${county.county} County</h4>
+            <div class="county-stat" style="font-weight:600">
+                <span class="county-stat-label">% of Residents on SNAP</span>
+                <span class="county-stat-value">${county.participationRate != null ? county.participationRate + '%' : '—'}</span>
+            </div>
+            <div class="county-stat">
+                <span class="county-stat-label">Participants</span>
+                <span class="county-stat-value">${formatNumber(county.participants)}</span>
+            </div>
+            <div class="county-stat">
+                <span class="county-stat-label">Households</span>
+                <span class="county-stat-value">${formatNumber(county.households)}</span>
+            </div>`;
+        c.appendChild(card);
+    });
 }
 
 // Chart configurations

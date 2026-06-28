@@ -225,6 +225,52 @@ def process_recent_trends():
     return data
 
 
+def process_dhs_data():
+    """Process Hawaii DHS by-island monthly participation for the dashboard.
+
+    DHS data is monthly, island-level, and more current than the USDA series
+    (through May 2026). Kept as a separate, clearly-labeled view rather than
+    spliced into the USDA series (different source/methodology)."""
+    path = DATA_DIR / "dhs_snap_participation_by_island.csv"
+    if not path.exists():
+        return None
+    print("Processing DHS participation data...")
+    df = pd.read_csv(path)
+    df = df.sort_values('Date')
+
+    state = df[df['Island'] == 'STATE']
+    # Map DHS island/branch -> census county for per-capita (sub-islands roll up
+    # into Maui County via 'Maui Branch').
+    county_for = {'Oahu Branch': 'HONOLULU', 'Hawaii Branch': 'HAWAII',
+                  'Kauai Branch': 'KAUAI', 'Maui Branch': 'MAUI'}
+    pop = dict(zip(*[pd.read_csv(DATA_DIR / "county_population.csv")[c]
+                     for c in ('County', 'Population')]))
+
+    latest = df[df['Date'] == df['Date'].max()]
+    islands = []
+    for _, r in latest[latest['Island'].isin(county_for)].iterrows():
+        county = county_for[r['Island']]
+        p = pop.get(county)
+        islands.append({
+            'island': r['Island'], 'county': county.title(),
+            'participants': int(r['Participants']),
+            'households': int(r['Households']),
+            'participationRate': round(int(r['Participants']) / p * 100, 1) if p else None,
+        })
+
+    return {
+        'source': 'Hawaii DHS (Department of Human Services)',
+        'granularity': 'monthly, by island/branch',
+        'asOfDate': str(df['Date'].max()),
+        'statewideMonthly': {
+            'dates': state['Date'].tolist(),
+            'participants': [int(x) for x in state['Participants']],
+            'households': [int(x) for x in state['Households']],
+        },
+        'latestByCounty': sorted(islands, key=lambda x: -(x['participationRate'] or 0)),
+    }
+
+
 def main():
     """Generate all JSON data files for web visualization."""
 
@@ -238,11 +284,17 @@ def main():
     monthly_data = process_monthly_data()
     county_data = process_county_data()
     trends_data = process_recent_trends()
+    dhs_data = process_dhs_data()
 
     # Save to JSON files
     with open(WEB_DIR / 'monthly.json', 'w') as f:
         json.dump(monthly_data, f, indent=2)
     print(f"✓ Saved monthly.json")
+
+    if dhs_data:
+        with open(WEB_DIR / 'dhs.json', 'w') as f:
+            json.dump(dhs_data, f, indent=2)
+        print(f"✓ Saved dhs.json")
 
     with open(WEB_DIR / 'county.json', 'w') as f:
         json.dump(county_data, f, indent=2)

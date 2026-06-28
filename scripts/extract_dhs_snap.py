@@ -15,11 +15,41 @@ Usage:
 """
 
 import re
+import subprocess
 import sys
 from pathlib import Path
 
 import openpyxl
 import pandas as pd
+
+# Island/branch codes (old .xls/PDF) and full names (2025+ .xlsx) -> canonical.
+CANON_ISLAND = {
+    'OB': 'Oahu Branch', 'OAHU BRANCH': 'Oahu Branch',
+    'HB': 'Hawaii Branch', 'HAWAII BRANCH': 'Hawaii Branch',
+    'KB': 'Kauai Branch', 'KAUAI BRANCH': 'Kauai Branch',
+    'MAUI': 'Maui Island', 'MAUI ISLAND': 'Maui Island',
+    'MOLOKAI': 'Molokai Island', 'MOLOKAI ISLAND': 'Molokai Island',
+    'LANAI': 'Lanai Island', 'LANAI ISLAND': 'Lanai Island',
+    'MB': 'Maui Branch', 'MAUI BRANCH': 'Maui Branch',
+    'STATE': 'STATE', 'STATE TOTAL': 'STATE',
+}
+# Section titles for the three metrics, across eras.
+METRIC_TITLES = {
+    'Participants': ('NUMBER OF PERSONS', 'NUMBER OF PARTICIPANTS RECEIVING'),
+    'Households': ('NUMBER OF HOUSEHOLDS', 'NUMBER OF HOUSEHOLDS RECEIVING'),
+    'BenefitsIssued': ('COUPON ISSUANCE', 'SNAP BENEFITS ISSUED'),
+}
+
+
+def _sfy_year(month_idx, sfy):
+    """State Fiscal Year N runs Jul(N-1)..Jun(N)."""
+    return sfy - 1 if month_idx >= 7 else sfy
+
+
+def _fy_from_name(path, kind):
+    """Pull SFY/FFY year from a filename like 'SFY-2018-...' or 'FFY-2020'."""
+    m = re.search(rf'{kind}[-_\s]*(\d{{4}})', Path(path).name, re.IGNORECASE)
+    return int(m.group(1)) if m else None
 
 MONTHS = {m: i for i, m in enumerate(
     ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
@@ -89,6 +119,138 @@ def extract_participation(path):
     return out
 
 
+def _metric_for_title(line_upper):
+    """Map a section-title line to a metric, or None. Guards section-2 lookalikes."""
+    if 'CATEGORY' in line_upper or 'BY FA' in line_upper or 'BY AREA' in line_upper:
+        return None
+    for metric, titles in METRIC_TITLES.items():
+        if any(t in line_upper for t in titles):
+            return metric
+    return None
+
+
+def _island_row_values(tokens):
+    """Given whitespace tokens of a data row, return (island, snap_only, total) or None.
+
+    Columns are TANF TAONF GA SSI ABD NPA/SNAP-ONLY TOTAL — take the first 7
+    integers; TOTAL is the 7th, NPA/SNAP-only the 6th. Trailing acronym-key text
+    is ignored because we stop after 7 numbers.
+    """
+    is_num = lambda t: bool(re.match(r'^[\d,]+\.?\d*$', t)) and any(c.isdigit() for c in t)
+    # island code = leading non-numeric, non-empty tokens (e.g. 'OB', 'Maui', 'STATE')
+    lead = []
+    i = 0
+    while i < len(tokens) and not is_num(tokens[i]):
+        if tokens[i].strip():
+            lead.append(tokens[i].upper())
+        i += 1
+    key = ' '.join(lead).strip().replace(' TOTALS', '').replace(' TOTAL', '')
+    island = CANON_ISLAND.get(key) or CANON_ISLAND.get(key.split()[0] if key else '', None)
+    if not island:
+        return None
+    # Collect the full numeric run (column count varies by era: some years add
+    # an 'NA' column). TOTAL is always the last column, NPA/SNAP-only the one
+    # before it. Stop at the first trailing text token (acronym-key sidebar).
+    nums = []
+    for t in tokens[i:]:
+        if is_num(t):
+            nums.append(int(round(float(t.replace(',', '')))))
+        elif t.strip():
+            break
+    if len(nums) < 6:
+        return None
+    return island, nums[-2], nums[-1]
+
+
+def _participation_from_rows(get_rows, date_for_sheet):
+    """Shared engine: iterate (sheet, rows-of-token-lists); pull the 3 metric tables."""
+    out = {}
+    for sheet, rows in get_rows():
+        date = date_for_sheet(sheet)
+        if not date:
+            continue
+        metric = None
+        for tokens in rows:
+            if not tokens:
+                continue
+            line_up = ' '.join(str(t) for t in tokens).upper()
+            m = _metric_for_title(line_up)
+            if m:
+                metric = m
+                continue
+            if 'SECTION 2' in line_up or 'BY CATEGORY' in line_up:
+                metric = None
+            if not metric:
+                continue
+            vals = _island_row_values([str(t) for t in tokens])
+            if vals:
+                island, snap_only, total = vals
+                rec = out.setdefault((date, island), {})
+                rec[metric] = total
+                if metric == 'Participants':
+                    rec['ParticipantsSNAPOnly'] = snap_only
+    return [
+        {'Date': d, 'Island': isl, 'Participants': v.get('Participants'),
+         'Households': v.get('Households'), 'BenefitsIssued': v.get('BenefitsIssued'),
+         'ParticipantsSNAPOnly': v.get('ParticipantsSNAPOnly')}
+        for (d, isl), v in out.items() if v.get('Participants')
+    ]
+
+
+def _participation_from_xls(path, sfy):
+    """Old .xls files: month sheets JUL..JUN (bare), tables NUMBER OF PERSONS etc."""
+    import xlrd
+    wb = xlrd.open_workbook(path)
+
+    def get_rows():
+        for name in wb.sheet_names():
+            mi = MONTHS.get(name.strip().upper()[:3])
+            if not mi:
+                continue
+            sh = wb.sheet_by_name(name)
+            rows = [[sh.cell_value(r, c) for c in range(sh.ncols)] for r in range(sh.nrows)]
+            yield (name, mi), rows
+
+    return _participation_from_rows(
+        get_rows, lambda key: f"{_sfy_year(key[1], sfy)}-{key[1]:02d}-01")
+
+
+def _participation_from_pdf(path, sfy):
+    """PDF summaries (~2016-2024): per-page month worksheets, same table layout."""
+    txt = subprocess.run(["pdftotext", "-layout", str(path), "-"],
+                         capture_output=True, text=True).stdout
+
+    def get_rows():
+        for page in txt.split('\f'):
+            mi = None
+            for line in page.splitlines()[:8]:
+                pm = re.search(r'\((JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\)',
+                               line.upper())
+                if pm:
+                    mi = MONTHS[pm.group(1)]
+                    break
+            if not mi:
+                continue
+            rows = [ln.split() for ln in page.splitlines()]
+            yield (page, mi), rows
+
+    return _participation_from_rows(
+        get_rows, lambda key: f"{_sfy_year(key[1], sfy)}-{key[1]:02d}-01")
+
+
+def extract_participation_any(path, sfy=None):
+    """Dispatch a participation file to the right parser by extension/era."""
+    p = str(path)
+    if p.lower().endswith('.xlsx'):
+        return extract_participation(path)          # 2025+ dated-sheet format
+    sfy = sfy or _fy_from_name(path, 'SFY')
+    if p.lower().endswith('.xls'):
+        return _participation_from_xls(path, sfy)
+    if p.lower().endswith('.pdf'):
+        return _participation_from_pdf(path, sfy)
+    return []
+
+
 def extract_timeliness(path):
     """Tidy monthly statewide application-timeliness records from a Timeliness file."""
     wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
@@ -125,6 +287,30 @@ def extract_timeliness(path):
                 'PercentTimely': r[4] if len(r) > 4 else None,
             })
     return out
+
+
+# Hawaii DHS archive of machine-readable participation files (SFY -> URL).
+# Used for the one-time historical backfill; the live pipeline only needs the
+# current release. PDF-era files (2016-2024) are parsed via pdftotext.
+DHS_PARTICIPATION_ARCHIVE = {
+    2009: "https://humanservices.hawaii.gov/bessd/files/2014/09/Corrected-and-fed-rpt-deleted-SFY-2009-SUMMARY.xls",
+    2010: "https://humanservices.hawaii.gov/bessd/files/2014/09/Corrected-and-fed-rpt-deleted-SFY-2010-SUMMARY.xls",
+    2011: "https://humanservices.hawaii.gov/bessd/files/2014/09/Corrected-and-fed-rpt-deleted-SFY-2011-SUMMARY-3.xls",
+    2012: "https://humanservices.hawaii.gov/bessd/files/2014/09/Corrected-and-fed-Rpt-deleted-SFY-2012-SUMMARY.xls",
+    2013: "https://humanservices.hawaii.gov/bessd/files/2014/09/Corrected-and-fed-rpt-deleted-SFY-2013-SUMMARY.xls",
+    2014: "https://humanservices.hawaii.gov/bessd/files/2014/09/Corrected-and-fed-rpt-deleted-SNAP_SFY-2014-SUMMARY.xls",
+    2015: "https://humanservices.hawaii.gov/wp-content/uploads/2016/06/SFY-2015-SUMMARY-.xls",
+    2016: "https://humanservices.hawaii.gov/wp-content/uploads/2016/12/SFY-2016-Participation-SUMMARY.pdf",
+    2017: "https://humanservices.hawaii.gov/wp-content/uploads/2017/08/SFY-2017-SUMMARY-thru-June.pdf",
+    2018: "https://humanservices.hawaii.gov/wp-content/uploads/2018/08/SNAP-Participation.SFY-2018-SUMMARY.-as-of-June.pdf",
+    2019: "https://humanservices.hawaii.gov/wp-content/uploads/2020/06/SFY-2019-SUMMARY.pdf",
+    2020: "https://humanservices.hawaii.gov/wp-content/uploads/2020/07/SFY-2020-PART-SUMMARY.pdf",
+    2021: "https://humanservices.hawaii.gov/wp-content/uploads/2021/05/SFY-2021-SUMMARY.pdf",
+    2022: "https://humanservices.hawaii.gov/wp-content/uploads/2022/12/SFY-2022-SUMMARY.pdf",
+    2023: "https://humanservices.hawaii.gov/wp-content/uploads/2023/10/SFY-2023-SUMMARY.pdf",
+    2024: "https://humanservices.hawaii.gov/wp-content/uploads/2025/03/SFY-2024-SUMMARY.pdf",
+    2025: "https://humanservices.hawaii.gov/wp-content/uploads/2025/07/SFY-2025-SUMMARY.xls",
+}
 
 
 def main():

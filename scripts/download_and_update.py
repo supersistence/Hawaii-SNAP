@@ -640,7 +640,7 @@ def update_dhs_data():
         return
 
     from extract_dhs_snap import extract_participation, extract_timeliness
-    part = pd.DataFrame(extract_participation(part_path)).sort_values(['Date', 'Island'])
+    part = pd.DataFrame(extract_participation(part_path))
     tl = pd.DataFrame(extract_timeliness(tl_path)).sort_values('Date')
     if part.empty or tl.empty:
         print("✗ DHS extraction produced no rows. Aborting.")
@@ -648,6 +648,15 @@ def update_dhs_data():
 
     part_csv = DATA_DIR / "dhs_snap_participation_by_island.csv"
     tl_csv = DATA_DIR / "dhs_snap_application_timeliness.csv"
+    # Union with existing history (the multi-year backfill) so monthly pulls
+    # only ever add new months, never drop the archive. Keyed on Date+Island.
+    if part_csv.exists():
+        prior = pd.read_csv(part_csv)
+        part = pd.concat([prior, part], ignore_index=True)
+    part = part.drop_duplicates(['Date', 'Island'], keep='last').sort_values(['Date', 'Island'])
+    if tl_csv.exists():
+        tl = pd.concat([pd.read_csv(tl_csv), tl], ignore_index=True)
+    tl = tl.drop_duplicates(['Date'], keep='last').sort_values('Date')
     part.to_csv(part_csv, index=False)
     tl.to_csv(tl_csv, index=False)
     print(f"✓ {part_csv.name}: {len(part)} rows ({part['Date'].min()}..{part['Date'].max()})")
@@ -680,6 +689,34 @@ def update_dhs_data():
                 "Partly recovers the discontinued weekly applications series "
                 "(monthly statewide instead of weekly by-county).",
     })
+
+
+def backfill_dhs_participation():
+    """One-time: rebuild DHS by-island participation history from the archive."""
+    print("\n" + "="*60)
+    print("BACKFILLING DHS PARTICIPATION HISTORY (archive)")
+    print("="*60)
+    from extract_dhs_snap import (DHS_PARTICIPATION_ARCHIVE, extract_participation_any)
+    recs = []
+    for sfy, url in sorted(DHS_PARTICIPATION_ARCHIVE.items()):
+        ext = url.rsplit('.', 1)[-1].split('?')[0]
+        dest = Path(f"downloads/dhs_archive/SFY-{sfy}.{ext}")
+        if not download_file(url, dest):
+            print(f"  ⚠ SFY {sfy}: download failed, skipping")
+            continue
+        r = extract_participation_any(dest, sfy)
+        print(f"  SFY {sfy}: {len(set(x['Date'] for x in r))} months")
+        recs += r
+
+    part_csv = DATA_DIR / "dhs_snap_participation_by_island.csv"
+    df = pd.DataFrame(recs)
+    if part_csv.exists():  # keep any newer months already present (e.g. SFY 2026)
+        df = pd.concat([pd.read_csv(part_csv), df], ignore_index=True)
+    df = df.drop_duplicates(['Date', 'Island'], keep='first').sort_values(['Date', 'Island'])
+    df.to_csv(part_csv, index=False)
+    state = df[df['Island'] == 'STATE']
+    print(f"✓ {part_csv.name}: {len(df)} rows, "
+          f"STATE {state['Date'].min()}..{state['Date'].max()} ({len(state)} months)")
 
 
 def rebuild_web_data():

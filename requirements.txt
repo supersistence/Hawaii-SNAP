@@ -20,3 +20,4 @@ jupyter>=1.0.0
 # Uncomment if you need geographic analysis
 # geopandas>=0.13.0
 # folium>=0.14.0
+xlrd>=2.0.0

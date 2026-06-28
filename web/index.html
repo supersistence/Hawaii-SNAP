@@ -48,6 +48,7 @@
             <button class="tab-button" data-tab="shutdown">2025 Federal Shutdown</button>
             <button class="tab-button" data-tab="retailers">Retailer Network</button>
             <button class="tab-button" data-tab="counties">County Comparison</button>
+            <button class="tab-button" data-tab="dhs">DHS State Data</button>
             <button class="tab-button" data-tab="implications">Key Insights</button>
         </div>
     </nav>
@@ -835,6 +836,26 @@
 
             <div class="data-note">
                 <strong>✓ County Data Updated:</strong> County bi-annual data now current through January 2025. Statewide monthly data is current through May 2025. This updated data reveals pandemic recovery patterns across all four islands.
+            </div>
+        </section>
+
+        <!-- DHS State Data Tab -->
+        <section id="dhs" class="tab-content">
+            <h2>Hawaii DHS State Data <span style="font-size:0.6em; color:var(--text-secondary);">(monthly, by island)</span></h2>
+            <p class="section-description">Sourced directly from the <a href="https://humanservices.hawaii.gov/bessd/snap/" target="_blank" rel="noopener">Hawaii Department of Human Services</a>, this is a separate series from the USDA federal data — <strong>monthly, island-level, and more current (through May 2026)</strong>. Kept distinct because DHS uses its own State-Fiscal-Year reporting and methodology; figures may differ slightly from the USDA series.</p>
+
+            <div class="chart-container">
+                <h3>Monthly SNAP Participation, Statewide</h3>
+                <p class="chart-description">~17 years of monthly data (SFY 2009–present), backfilled from DHS archives. Note the Great Recession rise to a 2014 peak, decline, the COVID-19 surge (peak 206,226 in July 2021), and recovery.</p>
+                <canvas id="dhsChart"></canvas>
+            </div>
+
+            <h3>Latest Month by County (per-capita)</h3>
+            <p class="chart-description">Most recent DHS month, normalized by 2024 population. Sub-island branches (Molokai, Lanai) roll up into Maui County. Same pattern as the federal data: the Big Island carries the highest per-capita burden, Honolulu the lowest.</p>
+            <div id="dhs-counties" class="county-details"></div>
+
+            <div class="data-note">
+                <strong>✓ Most current data available:</strong> DHS publishes monthly by-island participation and application-timeliness data, currently through <strong>May 2026</strong> — about a year ahead of the USDA federal series.
             </div>
         </section>
 

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-27T18:09:04.798142",
+  "generated": "2026-06-27T18:30:02.534049",
   "dataVersion": "2025-05",
   "note": "Monthly statewide data current through May 2025. County bi-annual data current through January 2025.",
   "repository": "https://github.com/supersistence/Hawaii-SNAP",
@@ -61,12 +61,13 @@
       "publisher": "Hawaii DHS (Department of Human Services)",
       "sourcePage": "https://humanservices.hawaii.gov/bessd/snap/",
       "sourceFile": "Partic-SFY-2026-WCAG.xlsx",
-      "fiscalYear": "SFY 2026",
+      "fiscalYear": "SFY 2009-2026",
       "downloadedAt": "2026-06-27",
+      "coverageStart": "2008-07-01",
       "coverageEnd": "2026-05-01",
       "granularity": "monthly, by island/branch",
-      "provenanceSource": "automated-pull",
-      "note": "Monthly by-island participation; only machine-readable releases are auto-extracted (PDF-era SFY 2016-2024 require manual handling)."
+      "provenanceSource": "automated-pull + backfill",
+      "note": "Monthly by-island participation, SFY 2009-2026 (213 months). History backfilled from the DHS archive via scripts/extract_dhs_snap.py (.xls via xlrd, PDF via pdftotext). Cross-validated: the July-2021 peak (206,226) matches USDA's all-time max exactly, and island parts sum to the STATE row. May/June 2021 missing (the SFY2021 release was partial)."
     },
     "dhs_timeliness": {
       "dataset": "dhs_snap_application_timeliness.csv",
