@@ -78,5 +78,17 @@
     "granularity": "monthly, statewide",
     "provenanceSource": "automated-pull + backfill",
     "note": "Application processing timeliness + applications received, FFY 2009-2026. Backfilled from the DHS archive (.xls 'STATE SUMMARY' sheets via xlrd; PDF 'State TOTAL' rows via pdftotext). Remaining gaps are source-side: FFY2025 unpublished; FFY2018/2020/2021 are mid-year partials; FFY2023 is an August-only snapshot."
+  },
+  "population_annual": {
+    "dataset": "hawaii_population_annual.csv",
+    "publisher": "U.S. Census Bureau (resident population estimates)",
+    "sourcePage": "https://fred.stlouisfed.org/series/HIPOP",
+    "sourceFile": "FRED series HIPOP (annual, thousands)",
+    "vintage": "annual resident population, 1988–2025",
+    "coverageStart": "1988",
+    "coverageEnd": "2025",
+    "downloadedAt": "2026-06-27",
+    "provenanceSource": "automated-pull",
+    "note": "Linearly interpolated to monthly by prepare_web_data.py to compute the statewide SNAP participation rate (% of residents) over the full series. Differs ~0.8% from the DBEDT county sum (different vintage)."
   }
 }

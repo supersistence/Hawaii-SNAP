@@ -84,6 +84,27 @@ def process_monthly_data():
         }
     }
 
+    # Participation as a share of Hawai‘i's resident population. Annual Census
+    # population (FRED HIPOP) is linearly interpolated to each month; the rate
+    # = persons / population. If enrollment merely tracked population growth
+    # this line would be flat — it isn't, which is the point.
+    pop = pd.read_csv(DATA_DIR / "hawaii_population_annual.csv")
+    by_year = dict(zip(pop['Year'].astype(int), pop['Population'].astype(int)))
+    years = sorted(by_year)
+
+    def pop_at(ts):
+        y = ts.year + (ts.month - 1) / 12.0
+        lo = int(y)
+        p0 = by_year.get(lo, by_year[years[0] if lo < years[0] else years[-1]])
+        p1 = by_year.get(lo + 1, p0)
+        return p0 + (p1 - p0) * (y - lo)
+
+    populations = [pop_at(d) for d in df['Date']]
+    data['datasets']['population'] = [int(round(p)) for p in populations]
+    data['datasets']['participationRate'] = [round(pers / p * 100, 2)
+                                             for pers, p in zip(df['Persons'], populations)]
+    data['metadata']['latestParticipationRate'] = data['datasets']['participationRate'][-1]
+
     # Calculate summary statistics
     data['summary'] = {
         'peak': {

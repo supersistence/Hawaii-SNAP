@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-27T21:40:51.506244",
+  "generated": "2026-06-27T22:50:13.909630",
   "dataVersion": "2026-05",
   "note": "Monthly statewide data current through May 2026. County bi-annual data current through January 2025.",
   "repository": "https://github.com/supersistence/Hawaii-SNAP",
@@ -94,6 +94,7 @@
     "latestAvgBenefitPerPerson": 322.41,
     "latestTotalCost": 50925976,
     "spliceDate": "2008-07-01",
-    "source": "USDA FNS (pre-2008) + Hawai\u2018i DHS (2008\u2013present)"
+    "source": "USDA FNS (pre-2008) + Hawai\u2018i DHS (2008\u2013present)",
+    "latestParticipationRate": 11.02
   }
 }

@@ -15,9 +15,9 @@ Processed Hawaii SNAP (Supplemental Nutrition Assistance Program) data files. Ev
 - **`dhs_snap_application_timeliness.csv`** — monthly statewide applications received + on-time processing rates, **FFY 2009 – May 2026** (180 months; some source-side gaps, see `SOURCES.json`).
 
 ### Supplemental / reference
-- **`county_population.csv`** — 2024 Hawaii State Census county populations; used to compute per-capita `participationRate`.
+- **`county_population.csv`** — 2024 Hawaii State Census (DBEDT) county populations; used to compute per-capita `participationRate` by county.
+- **`hawaii_population_annual.csv`** — annual statewide resident population 1988–2025 (U.S. Census via FRED `HIPOP`); interpolated to monthly to compute the statewide SNAP participation **rate** over the full series.
 - **`County Weekly Applications 4:2020-3:2022.csv`** — COVID-era weekly applications by county (Apr 2020 – Apr 2022). **Discontinued**; partly succeeded by the DHS participation/timeliness data above.
-- **`hawaii_snap_extracted_fy89-fy25.csv`** — intermediate raw extract from the USDA FY Excel files.
 - **`SOURCES.json`** — provenance manifest for every dataset.
 
 ## 🔄 Updating the data

@@ -420,6 +420,7 @@ function initializeCharts() {
     createOverviewChart();
     createHouseholdsChart();
     createPersonsChart();
+    createRateChart();
     createBenefitChart();
     createCostChart();
     createCovidChart();
@@ -644,6 +645,42 @@ function createHouseholdsChart() {
                 }
             }
         }
+    });
+}
+
+// Participation as a share of Hawai‘i's resident population (1989–2026).
+function createRateChart() {
+    const el = document.getElementById('rateChart');
+    if (!el || !monthlyData.datasets.participationRate) return;
+    charts.rate = new Chart(el.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: monthlyData.labels,
+            datasets: [{
+                label: '% of residents on SNAP',
+                data: monthlyData.datasets.participationRate,
+                borderWidth: 2.2, fill: true, pointRadius: 0,
+            }],
+        },
+        options: {
+            ...chartDefaults,
+            plugins: {
+                ...chartDefaults.plugins,
+                legend: { display: false },
+                tooltip: {
+                    ...chartDefaults.plugins.tooltip,
+                    callbacks: {
+                        title: (c) => formatDate(c[0].parsed.x),
+                        label: (c) => c.parsed.y + '% of residents',
+                    },
+                },
+            },
+            scales: {
+                x: { type: 'time', time: { unit: 'year', displayFormats: { year: 'yyyy' } },
+                     ticks: { maxTicksLimit: 8 } },
+                y: { ticks: { callback: (v) => v + '%' } },
+            },
+        },
     });
 }
 
