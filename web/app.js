@@ -599,8 +599,9 @@ function createOverviewChart() {
                 },
                 yPop: {
                     position: 'right', beginAtZero: false,
+                    min: 1000000, max: 1500000,
                     grid: { drawOnChartArea: false },
-                    ticks: { color: '#b8b3a0', maxTicksLimit: 5,
+                    ticks: { color: '#b8b3a0', stepSize: 100000,
                              callback: (v) => (v / 1e6).toFixed(1) + 'M' },
                     title: { display: true, text: 'population', color: '#b8b3a0',
                              font: { size: 10 } },
