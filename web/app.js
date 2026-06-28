@@ -18,10 +18,53 @@ document.addEventListener('DOMContentLoaded', async () => {
     themeChartDefaults();
     initializeCharts();
     themeCharts();
+    annotateEvents();
     populateStats();
     buildIsotypes();
     setupScrolly();
 });
+
+// ---- Event markers: label WHY each chart turns ------------------------
+// Restrained, Tufte-style reference lines. Each chart only carries the
+// events that explain ITS inflections (≤3 each), labels alternate top/bottom
+// to avoid collisions in the tightly-spaced 2019–2023 stretch.
+const EVENTS = [
+    { date: '2008-09-01', label: 'Great Recession',      charts: ['households', 'persons'] },
+    { date: '2019-02-01', label: '2019 shutdown',        charts: ['benefit', 'cost'] },
+    { date: '2020-03-01', label: 'COVID-19',             charts: ['households', 'persons', 'dhs'] },
+    { date: '2021-08-01', label: 'Emergency allotments', charts: ['benefit', 'cost', 'households', 'persons', 'dhs'] },
+    { date: '2023-03-01', label: 'Allotments end',       charts: ['benefit', 'cost', 'dhs'] },
+];
+
+function annotateEvents() {
+    const accent = { households: '#075985', persons: '#075985',
+                     benefit: '#b45309', cost: '#b45309', dhs: '#6243a4' };
+    const seen = {};
+    EVENTS.forEach(ev => ev.charts.forEach(key => {
+        const ch = charts[key];
+        if (!ch) return;
+        const i = seen[key] = (seen[key] || 0) + 1;
+        // Mutate the source config, not the resolved ch.options proxy: assigning
+        // a fresh plugins.annotation onto resolved options recurses in Chart's
+        // option merge. The config is re-resolved cleanly on update().
+        const plugins = ch.config.options.plugins;
+        const plug = plugins.annotation || (plugins.annotation = { annotations: {} });
+        plug.annotations = plug.annotations || {};
+        plug.annotations['ev_' + ev.date] = {
+            type: 'line', xMin: ev.date, xMax: ev.date,
+            borderColor: hexA(accent[key] || '#86867a', 0.5),
+            borderWidth: 1, borderDash: [3, 3],
+            label: {
+                display: true, content: ev.label,
+                position: i % 2 ? 'start' : 'end',
+                backgroundColor: 'rgba(255,255,248,0.92)',
+                color: '#54544c', font: { size: 9, weight: '500' },
+                padding: 3, borderRadius: 2,
+            },
+        };
+    }));
+    Object.values(charts).forEach(c => c.update('none'));
+}
 
 // ---- Isotype pictographs (human-scale, data-driven) -------------------
 const PERSON_PATH = 'M12 2c1.7 0 3 1.3 3 3s-1.3 3-3 3-3-1.3-3-3 1.3-3 3-3zm-5 20v-7c0-2.2 2.2-4 5-4s5 1.8 5 4v7h-3v-1h-4v1z';
