@@ -21,8 +21,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     annotateEvents();
     populateStats();
     buildIsotypes();
+    updateDataCurrency();
     setupScrolly();
 });
+
+// Data-currency labels, source-attributed so the two series read as
+// intentional (federal = historical backbone, DHS = most current) and never
+// go stale: everything is derived from the loaded JSON, not hardcoded.
+function updateDataCurrency() {
+    const monthYear = (d) => {
+        if (!d) return null;
+        const iso = d.length === 10 ? d + 'T12:00:00' : d;  // avoid TZ slip on date-only
+        return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+    };
+    const fed = monthYear(metadata && metadata.summary && metadata.summary.endDate) || 'May 2025';
+    const dhs = monthYear(dhsData && dhsData.asOfDate);
+    const gen = monthYear(metadata && metadata.generated);
+
+    const badge = document.getElementById('data-badge');
+    if (badge) badge.textContent = dhs
+        ? `USDA federal → ${fed} · DHS state → ${dhs}`
+        : `Current through ${fed}`;
+
+    const foot = document.getElementById('footer-currency');
+    if (foot) {
+        let t = `Federal (USDA) series current through <strong>${fed}</strong>`;
+        if (dhs) t += ` · state (DHS) series through <strong>${dhs}</strong>`;
+        if (gen) t += `. Page data regenerated ${gen}.`;
+        foot.innerHTML = t;
+    }
+}
 
 // ---- Event markers: label WHY each chart turns ------------------------
 // Restrained, Tufte-style reference lines. Each chart only carries the
