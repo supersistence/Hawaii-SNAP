@@ -108,6 +108,15 @@ function buildIsotypes() {
         const totalPop = countyData.counties.reduce((s, c) => s + (c.population || 0), 0);
         const snap = monthlyData.metadata.latestPersons;
         shareEl.textContent = `1 in ${Math.round(totalPop / snap)}`;
+        const cap = document.getElementById('iso-cap');
+        if (cap) {
+            const maui = countyData.counties.find(c => c.name === 'MAUI');
+            const src = (monthlyData.metadata.spliceDate && monthlyData.metadata.endDate >= monthlyData.metadata.spliceDate) ? 'DHS' : 'USDA FNS';
+            cap.innerHTML = `${formatNumber(snap)} of ${formatNumber(totalPop)} residents `
+                + `(${src}, ${formatDate(monthlyData.metadata.endDate)} ÷ Hawai‘i State Census, ${countyData.populationYear}). `
+                + `The shaded group is essentially the entire population of Maui County`
+                + (maui ? ` (${formatNumber(maui.population)})` : '') + '.';
+        }
     }
 
     // --- Counties: highest- vs lowest-rate county, 100-figure classrooms
@@ -236,16 +245,12 @@ function setupScrolly() {
         return mx;
     };
     const latest = monthlyData.metadata.latestPersons;
-    const popLatest = monthlyData.datasets.population[monthlyData.datasets.population.length - 1];
-    const rate = Math.round(monthlyData.metadata.latestParticipationRate);
     const baseline = trendsData.periods.preCovidAvg.persons;
     const recPeak = peakIn('2008-01-01', '2014-06-01');
     const octPeak = at('2025-10-01') || peakIn('2025-08-01', '2025-12-01');
 
-    // Act 0 sets the scale (both lines on one axis); Acts 1–6 zoom into the slice.
+    // Six acts walking the participation line. (The "scale" view moved to Overview.)
     const acts = [
-        { range: null, scale: 'shared', n: formatNumber(latest),
-          note: '≈ ' + rate + '%', noteL: 'of ' + formatNumber(popLatest) + ' residents' },
         { range: ['1989-01-01', '2008-01-01'], n: '~110K', note: 'stable', noteL: '1989–2008 floor' },
         { range: ['2008-01-01', '2014-06-01'], n: formatNumber(recPeak),
           note: '+' + Math.round((recPeak / at('2008-01-01') - 1) * 100) + '%', noteL: 'recession climb' },
@@ -264,21 +269,10 @@ function setupScrolly() {
         document.getElementById('ro-note').textContent = a.note;
         document.getElementById('ro-note-l').textContent = a.noteL;
         const ch = charts.overview;
-        // Act 0: population shares the left axis (shows the slice). Else: own right axis.
-        const popDs = ch.data.datasets[1];
-        if (a.scale === 'shared') {
-            popDs.yAxisID = 'y';
-            ch.options.scales.y.min = 0; ch.options.scales.y.max = 1500000;
-            ch.options.scales.yPop.display = false;
-        } else {
-            popDs.yAxisID = 'yPop';
-            ch.options.scales.y.min = undefined; ch.options.scales.y.max = undefined;
-            ch.options.scales.yPop.display = true;
-        }
         const ann = {};
         if (a.range) ann.band = { type: 'box', xMin: a.range[0], xMax: a.range[1],
             backgroundColor: hexA('#1d6b3f', 0.10), borderWidth: 0 };
-        if (i === 3) ann.peak = { type: 'point', xValue: '2021-07-01', yValue: 206226, radius: 4,
+        if (i === 2) ann.peak = { type: 'point', xValue: '2021-07-01', yValue: 206226, radius: 4,
             backgroundColor: '#1d6b3f', borderColor: '#fffff8', borderWidth: 1.5 };
         ch.options.plugins.annotation = { annotations: ann };
         ch.update('none');
@@ -295,7 +289,7 @@ function setupScrolly() {
             }
         }), { rootMargin: '-45% 0px -45% 0px' }).observe(step);
     });
-    setAct(reduce ? 6 : 0);
+    setAct(reduce ? 5 : 0);
 }
 
 // Load data from JSON files
@@ -374,6 +368,7 @@ function populateStats() {
     document.getElementById('avg-persons').textContent = formatNumber(summary.averages.persons);
     document.getElementById('peak-date').textContent = formatDate(summary.peak.persons.date);
     document.getElementById('peak-persons').textContent = formatNumber(summary.peak.persons.value);
+    document.getElementById('latest-date').textContent = formatDate(meta.endDate);
     document.getElementById('latest-persons').textContent = formatNumber(meta.latestPersons);
     document.getElementById('latest-households').textContent = formatNumber(meta.latestHouseholds);
 
@@ -443,6 +438,7 @@ function populateCountyDetails() {
 
 // Initialize all charts
 function initializeCharts() {
+    createScaleChart();
     createOverviewChart();
     createHouseholdsChart();
     createPersonsChart();
@@ -565,10 +561,57 @@ const chartDefaults = {
     }
 };
 
+// Overview "scale" view: participation and population on ONE shared axis,
+// so the caseload reads as the ~1-in-9 slice it is. (Moved here from the arc.)
+function createScaleChart() {
+    const el = document.getElementById('scaleChart');
+    if (!el || !monthlyData.datasets.population) return;
+    charts.scale = new Chart(el.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: monthlyData.labels,
+            datasets: [
+                {
+                    label: 'Hawai‘i population',
+                    data: monthlyData.datasets.population,
+                    borderColor: '#b8b3a0', borderWidth: 1.4, borderDash: [4, 3],
+                    fill: false, pointRadius: 0, skipTheme: true,
+                },
+                {
+                    label: 'Persons receiving SNAP',
+                    data: monthlyData.datasets.persons,
+                    borderColor: '#1d6b3f', backgroundColor: 'rgba(29,107,63,0.08)',
+                    borderWidth: 2.2, fill: true, pointRadius: 0, skipTheme: true,
+                },
+            ],
+        },
+        options: {
+            ...chartDefaults,
+            plugins: {
+                ...chartDefaults.plugins,
+                legend: { ...chartDefaults.plugins.legend, display: true },
+                tooltip: {
+                    ...chartDefaults.plugins.tooltip,
+                    callbacks: {
+                        title: (c) => formatDate(c[0].parsed.x),
+                        label: (c) => c.dataset.label + ': ' + formatNumber(c.parsed.y),
+                    },
+                },
+            },
+            scales: {
+                x: { type: 'time', time: { unit: 'year', displayFormats: { year: 'yyyy' } },
+                     ticks: { maxTicksLimit: 8 } },
+                y: { beginAtZero: true, max: 1500000,
+                     ticks: { callback: (v) => v >= 1e6 ? (v / 1e6) + 'M' : formatNumber(v) } },
+            },
+        },
+    });
+}
+
 function createOverviewChart() {
     const ctx = document.getElementById('overviewChart').getContext('2d');
 
-    // Full 1989–2025 range: the scrollytelling hero walks the whole story.
+    // Full 1989–2026 range: the scrollytelling arc walks the whole story.
     charts.overview = new Chart(ctx, {
         type: 'line',
         data: {
@@ -582,18 +625,6 @@ function createOverviewChart() {
                     borderWidth: 2.2,
                     fill: true,
                     yAxisID: 'y',
-                },
-                {
-                    // Faint context line: resident population (own right axis).
-                    // Climbs steadily while SNAP swings — the divergence is the point.
-                    label: 'Hawai‘i population',
-                    data: monthlyData.datasets.population,
-                    borderColor: '#b8b3a0',
-                    borderWidth: 1.3,
-                    borderDash: [4, 3],
-                    fill: false,
-                    yAxisID: 'yPop',
-                    skipTheme: true,
                 }
             ]
         },
@@ -607,9 +638,7 @@ function createOverviewChart() {
                     ...chartDefaults.plugins.tooltip,
                     callbacks: {
                         title: (context) => formatDate(context[0].parsed.x),
-                        label: (c) => c.datasetIndex === 1
-                            ? formatNumber(c.parsed.y) + ' residents'
-                            : formatNumber(c.parsed.y) + ' persons',
+                        label: (c) => formatNumber(c.parsed.y) + ' persons',
                     }
                 }
             },
@@ -622,15 +651,6 @@ function createOverviewChart() {
                 y: {
                     beginAtZero: false,
                     ticks: { callback: (value) => formatNumber(value) }
-                },
-                yPop: {
-                    position: 'right', beginAtZero: false,
-                    min: 1000000, max: 1500000,
-                    grid: { drawOnChartArea: false },
-                    ticks: { color: '#b8b3a0', stepSize: 100000,
-                             callback: (v) => (v / 1e6).toFixed(1) + 'M' },
-                    title: { display: true, text: 'population', color: '#b8b3a0',
-                             font: { size: 10 } },
                 }
             }
         }
@@ -639,7 +659,7 @@ function createOverviewChart() {
 
 function createHouseholdsChart() {
     const ctx = document.getElementById('householdsChart').getContext('2d');
-    const startIndex = monthlyData.labels.findIndex(date => date >= '1999-01-01');
+    const startIndex = 0;  // full spliced series (1989–2026)
 
     charts.households = new Chart(ctx, {
         type: 'line',
@@ -736,7 +756,7 @@ function createRateChart() {
 
 function createPersonsChart() {
     const ctx = document.getElementById('personsChart').getContext('2d');
-    const startIndex = monthlyData.labels.findIndex(date => date >= '1999-01-01');
+    const startIndex = 0;  // full spliced series (1989–2026)
 
     charts.persons = new Chart(ctx, {
         type: 'line',
@@ -797,7 +817,7 @@ function createPersonsChart() {
 
 function createBenefitChart() {
     const ctx = document.getElementById('benefitChart').getContext('2d');
-    const startIndex = monthlyData.labels.findIndex(date => date >= '1999-01-01');
+    const startIndex = 0;  // full spliced series (1989–2026)
 
     charts.benefit = new Chart(ctx, {
         type: 'line',
@@ -858,7 +878,7 @@ function createBenefitChart() {
 
 function createCostChart() {
     const ctx = document.getElementById('costChart').getContext('2d');
-    const startIndex = monthlyData.labels.findIndex(date => date >= '1999-01-01');
+    const startIndex = 0;  // full spliced series (1989–2026)
 
     charts.cost = new Chart(ctx, {
         type: 'line',
