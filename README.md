@@ -2,7 +2,7 @@
 
 > **🚀 NEW: Interactive Visualization Dashboard** - [View deployment guide](web/DEPLOY_NOW.md) | Explore Hawaii SNAP data through interactive charts and analysis. Ready to deploy to Netlify in < 1 minute!
 
-> **✅ DATA CURRENT:** Statewide monthly data runs through **May 2025**, county data through **Jan 2025**, and retailer data through **2025**. Updates are now fully automated — `python scripts/download_and_update.py --all` pulls the latest USDA files, merges them forward-only, records provenance, and rebuilds the dashboard. See [Automated Pipeline & Provenance](#automated-pipeline--provenance).
+> **✅ DATA CURRENT:** USDA statewide monthly through **May 2025**, county through **Jan 2025**, retailers through **2025**, and Hawaii DHS by-island participation + application timeliness through **May 2026**. Updates are fully automated — `python scripts/download_and_update.py --all` pulls the latest USDA *and* DHS files, merges forward-only, records provenance, and rebuilds the dashboard. See [Automated Pipeline & Provenance](#automated-pipeline--provenance).
 
 ## Contents
 - [Interactive Visualization Dashboard](#interactive-visualization-dashboard-new) 🆕
@@ -134,8 +134,22 @@ Data for Hawaii was extracted, cleaned to address geolocation errors, and restru
 
 ## State Data
 
+Hawaii DHS publishes ongoing monthly SNAP data on its [SNAP page](https://humanservices.hawaii.gov/bessd/snap/), back to ~2009. The pipeline extracts the machine-readable releases into:
+
+### DHS Monthly Participation, by Island (current through May 2026)
+Monthly participants, households, and benefits issued for each island/branch (Oahu, Hawaii, Kauai, Maui, Molokai, Lanai, + State), broken out by program (SNAP-only, TANF, GA, SSI, ABD). **More current and more granular than the USDA monthly series** (which is statewide and ends May 2025); latest month: 157,954 participants statewide.
+- [CSV](https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/dhs_snap_participation_by_island.csv)
+- Source: Hawaii DHS "SNAP Participation Report" (SFY), via `scripts/extract_dhs_snap.py`
+
+### DHS Application Timeliness (current through May 2026)
+Monthly statewide applications received + on-time disposition rates (regular and expedited). Partly recovers the discontinued weekly applications series below — monthly statewide instead of weekly by-county.
+- [CSV](https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/dhs_snap_application_timeliness.csv)
+- Source: Hawaii DHS "Application Processing Timeliness Report" (FFY)
+
+> **Note:** Machine-readable DHS releases (roughly SFY/FFY ≤2015 and ≥2025) are auto-extracted; the **2016–2024** releases are PDFs and are not yet integrated.
+
 ### County Daily Application Received and Approved Data, 4/26/20-4/1/22
-> **⏹️ Discontinued.** This was a COVID-era *weekly* series ("SNAP Data by County Received and Approved"), published by Hawaii DHS as individual press-release spreadsheets. It ended at the 4/1/2022 release — the next week's file (and all later dates) 404, the page that hosted it now serves other content, and no ongoing equivalent exists. It is the only State-of-Hawaii-sourced dataset here (all others are USDA/FNS). Note: SNAP *caseloads/participation* remain covered by the USDA monthly series above; only this weekly application-flow granularity stopped.
+> **⏹️ Discontinued (with partial successor).** This specific COVID-era series was *weekly* and *by county*, tracking applications received **and approved**. It ended at the 4/1/2022 release (later dates 404). The *weekly cadence and by-county "approved" counts* are gone, but ongoing monthly DHS participation and application-timeliness data (above) cover most of the same ground.
 
 - Data: Applications received, applications approved, date, county
 - [CSV](https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/County%20Weekly%20Applications%204:2020-3:2022.csv)
@@ -215,7 +229,9 @@ Located in `scripts/` directory:
 | **Statewide Monthly** | FY89 – **May 2025** | USDA/FNS | ✅ Current (ahead of USDA's currently-published file, which stops at Mar 2025) |
 | **County Bi-Annual** | FY89 – **Jan 2025** | USDA/FNS | ✅ Current |
 | **Retailer Historical** | **2004 – 2025** | USDA/FNS | ✅ Current (unioned across releases) |
-| **Application Data** | Apr 2020 – Apr 2022 | Hawaii DHS | ⏹️ Discontinued (COVID-era series, not updatable) |
+| **DHS Participation (by island)** | **→ May 2026** | Hawaii DHS | ✅ Current — monthly, island-level (most current participation data) |
+| **DHS Application Timeliness** | **→ May 2026** | Hawaii DHS | ✅ Current — monthly statewide |
+| **Weekly County Applications** | Apr 2020 – Apr 2022 | Hawaii DHS | ⏹️ Discontinued (weekly/by-county slice; see DHS data above for successor) |
 
 Full provenance for every dataset — publisher, source file/revision, "data as of" date, download date, coverage — is recorded in [`Data/SOURCES.json`](Data/SOURCES.json) and surfaced in the dashboard's `metadata.json`.
 
@@ -223,7 +239,7 @@ Full provenance for every dataset — publisher, source file/revision, "data as 
 
 This repo updates itself with one command and documents where every number came from:
 
-- **One-command updates** — `python scripts/download_and_update.py --all` auto-discovers and downloads the current USDA files, extracts Hawaii records, and rebuilds the dashboard. No manual downloads or prompts.
+- **One-command updates** — `python scripts/download_and_update.py --all` auto-discovers and downloads the current USDA files *and* Hawaii DHS releases, extracts Hawaii records, and rebuilds the dashboard. No manual downloads or prompts. (Individual flags: `--monthly`, `--retailers`, `--county`, `--dhs`.)
 - **Forward-only merges** — new months/records are appended; a regressed USDA release can never overwrite newer local data. (USDA currently republishes an older monthly file ending Mar 2025, while this repo holds May 2025 — the guard keeps the newer data.)
 - **Retailer union** — USDA's retailer file is a rolling ~20-year window that drops long-closed stores. The pipeline unions successive releases so the repo becomes a *longer* historical record than USDA keeps (e.g. Hawaii stores that closed in 2004 are preserved).
 - **Provenance manifest** — `Data/SOURCES.json` records the origin of each dataset, so "where did this come from?" is one field, not an investigation.

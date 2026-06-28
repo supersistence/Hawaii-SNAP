@@ -41,7 +41,7 @@ URLS = {
     "monthly": "https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap",
     "retailers": "https://www.fns.usda.gov/snap/retailer/historical-data",
     "county": "https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap",
-    "hawaii_dhs": "https://humanservices.hawaii.gov/communications/"
+    "dhs": "https://humanservices.hawaii.gov/bessd/snap/"
 }
 
 # Substring that identifies each dataset's file among the page's resource links.
@@ -138,28 +138,45 @@ def discover_file_url(page_url, name_contains):
     return url
 
 
+def _curl(args):
+    """Run curl; some hosts (humanservices.hawaii.gov) break Python's TLS."""
+    import subprocess
+    return subprocess.run(["curl", "-sL", "-m", "120", "-A", USER_AGENT, *args],
+                          capture_output=True)
+
+
+def fetch_text(url):
+    """GET a page as text, falling back to curl if Python's TLS can't handle the host."""
+    try:
+        r = requests.get(url, timeout=40, headers={"User-Agent": USER_AGENT})
+        r.raise_for_status()
+        return r.text
+    except requests.exceptions.RequestException:
+        res = _curl([url])
+        return res.stdout.decode("utf-8", "replace") if res.returncode == 0 else None
+
+
 def download_file(url, destination):
-    """Download a file from URL to destination."""
+    """Download a file from URL to destination (curl fallback on TLS failure)."""
     print(f"Downloading from: {url}")
     print(f"Saving to: {destination}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
 
     try:
         response = requests.get(url, stream=True, timeout=120,
                                 headers={"User-Agent": USER_AGENT})
         response.raise_for_status()
-
-        destination.parent.mkdir(parents=True, exist_ok=True)
-
         with open(destination, 'wb') as f:
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
-
-        print(f"✓ Downloaded: {destination.name} ({destination.stat().st_size / 1024:.1f} KB)")
-        return True
-
     except requests.exceptions.RequestException as e:
-        print(f"✗ Download failed: {e}")
-        return False
+        res = _curl(["-o", str(destination), url])
+        if res.returncode != 0 or not destination.exists() or destination.stat().st_size == 0:
+            print(f"✗ Download failed (requests: {e}; curl rc={res.returncode})")
+            return False
+
+    print(f"✓ Downloaded: {destination.name} ({destination.stat().st_size / 1024:.1f} KB)")
+    return True
 
 
 def update_monthly_data():
@@ -523,6 +540,7 @@ def main():
     parser.add_argument('--monthly', action='store_true', help='Update statewide monthly data')
     parser.add_argument('--retailers', action='store_true', help='Update retailer historical data')
     parser.add_argument('--county', action='store_true', help='Update county bi-annual data')
+    parser.add_argument('--dhs', action='store_true', help='Update Hawaii DHS participation + timeliness')
     parser.add_argument('--all', action='store_true', help='Update all datasets')
     parser.add_argument('--report', action='store_true', help='Generate status report only')
 
@@ -532,7 +550,7 @@ def main():
         generate_summary_report()
         return
 
-    if not any([args.monthly, args.retailers, args.county, args.all]):
+    if not any([args.monthly, args.retailers, args.county, args.dhs, args.all]):
         parser.print_help()
         print("\n" + "="*60)
         print("QUICK START:")
@@ -564,6 +582,9 @@ def main():
     if args.all or args.county:
         update_county_data()
 
+    if args.all or args.dhs:
+        update_dhs_data()
+
     # Rebuild the dashboard JSON so a full run updates data AND site together.
     if args.all or args.monthly:
         rebuild_web_data()
@@ -578,6 +599,87 @@ def main():
     print("\nNext steps:")
     print("1. Review DATA_STATUS_REPORT.md and Data/SOURCES.json (provenance)")
     print("2. git add/commit/push  → Netlify redeploys the dashboard automatically")
+
+
+def _dhs_latest_link(page_text, fname_regex):
+    """Return the (year, absolute_url) with the highest year matching a DHS file."""
+    import re
+    from urllib.parse import urljoin
+    best = None
+    for href in re.findall(r'href="([^"]+)"', page_text):
+        m = re.search(fname_regex, href, re.IGNORECASE)
+        if m:
+            year = int(m.group(1))
+            if best is None or year > best[0]:
+                best = (year, urljoin(URLS["dhs"], href))
+    return best
+
+
+def update_dhs_data():
+    """Pull Hawaii DHS monthly participation (by island) + application timeliness."""
+    print("\n" + "="*60)
+    print("UPDATING HAWAII DHS SNAP DATA (participation + timeliness)")
+    print("="*60)
+
+    page = fetch_text(URLS["dhs"])
+    if not page:
+        print("✗ Could not load DHS page.")
+        return
+
+    # Current machine-readable releases (PDF-era SFY/FFY ~2016-2024 not handled).
+    part_link = _dhs_latest_link(page, r'Partic.*SFY[-\s]*(\d{4}).*\.xlsx?$')
+    tl_link = _dhs_latest_link(page, r'Timeliness.*FFY[-\s]*(\d{4}).*\.xlsx?$')
+    if not part_link or not tl_link:
+        print(f"✗ Could not find current DHS files "
+              f"(participation={bool(part_link)}, timeliness={bool(tl_link)}).")
+        return
+
+    part_path = Path("downloads/dhs_participation.xlsx")
+    tl_path = Path("downloads/dhs_timeliness.xlsx")
+    if not download_file(part_link[1], part_path) or not download_file(tl_link[1], tl_path):
+        return
+
+    from extract_dhs_snap import extract_participation, extract_timeliness
+    part = pd.DataFrame(extract_participation(part_path)).sort_values(['Date', 'Island'])
+    tl = pd.DataFrame(extract_timeliness(tl_path)).sort_values('Date')
+    if part.empty or tl.empty:
+        print("✗ DHS extraction produced no rows. Aborting.")
+        return
+
+    part_csv = DATA_DIR / "dhs_snap_participation_by_island.csv"
+    tl_csv = DATA_DIR / "dhs_snap_application_timeliness.csv"
+    part.to_csv(part_csv, index=False)
+    tl.to_csv(tl_csv, index=False)
+    print(f"✓ {part_csv.name}: {len(part)} rows ({part['Date'].min()}..{part['Date'].max()})")
+    print(f"✓ {tl_csv.name}: {len(tl)} rows ({tl['Date'].min()}..{tl['Date'].max()})")
+
+    write_provenance("dhs_participation", {
+        "dataset": part_csv.name,
+        "publisher": "Hawaii DHS (Department of Human Services)",
+        "sourcePage": URLS["dhs"],
+        "sourceFile": part_link[1].rsplit("/", 1)[-1],
+        "fiscalYear": f"SFY {part_link[0]}",
+        "downloadedAt": datetime.now().strftime("%Y-%m-%d"),
+        "coverageEnd": str(part['Date'].max()),
+        "granularity": "monthly, by island/branch",
+        "provenanceSource": "automated-pull",
+        "note": "Monthly by-island participation; only machine-readable releases "
+                "are auto-extracted (PDF-era SFY 2016-2024 require manual handling).",
+    })
+    write_provenance("dhs_timeliness", {
+        "dataset": tl_csv.name,
+        "publisher": "Hawaii DHS (Department of Human Services)",
+        "sourcePage": URLS["dhs"],
+        "sourceFile": tl_link[1].rsplit("/", 1)[-1],
+        "fiscalYear": f"FFY {tl_link[0]}",
+        "downloadedAt": datetime.now().strftime("%Y-%m-%d"),
+        "coverageEnd": str(tl['Date'].max()),
+        "granularity": "monthly, statewide",
+        "provenanceSource": "automated-pull",
+        "note": "Application processing timeliness + applications received. "
+                "Partly recovers the discontinued weekly applications series "
+                "(monthly statewide instead of weekly by-county).",
+    })
 
 
 def rebuild_web_data():

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-22T12:02:19.676526",
+  "generated": "2026-06-27T18:09:04.798142",
   "dataVersion": "2025-05",
   "note": "Monthly statewide data current through May 2025. County bi-annual data current through January 2025.",
   "repository": "https://github.com/supersistence/Hawaii-SNAP",
@@ -48,9 +48,37 @@
       "originalSourceFiles": "Weekly press-release spreadsheets, e.g. wp-content/uploads/2022/04/SNAP-Data-4.1.22.xlsx ('SNAP Data by County Received and Approved')",
       "coverageStart": "2020-04-26",
       "coverageEnd": "2022-04-01",
-      "status": "discontinued",
+      "status": "discontinued-with-successor",
       "provenanceSource": "investigated-2026-06-22",
-      "note": "The only State-of-Hawaii-sourced dataset (all others are USDA/FNS). A COVID-era weekly series: the 4/1/2022 file still resolves but the next week (4/8/2022) and all later dates 404; the page that hosted it now serves Maui wildfire content; DHS still issues SNAP press releases but no longer this weekly applications-by-county data, and no ongoing equivalent was found. Not updatable. Note: USDA FNS monthly participation already covers caseloads; only this weekly applications granularity is gone."
+      "supersededBy": [
+        "dhs_participation",
+        "dhs_timeliness"
+      ],
+      "note": "A COVID-era *weekly, by-county* series of applications received AND approved; the 4/1/2022 file still resolves but the next week (4/8/2022) and all later dates 404. That specific weekly/by-county slice ended. However DHS DOES publish ongoing monthly data on https://humanservices.hawaii.gov/bessd/snap/ : by-island participation (see dhs_participation) and application timeliness incl. applications received (see dhs_timeliness), both back to ~2009. So only the weekly cadence + by-county 'approved' counts are truly gone."
+    },
+    "dhs_participation": {
+      "dataset": "dhs_snap_participation_by_island.csv",
+      "publisher": "Hawaii DHS (Department of Human Services)",
+      "sourcePage": "https://humanservices.hawaii.gov/bessd/snap/",
+      "sourceFile": "Partic-SFY-2026-WCAG.xlsx",
+      "fiscalYear": "SFY 2026",
+      "downloadedAt": "2026-06-27",
+      "coverageEnd": "2026-05-01",
+      "granularity": "monthly, by island/branch",
+      "provenanceSource": "automated-pull",
+      "note": "Monthly by-island participation; only machine-readable releases are auto-extracted (PDF-era SFY 2016-2024 require manual handling)."
+    },
+    "dhs_timeliness": {
+      "dataset": "dhs_snap_application_timeliness.csv",
+      "publisher": "Hawaii DHS (Department of Human Services)",
+      "sourcePage": "https://humanservices.hawaii.gov/bessd/snap/",
+      "sourceFile": "Timeliness-FFY2026-WCAG.xlsx",
+      "fiscalYear": "FFY 2026",
+      "downloadedAt": "2026-06-27",
+      "coverageEnd": "2026-05-01",
+      "granularity": "monthly, statewide",
+      "provenanceSource": "automated-pull",
+      "note": "Application processing timeliness + applications received. Partly recovers the discontinued weekly applications series (monthly statewide instead of weekly by-county)."
     }
   },
   "summary": {
