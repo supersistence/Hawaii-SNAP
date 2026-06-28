@@ -141,12 +141,12 @@ Monthly participants, households, and benefits issued for each island/branch (Oa
 - [CSV](https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/dhs_snap_participation_by_island.csv)
 - Source: Hawaii DHS "SNAP Participation Report" (SFY), via `scripts/extract_dhs_snap.py` (.xls + PDF)
 
-### DHS Application Timeliness (current through May 2026)
-Monthly statewide applications received + on-time disposition rates (regular and expedited). Partly recovers the discontinued weekly applications series below — monthly statewide instead of weekly by-county.
+### DHS Application Timeliness (FFY 2009 – May 2026)
+Monthly statewide applications received + on-time disposition rates. **~14 years (172 months)** backfilled from DHS archives. Partly recovers the discontinued weekly applications series below — monthly statewide instead of weekly by-county. Shown in the dashboard's **DHS State Data** tab. A few months are missing where DHS published only an image scan (FFY2021), no file (FFY2025), or a partial-year summary (FFY2018/2020/2023).
 - [CSV](https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/dhs_snap_application_timeliness.csv)
-- Source: Hawaii DHS "Application Processing Timeliness Report" (FFY)
+- Source: Hawaii DHS "Application Processing Timeliness Report" (FFY), via `scripts/extract_dhs_snap.py`
 
-> **Note:** DHS *participation* is fully backfilled 2009–present (the 2016–2024 PDF releases are parsed via `pdftotext`). DHS *timeliness* is currently integrated for the machine-readable years only (≥FFY 2026); the 2016–2024 timeliness PDFs (sub-office-level, more complex) are not yet integrated.
+> **Note:** Both DHS series are backfilled to 2009 (`.xls` via `xlrd`, PDFs via `pdftotext`). A one-time rebuild from the archives is `python scripts/download_and_update.py --dhs-backfill`; routine monthly pulls (`--dhs`) union new months onto this history. A few timeliness months are unavailable at source (FFY2021 is an image-only scan; FFY2025 unpublished; FFY2018/2020/2023 partial).
 
 ### County Daily Application Received and Approved Data, 4/26/20-4/1/22
 > **⏹️ Discontinued (with partial successor).** This specific COVID-era series was *weekly* and *by county*, tracking applications received **and approved**. It ended at the 4/1/2022 release (later dates 404). The *weekly cadence and by-county "approved" counts* are gone, but ongoing monthly DHS participation and application-timeliness data (above) cover most of the same ground.
@@ -230,7 +230,7 @@ Located in `scripts/` directory:
 | **County Bi-Annual** | FY89 – **Jan 2025** | USDA/FNS | ✅ Current |
 | **Retailer Historical** | **2004 – 2025** | USDA/FNS | ✅ Current (unioned across releases) |
 | **DHS Participation (by island)** | **SFY 2009 → May 2026** | Hawaii DHS | ✅ Current — monthly, island-level, 17-yr history (most current participation data) |
-| **DHS Application Timeliness** | **→ May 2026** | Hawaii DHS | ✅ Current — monthly statewide |
+| **DHS Application Timeliness** | **FFY 2009 → May 2026** | Hawaii DHS | ✅ Current — monthly statewide, 14-yr history (some source gaps) |
 | **Weekly County Applications** | Apr 2020 – Apr 2022 | Hawaii DHS | ⏹️ Discontinued (weekly/by-county slice; see DHS data above for successor) |
 
 Full provenance for every dataset — publisher, source file/revision, "data as of" date, download date, coverage — is recorded in [`Data/SOURCES.json`](Data/SOURCES.json) and surfaced in the dashboard's `metadata.json`.

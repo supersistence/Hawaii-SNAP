@@ -541,6 +541,7 @@ def main():
     parser.add_argument('--retailers', action='store_true', help='Update retailer historical data')
     parser.add_argument('--county', action='store_true', help='Update county bi-annual data')
     parser.add_argument('--dhs', action='store_true', help='Update Hawaii DHS participation + timeliness')
+    parser.add_argument('--dhs-backfill', action='store_true', help='Rebuild DHS history from the archive (one-time)')
     parser.add_argument('--all', action='store_true', help='Update all datasets')
     parser.add_argument('--report', action='store_true', help='Generate status report only')
 
@@ -548,6 +549,10 @@ def main():
 
     if args.report:
         generate_summary_report()
+        return
+
+    if getattr(args, 'dhs_backfill', False):
+        backfill_dhs_data()
         return
 
     if not any([args.monthly, args.retailers, args.county, args.dhs, args.all]):
@@ -691,32 +696,49 @@ def update_dhs_data():
     })
 
 
-def backfill_dhs_participation():
-    """One-time: rebuild DHS by-island participation history from the archive."""
+def backfill_dhs_data():
+    """One-time: rebuild DHS participation + timeliness history from the archives."""
+    from extract_dhs_snap import (DHS_PARTICIPATION_ARCHIVE, DHS_TIMELINESS_ARCHIVE,
+                                  extract_participation_any, extract_timeliness_any)
+
     print("\n" + "="*60)
     print("BACKFILLING DHS PARTICIPATION HISTORY (archive)")
     print("="*60)
-    from extract_dhs_snap import (DHS_PARTICIPATION_ARCHIVE, extract_participation_any)
     recs = []
     for sfy, url in sorted(DHS_PARTICIPATION_ARCHIVE.items()):
-        ext = url.rsplit('.', 1)[-1].split('?')[0]
-        dest = Path(f"downloads/dhs_archive/SFY-{sfy}.{ext}")
+        dest = Path(f"downloads/dhs_archive/SFY-{sfy}.{url.rsplit('.', 1)[-1]}")
         if not download_file(url, dest):
-            print(f"  ⚠ SFY {sfy}: download failed, skipping")
-            continue
+            print(f"  ⚠ SFY {sfy}: download failed, skipping"); continue
         r = extract_participation_any(dest, sfy)
         print(f"  SFY {sfy}: {len(set(x['Date'] for x in r))} months")
         recs += r
-
     part_csv = DATA_DIR / "dhs_snap_participation_by_island.csv"
     df = pd.DataFrame(recs)
-    if part_csv.exists():  # keep any newer months already present (e.g. SFY 2026)
+    if part_csv.exists():
         df = pd.concat([pd.read_csv(part_csv), df], ignore_index=True)
     df = df.drop_duplicates(['Date', 'Island'], keep='first').sort_values(['Date', 'Island'])
     df.to_csv(part_csv, index=False)
-    state = df[df['Island'] == 'STATE']
-    print(f"✓ {part_csv.name}: {len(df)} rows, "
-          f"STATE {state['Date'].min()}..{state['Date'].max()} ({len(state)} months)")
+    st = df[df['Island'] == 'STATE']
+    print(f"✓ {part_csv.name}: {len(df)} rows, STATE {st['Date'].min()}..{st['Date'].max()} ({len(st)} months)")
+
+    print("\n" + "="*60)
+    print("BACKFILLING DHS TIMELINESS HISTORY (archive)")
+    print("="*60)
+    trecs = []
+    for ffy, url in sorted(DHS_TIMELINESS_ARCHIVE.items()):
+        dest = Path(f"downloads/dhs_archive/TL-{ffy}.{url.rsplit('.', 1)[-1]}")
+        if not download_file(url, dest):
+            print(f"  ⚠ FFY {ffy}: download failed, skipping"); continue
+        r = extract_timeliness_any(dest, ffy) or []
+        print(f"  FFY {ffy}: {len(r)} months")
+        trecs += r
+    tl_csv = DATA_DIR / "dhs_snap_application_timeliness.csv"
+    tdf = pd.DataFrame(trecs)
+    if tl_csv.exists():
+        tdf = pd.concat([pd.read_csv(tl_csv), tdf], ignore_index=True)
+    tdf = tdf.drop_duplicates(['Date'], keep='first').sort_values('Date')
+    tdf.to_csv(tl_csv, index=False)
+    print(f"✓ {tl_csv.name}: {len(tdf)} months, {tdf['Date'].min()}..{tdf['Date'].max()}")
 
 
 def rebuild_web_data():

@@ -238,6 +238,89 @@ def _participation_from_pdf(path, sfy):
         get_rows, lambda key: f"{_sfy_year(key[1], sfy)}-{key[1]:02d}-01")
 
 
+def _timeliness_from_pdf(path, ffy):
+    """PDF timeliness (~2016-2024): per-month pages, sub-office rows + 'State TOTAL'.
+
+    The 'State TOTAL' row gives, in order: apps received, all dispositions,
+    timely dispositions, % timely (followed by untimely/expedited columns)."""
+    txt = subprocess.run(["pdftotext", "-layout", str(path), "-"],
+                         capture_output=True, text=True).stdout
+    out = {}
+    for page in txt.split('\f'):
+        # month marker near the top — standalone on its own line in most files,
+        # but embedded in the column header in some (e.g. FFY2018).
+        mi = None
+        for line in page.splitlines()[:6]:
+            mm = re.search(r'\b(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\b',
+                           line.strip().upper())
+            if mm:
+                mi = MONTHS[mm.group(1)]
+                break
+        if not mi:
+            continue
+        for line in page.splitlines():
+            if re.match(r'\s*STATE\s+TOTAL', line, re.IGNORECASE):
+                ints = [int(x.replace(',', '')) for x in re.findall(r'[\d,]+(?=\s|$)', line)
+                        if re.fullmatch(r'[\d,]+', x)]
+                pcts = re.findall(r'(\d+(?:\.\d+)?)%', line)
+                if len(ints) >= 3 and pcts:
+                    year = ffy - 1 if mi >= 10 else ffy
+                    out[f"{year}-{mi:02d}-01"] = {
+                        'ApplicationsReceived': ints[0],
+                        'TotalDispositions': ints[1],
+                        'TimelyDispositions': ints[2],
+                        'PercentTimely': round(float(pcts[0]) / 100, 3),
+                    }
+                break
+    return [{'Date': d, **v} for d, v in out.items()]
+
+
+def _timeliness_from_summary(path, ffy):
+    """Old .xls/.xlsx timeliness: a 'STATE SUMMARY' sheet, month x metric table."""
+    if str(path).lower().endswith('.xls'):
+        import xlrd
+        wb = xlrd.open_workbook(path)
+        if 'STATE SUMMARY' not in wb.sheet_names():
+            return None
+        sh = wb.sheet_by_name('STATE SUMMARY')
+        rows = [[sh.cell_value(r, c) for c in range(sh.ncols)] for r in range(sh.nrows)]
+    else:
+        wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
+        if 'STATE SUMMARY' not in wb.sheetnames:
+            return None
+        rows = list(wb['STATE SUMMARY'].iter_rows(values_only=True))
+
+    out = []
+    for r in rows:
+        mon = MONTH_NAMES.get(str(r[0]).strip().upper()) if r and r[0] else None
+        if not mon:
+            continue
+        nums = [x for x in r[1:] if isinstance(x, (int, float))]
+        if len(nums) < 4:
+            continue
+        year = ffy - 1 if mon >= 10 else ffy
+        out.append({
+            'Date': f"{year}-{mon:02d}-01",
+            'ApplicationsReceived': int(nums[0]),
+            'TotalDispositions': int(nums[1]),
+            'TimelyDispositions': int(nums[2]),
+            'PercentTimely': round(float(nums[3]), 3),   # already a fraction
+        })
+    return out
+
+
+def extract_timeliness_any(path, ffy=None):
+    """Dispatch a timeliness file to the right parser by extension/era."""
+    p = str(path)
+    ffy = ffy or _fy_from_name(path, 'FFY')
+    if p.lower().endswith('.pdf'):
+        return _timeliness_from_pdf(path, ffy)
+    summary = _timeliness_from_summary(path, ffy)   # old 'STATE SUMMARY' layout
+    if summary:
+        return summary
+    return extract_timeliness(path)   # current 'FFY YYYY'/Table-1 layout (2026+)
+
+
 def extract_participation_any(path, sfy=None):
     """Dispatch a participation file to the right parser by extension/era."""
     p = str(path)
@@ -310,6 +393,25 @@ DHS_PARTICIPATION_ARCHIVE = {
     2023: "https://humanservices.hawaii.gov/wp-content/uploads/2023/10/SFY-2023-SUMMARY.pdf",
     2024: "https://humanservices.hawaii.gov/wp-content/uploads/2025/03/SFY-2024-SUMMARY.pdf",
     2025: "https://humanservices.hawaii.gov/wp-content/uploads/2025/07/SFY-2025-SUMMARY.xls",
+}
+
+
+DHS_TIMELINESS_ARCHIVE = {
+    2009: "https://humanservices.hawaii.gov/bessd/files/2015/04/Application-Timeliness-FFY-20091.xls",
+    2010: "https://humanservices.hawaii.gov/bessd/files/2015/04/Application-Timeliness-FFY-2010.xls",
+    2011: "https://humanservices.hawaii.gov/bessd/files/2015/04/Application-Timeliness-FFY-2011.xls",
+    2012: "https://humanservices.hawaii.gov/bessd/files/2015/04/Application-Timeliness-FFY20121.xls",
+    2013: "https://humanservices.hawaii.gov/bessd/files/2012/12/application-timeliness-FFY-2013-corrected1.xls",
+    2014: "https://humanservices.hawaii.gov/wp-content/uploads/2016/06/Application-Timeliness-FFY-20141.xls",
+    2015: "https://humanservices.hawaii.gov/bessd/files/2016/05/Application-Timeliness-FFY-2015-new1.xlsx",
+    2016: "https://humanservices.hawaii.gov/wp-content/uploads/2016/12/Application-Timeliness-FFY-2016-Complete.pdf",
+    2017: "https://humanservices.hawaii.gov/wp-content/uploads/2017/12/Application-Timeliness-FFY-2017.pdf",
+    2018: "https://humanservices.hawaii.gov/wp-content/uploads/2018/08/SNAP-Timeliness.FFY-2018-SUMMARY.-as-of-June.pdf",
+    2019: "https://humanservices.hawaii.gov/wp-content/uploads/2020/06/Application-Timeliness-complete-FFY-2019.pdf",
+    2020: "https://humanservices.hawaii.gov/wp-content/uploads/2020/08/Application-Timeliness-FFY-2020.pdf",
+    2022: "https://humanservices.hawaii.gov/wp-content/uploads/2022/12/Application-Timeliness-FFY-2022.pdf",
+    2024: "https://humanservices.hawaii.gov/wp-content/uploads/2025/03/Application-Timeliness-FFY-2024-1.pdf",
+    # FFY2021 is an image-only scan (no text layer); FFY2023 source is August-only.
 }
 
 

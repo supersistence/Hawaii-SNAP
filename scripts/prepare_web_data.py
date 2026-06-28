@@ -258,7 +258,7 @@ def process_dhs_data():
             'participationRate': round(int(r['Participants']) / p * 100, 1) if p else None,
         })
 
-    return {
+    result = {
         'source': 'Hawaii DHS (Department of Human Services)',
         'granularity': 'monthly, by island/branch',
         'asOfDate': str(df['Date'].max()),
@@ -269,6 +269,17 @@ def process_dhs_data():
         },
         'latestByCounty': sorted(islands, key=lambda x: -(x['participationRate'] or 0)),
     }
+
+    # Application timeliness (monthly statewide): applications received + % timely.
+    tl_path = DATA_DIR / "dhs_snap_application_timeliness.csv"
+    if tl_path.exists():
+        tl = pd.read_csv(tl_path).sort_values('Date')
+        result['timeliness'] = {
+            'dates': tl['Date'].tolist(),
+            'applicationsReceived': [int(x) for x in tl['ApplicationsReceived']],
+            'percentTimely': [round(float(x) * 100, 1) for x in tl['PercentTimely']],
+        }
+    return result
 
 
 def main():

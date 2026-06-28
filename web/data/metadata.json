@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-27T18:30:02.534049",
+  "generated": "2026-06-27T18:54:01.033609",
   "dataVersion": "2025-05",
   "note": "Monthly statewide data current through May 2025. County bi-annual data current through January 2025.",
   "repository": "https://github.com/supersistence/Hawaii-SNAP",
@@ -74,12 +74,13 @@
       "publisher": "Hawaii DHS (Department of Human Services)",
       "sourcePage": "https://humanservices.hawaii.gov/bessd/snap/",
       "sourceFile": "Timeliness-FFY2026-WCAG.xlsx",
-      "fiscalYear": "FFY 2026",
+      "fiscalYear": "FFY 2009-2026",
       "downloadedAt": "2026-06-27",
+      "coverageStart": "2008-10-01",
       "coverageEnd": "2026-05-01",
       "granularity": "monthly, statewide",
-      "provenanceSource": "automated-pull",
-      "note": "Application processing timeliness + applications received. Partly recovers the discontinued weekly applications series (monthly statewide instead of weekly by-county)."
+      "provenanceSource": "automated-pull + backfill",
+      "note": "Application processing timeliness + applications received, FFY 2009-2026 (172 months). Backfilled from the DHS archive (.xls 'STATE SUMMARY' sheets via xlrd; PDF 'State TOTAL' rows via pdftotext). Partly recovers the discontinued weekly applications series (monthly statewide instead of weekly by-county). Gaps: FFY2021 (DHS published an image-only scan, no extractable text), FFY2025 (no file published), and partial FFY2018/2020/2023 (mid-year or single-month source files)."
     }
   },
   "summary": {

@@ -185,7 +185,37 @@ function initializeCharts() {
     createCountyChart();
     createPAChart();
     createFoodHubsChart();
-    if (dhsData) { createDHSChart(); populateDHSCounties(); }
+    if (dhsData) { createDHSChart(); createDHSTimelinessChart(); populateDHSCounties(); }
+}
+
+// DHS application timeliness: applications received (bars) + % timely (line)
+function createDHSTimelinessChart() {
+    const el = document.getElementById('dhsTimelinessChart');
+    if (!el || !dhsData.timeliness) return;
+    const t = dhsData.timeliness;
+    charts.dhsTimeliness = new Chart(el, {
+        data: {
+            labels: t.dates,
+            datasets: [
+                { type: 'line', label: '% Processed On Time', data: t.percentTimely,
+                  yAxisID: 'y1', borderColor: '#16a34a', pointRadius: 0, borderWidth: 2, spanGaps: false },
+                { type: 'bar', label: 'Applications Received', data: t.applicationsReceived,
+                  yAxisID: 'y', backgroundColor: 'rgba(37,99,235,0.35)' },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: { ticks: { maxTicksLimit: 12 } },
+                y: { position: 'left', title: { display: true, text: 'Applications Received' },
+                     ticks: { callback: v => formatNumber(v) } },
+                y1: { position: 'right', min: 0, max: 100, grid: { drawOnChartArea: false },
+                      title: { display: true, text: '% On Time' } },
+            },
+            plugins: { legend: { position: 'top' } }
+        }
+    });
 }
 
 // DHS state-data view: monthly statewide participation (2008-present) + per-island
