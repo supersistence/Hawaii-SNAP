@@ -20,9 +20,15 @@
     <meta property="twitter:description" content="Comprehensive analysis of Hawaii's SNAP program: 165K people served, $720M/year in benefits, pandemic recovery trends, and 2025 federal shutdown impacts.">
     <meta property="twitter:image" content="https://snap.supersistence.org/social-card.png">
 
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 
     <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
@@ -30,26 +36,34 @@
 <body>
     <header>
         <div class="container">
-            <h1>Hawaii SNAP Program Analysis</h1>
-            <p class="subtitle">Interactive Data Visualizations & Insights</p>
+            <div class="brandrow">
+                <span class="brand"><svg class="leaf" viewBox="0 0 40 40" aria-hidden="true">
+                        <circle cx="20" cy="20" r="18.5" fill="none" stroke="#141414" stroke-width="2"/>
+                        <path d="M20 9 C12 16 12 27 20 31 C28 27 28 16 20 9 Z" fill="#141414"/>
+                    </svg>Supersistence
+                </span>
+                <span>Hawai‘i SNAP · 1989–2025</span>
+            </div>
+            <h1>Who food assistance reaches in Hawai‘i — and what moves the numbers.</h1>
+            <p class="subtitle">Thirty-seven years of SNAP participation, benefits, and the shocks behind every turn in the line. Each section leads with what the data <em>means</em>, not just what it shows.</p>
             <div class="data-status">
-                <span class="status-badge">Data: October 1988 - May 2025</span>
-                <span class="update-available success">✅ Latest data included</span>
+                <span class="status-badge">Live data · USDA FNS &amp; Hawai‘i DHS</span>
+                <span class="update-available">Current through May 2025</span>
             </div>
         </div>
     </header>
 
     <nav class="nav-tabs">
         <div class="container">
-            <button class="tab-button active" data-tab="overview">Overview</button>
-            <button class="tab-button" data-tab="trends">Participation Trends</button>
-            <button class="tab-button" data-tab="benefits">Benefit Analysis</button>
-            <button class="tab-button" data-tab="covid">COVID-19 Impact</button>
-            <button class="tab-button" data-tab="shutdown">2025 Federal Shutdown</button>
-            <button class="tab-button" data-tab="retailers">Retailer Network</button>
-            <button class="tab-button" data-tab="counties">County Comparison</button>
-            <button class="tab-button" data-tab="dhs">DHS State Data</button>
-            <button class="tab-button" data-tab="implications">Key Insights</button>
+            <a class="tab-button active" href="#overview" data-tab="overview">Overview</a>
+            <a class="tab-button" href="#trends" data-tab="trends">Participation</a>
+            <a class="tab-button" href="#benefits" data-tab="benefits">Benefits</a>
+            <a class="tab-button" href="#covid" data-tab="covid">COVID-19</a>
+            <a class="tab-button" href="#shutdown" data-tab="shutdown">2025 Shutdown</a>
+            <a class="tab-button" href="#retailers" data-tab="retailers">Retailers</a>
+            <a class="tab-button" href="#counties" data-tab="counties">Counties</a>
+            <a class="tab-button" href="#dhs" data-tab="dhs">DHS State Data</a>
+            <a class="tab-button" href="#implications" data-tab="implications">Key Insights</a>
         </div>
     </nav>
 
@@ -62,42 +76,87 @@
 
         <!-- Overview Tab -->
         <section id="overview" class="tab-content active">
-            <h2>Program Overview</h2>
+            <span class="kicker">Overview</span>
+            <h2>One in nine residents relies on SNAP — and the rolls <span class="em">never returned to where they started.</span></h2>
+            <p class="section-description">Headline measures for the most recent reporting month, then the 37-year story behind them — scroll the line to walk through how Hawai‘i got here.</p>
 
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-icon">👥</div>
+                    <div class="stat-icon"></div>
                     <div class="stat-value" id="stat-persons">--</div>
                     <div class="stat-label">Persons Participating</div>
                     <div class="stat-date" id="stat-persons-date">--</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">🏠</div>
+                    <div class="stat-icon"></div>
                     <div class="stat-value" id="stat-households">--</div>
                     <div class="stat-label">Households Served</div>
                     <div class="stat-date" id="stat-households-date">--</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">💰</div>
+                    <div class="stat-icon"></div>
                     <div class="stat-value" id="stat-benefit">--</div>
                     <div class="stat-label">Avg Benefit/Household</div>
                     <div class="stat-date" id="stat-benefit-date">--</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">📊</div>
+                    <div class="stat-icon"></div>
                     <div class="stat-value" id="stat-cost">--</div>
                     <div class="stat-label">Monthly Program Cost</div>
                     <div class="stat-date" id="stat-cost-date">--</div>
                 </div>
             </div>
 
-            <div class="chart-container">
-                <h3>Participation Over Time (1999-2025)</h3>
-                <canvas id="overviewChart"></canvas>
+            <!-- Melded isotype: prevalence (1-in-9) + scale (= Maui County) -->
+            <div class="isotype" id="iso-overview">
+                <div class="iso-head">
+                    <span class="big" id="iso-share">1 in 9</span> residents is on SNAP —
+                    <div class="iso-sub">as many people as live in <strong>all of Maui County.</strong> The caseload isn’t an abstraction; it’s an entire island-county of people.</div>
+                </div>
+                <div class="iso-map"><svg viewBox="0 0 760 495" role="img" aria-label="Map of the Hawaiian Islands with Maui County shaded — its population equals Hawai‘i’s SNAP caseload"><path class="sea" d="M17.4,40.9 L17.8,40.3 L19.1,35.5 L21.4,34.6 L24.8,34.3 L26.7,35.3 L27.6,37.2 L27.5,37.7 L27.0,38.1 L26.4,38.2 L26.0,38.0 L25.7,38.3 L23.9,41.5 L22.9,45.6 L23.7,48.1 L23.8,50.3 L21.1,52.0 L17.5,53.2 L14.2,53.7 L12.3,54.9 L10.5,57.6 L8.4,61.3 L6.2,66.2 L6.9,66.6 L6.1,67.7 L4.4,67.0 L2.1,65.3 L0.0,62.3 L0.7,57.3 L2.6,51.7 L2.9,51.3 L5.0,49.8 L6.2,48.6 L6.6,47.8 L8.3,46.2 L11.5,44.8 L15.7,42.4 L17.1,41.4 L17.4,40.9Z M114.3,2.0 L117.7,0.4 L120.4,1.5 L120.6,2.0 L123.2,2.7 L124.3,2.7 L124.7,2.3 L127.1,3.7 L130.5,6.9 L131.4,11.6 L133.0,12.4 L133.2,13.2 L133.3,15.3 L133.1,17.8 L130.2,22.7 L129.6,25.3 L129.2,26.0 L128.0,26.6 L127.4,27.8 L126.9,30.5 L128.0,38.8 L128.0,40.1 L127.8,40.6 L125.6,42.1 L124.8,43.8 L121.2,46.0 L117.5,50.0 L115.1,52.0 L112.2,53.9 L108.6,52.2 L106.0,51.3 L102.2,51.0 L97.0,51.0 L94.2,50.2 L93.9,49.6 L92.9,49.8 L89.3,49.9 L85.5,47.1 L84.0,44.8 L80.7,41.2 L79.4,40.7 L76.0,40.2 L74.0,39.1 L68.6,37.7 L67.6,36.8 L64.5,32.0 L64.1,30.1 L64.7,25.3 L65.6,24.0 L70.1,19.8 L71.0,17.5 L72.1,13.5 L73.1,12.1 L76.8,10.1 L81.0,9.3 L89.5,3.8 L91.9,2.0 L93.0,1.0 L96.4,0.6 L97.2,0.7 L97.9,1.0 L99.0,2.4 L99.9,2.1 L101.4,2.3 L102.0,2.6 L102.2,3.3 L102.5,3.8 L103.6,4.1 L104.6,3.3 L104.6,1.1 L106.3,0.0 L107.5,0.1 L109.3,1.0 L110.8,0.7 L112.8,1.0 L114.3,2.0Z"/><path class="sea" d="M308.1,138.3 L301.9,139.4 L299.8,139.5 L298.5,138.9 L297.4,136.7 L297.2,135.8 L298.6,135.2 L298.3,134.5 L297.6,134.0 L296.7,134.7 L295.7,130.3 L294.7,128.2 L293.4,126.5 L291.7,124.8 L289.2,123.6 L288.9,122.8 L289.0,121.2 L288.8,119.8 L287.4,117.1 L285.6,115.3 L283.6,113.9 L281.7,111.2 L282.0,105.8 L281.9,104.4 L281.5,103.4 L279.3,100.8 L275.2,98.0 L275.5,97.6 L278.7,97.0 L287.6,96.5 L290.5,97.1 L296.7,96.4 L299.4,94.9 L299.4,94.0 L299.0,93.6 L303.1,90.2 L304.9,87.9 L305.0,86.6 L305.3,85.7 L309.1,81.9 L311.7,79.5 L315.3,78.3 L316.1,77.7 L318.7,77.6 L321.7,81.1 L322.8,84.1 L324.0,86.2 L324.8,86.8 L325.1,89.0 L324.9,90.1 L326.7,92.8 L328.2,93.6 L331.4,98.1 L331.2,100.4 L332.1,100.8 L332.9,99.8 L334.4,100.3 L334.9,100.8 L337.0,104.9 L337.0,107.5 L335.3,107.9 L334.9,109.4 L335.9,114.3 L336.5,115.4 L338.7,116.0 L339.9,116.8 L340.3,118.3 L341.4,119.8 L344.1,121.9 L345.0,121.7 L345.8,121.1 L346.1,119.6 L345.7,116.3 L346.1,115.7 L347.2,115.1 L348.6,115.1 L350.9,115.5 L351.7,115.9 L351.8,117.6 L351.2,118.5 L350.5,120.7 L350.4,122.1 L350.8,123.6 L352.0,124.0 L352.5,123.8 L353.1,124.0 L353.5,124.8 L354.9,126.8 L355.0,127.4 L354.4,128.9 L354.7,130.5 L355.0,131.2 L356.6,133.7 L357.0,134.3 L361.5,137.2 L362.9,137.1 L362.8,137.9 L362.6,138.9 L356.9,143.1 L357.0,144.2 L356.2,144.5 L354.8,144.8 L354.2,144.6 L354.6,143.4 L354.5,142.0 L354.2,141.5 L353.2,141.1 L348.2,142.5 L347.1,142.3 L345.3,143.1 L343.2,145.1 L340.9,145.5 L339.3,145.1 L338.8,144.5 L338.7,143.4 L337.8,142.2 L335.8,140.7 L329.6,138.2 L329.0,136.2 L328.4,135.1 L327.6,134.8 L325.6,136.4 L325.7,137.1 L326.4,137.5 L326.7,138.3 L320.9,138.2 L321.2,137.3 L321.0,136.4 L318.7,135.0 L318.0,135.1 L315.7,136.5 L310.8,137.8 L308.1,138.3Z"/><path class="sea" d="M451.9,156.3 L454.1,156.7 L455.2,156.3 L455.7,155.7 L456.4,152.9 L456.1,152.6 L457.6,151.3 L458.3,151.6 L459.2,152.3 L460.7,155.3 L460.8,156.7 L461.5,157.7 L465.4,158.8 L468.1,161.9 L465.4,164.6 L462.1,160.0 L451.9,156.3Z"/><path class="sea" d="M624.7,296.4 L625.4,296.5 L629.0,298.4 L630.4,299.8 L630.6,301.4 L631.0,302.4 L642.0,308.1 L645.3,311.2 L646.1,311.3 L648.5,312.5 L649.4,314.2 L649.8,314.5 L650.8,314.8 L652.1,314.6 L654.0,313.6 L655.3,313.4 L660.2,315.2 L661.2,315.9 L663.2,316.0 L668.0,317.5 L671.3,318.8 L676.7,321.3 L677.2,321.8 L679.2,323.1 L687.2,327.3 L692.1,329.4 L693.9,329.8 L695.6,330.9 L699.7,334.5 L704.8,337.6 L706.2,339.3 L708.2,340.6 L712.5,344.6 L713.2,344.9 L715.0,347.0 L716.0,348.4 L716.4,350.1 L718.3,352.1 L719.6,352.8 L721.3,354.6 L721.6,355.5 L721.4,357.1 L720.9,358.9 L720.2,360.7 L720.5,363.0 L720.6,366.4 L720.3,367.1 L720.3,372.2 L721.2,373.6 L722.3,373.9 L724.4,373.5 L727.0,371.9 L732.5,372.0 L733.8,373.5 L735.2,376.5 L736.0,379.2 L735.5,382.0 L735.6,386.5 L737.0,387.8 L738.4,388.6 L740.3,388.8 L740.7,389.1 L740.2,390.7 L740.8,392.0 L742.6,393.1 L743.4,393.8 L743.9,394.7 L746.8,397.1 L750.8,399.2 L754.0,400.3 L756.1,401.9 L757.6,402.0 L759.3,403.2 L760.0,404.3 L758.1,410.4 L755.9,413.1 L751.7,416.9 L749.0,418.6 L743.3,422.9 L741.2,425.3 L738.3,427.7 L736.0,430.1 L730.5,432.8 L724.7,435.0 L717.5,438.9 L714.7,441.0 L711.1,442.2 L709.3,442.1 L707.2,442.5 L706.0,443.2 L704.6,443.3 L699.3,441.7 L696.4,441.3 L691.9,442.5 L690.9,443.2 L689.6,444.8 L685.7,447.3 L684.6,449.7 L683.0,451.1 L680.5,452.0 L678.8,452.2 L675.1,454.2 L673.7,455.4 L672.9,456.8 L670.0,459.5 L668.3,460.3 L662.8,461.6 L661.5,462.4 L661.8,463.1 L660.8,464.8 L659.9,464.9 L659.5,465.3 L657.3,468.6 L656.4,469.0 L655.4,470.0 L655.8,471.9 L655.8,474.2 L655.5,475.3 L654.2,477.4 L652.8,478.1 L652.1,478.9 L650.1,482.4 L650.0,485.1 L649.3,486.5 L647.6,486.6 L646.0,487.9 L644.2,490.9 L641.4,493.4 L639.5,494.5 L638.1,494.3 L637.3,493.6 L637.0,492.3 L636.5,491.1 L631.9,486.8 L626.7,484.9 L620.8,480.1 L614.1,478.7 L610.2,476.7 L609.9,476.4 L609.6,473.9 L607.1,470.2 L606.5,470.1 L604.7,464.1 L605.2,458.9 L607.2,449.7 L607.0,447.9 L607.3,443.7 L608.3,441.3 L608.9,437.6 L609.4,431.9 L609.2,430.3 L607.8,425.8 L605.7,422.4 L606.4,420.2 L604.6,418.0 L604.2,416.8 L604.1,412.4 L604.5,410.8 L604.3,410.4 L603.4,409.9 L602.7,409.8 L602.6,410.3 L600.4,409.6 L600.1,406.1 L599.2,400.7 L598.9,399.9 L598.5,399.5 L598.0,399.3 L597.7,394.8 L596.7,391.5 L594.0,386.3 L589.6,385.3 L589.1,384.7 L588.8,383.9 L589.0,382.4 L589.8,382.0 L589.6,381.0 L588.6,379.3 L587.0,378.0 L586.5,377.3 L586.3,375.0 L584.7,373.2 L585.7,371.5 L586.4,369.3 L586.7,365.8 L590.6,362.6 L592.8,360.3 L596.1,356.1 L596.9,355.4 L598.6,354.7 L600.8,354.4 L601.3,354.9 L602.0,355.1 L604.0,354.1 L603.9,352.4 L604.1,351.7 L605.5,349.9 L607.4,346.2 L608.5,344.5 L608.4,344.0 L608.7,343.2 L612.3,339.9 L613.7,337.7 L615.9,336.5 L616.7,336.6 L617.1,335.6 L617.6,333.7 L618.1,329.2 L617.7,327.8 L614.6,323.7 L612.3,321.3 L609.8,317.1 L607.8,311.3 L606.8,302.5 L607.4,297.9 L608.9,295.0 L610.1,293.8 L611.3,293.1 L614.2,292.6 L620.0,294.2 L624.0,296.3 L624.7,296.4Z"/><path class="maui" d="M451.9,156.3 L462.1,160.0 L465.4,164.6 L468.1,161.9 L465.4,158.8 L467.5,159.4 L468.2,159.2 L468.5,158.6 L472.4,159.4 L476.1,158.9 L478.8,157.9 L485.9,157.1 L490.0,157.6 L490.5,158.3 L490.8,159.8 L493.2,159.5 L494.1,159.8 L493.9,161.2 L492.2,164.2 L489.0,167.7 L485.3,170.5 L483.2,171.7 L482.7,172.6 L477.0,174.5 L472.7,175.3 L471.1,176.6 L469.1,176.2 L468.6,175.6 L460.4,173.8 L453.6,171.5 L450.3,170.6 L449.5,170.3 L448.7,169.3 L442.8,168.1 L440.6,168.1 L436.5,168.6 L433.9,169.5 L418.5,170.4 L412.3,169.5 L410.2,168.1 L412.2,164.2 L412.9,162.1 L414.2,160.4 L415.3,159.6 L417.7,157.8 L418.4,156.9 L418.9,155.4 L419.0,152.9 L418.1,151.8 L417.4,151.5 L417.2,151.0 L417.6,150.3 L418.1,150.0 L420.2,151.0 L422.3,151.1 L424.3,150.8 L425.7,151.2 L427.1,153.0 L428.0,153.3 L432.0,154.0 L433.3,154.0 L433.8,153.7 L436.1,153.9 L438.1,154.5 L440.3,154.4 L445.0,155.7 L446.6,155.8 L447.3,155.5 L448.4,155.4 L451.9,156.3Z M517.6,255.1 L516.8,255.5 L515.4,255.2 L511.8,256.7 L509.3,254.9 L505.5,256.3 L503.9,257.3 L503.2,256.7 L500.2,257.8 L498.3,257.5 L495.4,254.4 L495.6,253.7 L496.3,252.3 L498.7,250.0 L502.6,248.7 L507.8,245.5 L508.4,244.5 L513.1,242.6 L514.4,242.8 L516.3,244.4 L517.8,246.5 L517.8,247.5 L517.0,248.3 L516.0,252.1 L516.4,252.6 L518.2,253.3 L518.3,254.4 L517.6,255.1Z M508.2,180.2 L509.0,178.8 L510.9,179.0 L512.6,180.9 L515.1,181.5 L516.9,183.2 L519.9,188.7 L521.2,190.7 L522.1,191.2 L522.4,192.8 L522.7,193.2 L523.9,193.7 L524.4,194.7 L524.8,196.4 L526.5,199.1 L527.3,199.6 L534.6,197.1 L539.7,195.9 L541.4,194.7 L541.9,194.0 L544.4,192.7 L545.4,192.6 L545.8,193.1 L547.2,191.9 L548.3,191.4 L550.8,192.5 L553.7,191.7 L555.2,193.3 L556.9,192.7 L559.8,193.2 L561.5,194.1 L561.5,196.2 L562.0,196.3 L562.6,196.1 L563.2,196.4 L563.4,197.8 L569.5,202.3 L569.9,202.6 L570.4,204.0 L575.1,204.6 L575.6,206.7 L577.5,209.7 L579.7,209.5 L581.1,209.0 L585.3,212.2 L589.0,212.5 L593.2,214.4 L593.3,215.3 L595.4,217.2 L595.8,218.6 L595.5,219.9 L595.7,222.1 L595.5,225.3 L594.9,226.6 L593.4,229.0 L591.7,230.8 L590.9,230.6 L589.4,231.3 L588.0,232.7 L587.6,233.9 L586.2,235.5 L585.3,235.8 L582.3,235.5 L581.2,236.3 L576.8,238.6 L575.5,239.5 L573.7,240.1 L573.0,239.2 L571.8,239.2 L570.0,239.5 L569.4,240.0 L567.9,239.1 L566.7,238.8 L564.3,239.3 L562.2,240.2 L560.7,241.2 L556.5,243.3 L553.9,244.1 L553.4,244.8 L552.7,245.3 L551.4,245.6 L548.6,245.3 L544.5,245.5 L543.4,246.3 L541.9,246.7 L540.9,246.8 L535.7,245.7 L535.3,245.1 L535.6,244.5 L535.3,243.8 L534.6,243.3 L533.9,243.7 L533.3,243.9 L532.4,243.4 L531.6,242.4 L531.8,241.5 L530.7,237.3 L531.4,236.2 L531.7,235.2 L531.0,228.0 L530.7,224.9 L530.4,224.0 L529.6,223.2 L529.1,220.6 L529.1,217.8 L528.8,216.5 L527.5,215.1 L525.3,214.0 L523.6,213.8 L523.0,213.8 L521.6,214.6 L520.3,216.6 L518.5,217.0 L505.4,210.6 L498.9,203.2 L497.4,200.5 L497.5,197.9 L497.1,197.0 L496.2,196.4 L495.9,195.8 L496.7,191.0 L498.5,186.9 L500.7,182.9 L502.5,182.6 L503.4,181.8 L503.9,180.9 L503.9,179.8 L507.1,179.8 L508.2,180.2Z M452.6,194.4 L455.4,194.0 L457.9,194.9 L462.7,195.1 L465.4,195.5 L468.3,196.5 L476.7,204.3 L478.4,206.2 L480.6,209.9 L480.7,210.7 L480.6,212.4 L479.5,214.6 L476.6,219.0 L475.4,219.7 L474.7,219.7 L472.2,220.5 L469.3,222.0 L466.7,222.8 L461.1,222.8 L458.5,223.4 L456.1,220.2 L454.8,215.7 L455.5,211.4 L455.1,209.8 L453.1,206.4 L452.4,205.6 L446.3,202.2 L445.6,201.1 L445.4,200.2 L445.2,198.2 L445.7,196.8 L449.0,194.8 L450.4,194.4 L452.6,194.4Z"/></svg></div>
+                <div class="iso-legend">
+                    <span class="sw on"></span> Maui County — the population the SNAP caseload equals
+                    <span class="sw off" style="margin-left:14px"></span> rest of Hawai‘i
+                </div>
+                <p class="iso-cap">163,576 of 1,446,146 residents (USDA FNS, Apr 2025 ÷ Hawai‘i State Census, 2024). The shaded group — 1 in 9 — is essentially the entire population of Maui County (163,769).</p>
+            </div>
+
+            <!-- Pinned scrollytelling hero -->
+            <div class="scrolly" id="overview-scrolly">
+                <div class="scrolly-graphic">
+                    <div class="figtitle">Persons receiving SNAP each month · 1989–2025</div>
+                    <canvas id="overviewChart"></canvas>
+                    <div class="scrolly-readout">
+                        <div class="ro"><div class="n" id="ro-persons">—</div><div class="l">persons this view</div></div>
+                        <div class="ro"><div class="n accent" id="ro-note">—</div><div class="l" id="ro-note-l">period</div></div>
+                    </div>
+                </div>
+                <div class="scrolly-steps">
+                    <div class="step is-active" data-step="0">
+                        <div class="act">Act 1 · 1989–2008</div>
+                        <h3>A stable floor</h3>
+                        <p>For two decades, participation held in a steady band — roughly 100,000–120,000 people in any given month. The safety net was load-bearing even in good years.</p>
+                    </div>
+                    <div class="step" data-step="1">
+                        <div class="act">Act 2 · 2008–2013</div>
+                        <h3>The recession climb</h3>
+                        <p>The Great Recession pushed the line up and held it there. Participation rose past 180,000 and didn't fall back to its old floor — the first reset to a higher baseline.</p>
+                    </div>
+                    <div class="step" data-step="2">
+                        <div class="act">Act 3 · 2020–2021</div>
+                        <h3>The pandemic peak</h3>
+                        <p>When tourism collapsed in 2020, enrollment spiked to its all-time high — about 206,000 people in July 2021 — carried by federal emergency allotments.</p>
+                    </div>
+                    <div class="step" data-step="3">
+                        <div class="act">Act 4 · 2022–2025</div>
+                        <h3>A new, higher baseline</h3>
+                        <p>Emergency measures wound down and the line fell — but settled roughly 13% above where it began in 2019, not back to it. Each shock leaves a permanent step up.</p>
+                    </div>
+                </div>
             </div>
 
             <div class="insight-box">
-                <h4>📈 Key Findings</h4>
+                <h4>Key findings</h4>
                 <ul>
                     <li>Hawaii's SNAP program has served an average of <strong id="avg-persons">--</strong> people per month over the past two decades</li>
                     <li>Peak participation occurred in <strong id="peak-date">--</strong> with <strong id="peak-persons">--</strong> individuals</li>
@@ -109,7 +168,8 @@
 
         <!-- Trends Tab -->
         <section id="trends" class="tab-content">
-            <h2>Participation Trends</h2>
+            <span class="kicker">Participation</span>
+            <h2>Households and individuals move together — and both sit <span class="em">well above their pre-pandemic floor.</span></h2>
 
             <div class="chart-container">
                 <h3>Households Participating in SNAP</h3>
@@ -124,7 +184,7 @@
             </div>
 
             <div class="insight-box">
-                <h4>💡 Implications</h4>
+                <h4>Implications</h4>
                 <div class="implication-grid">
                     <div class="implication-card">
                         <h5>Economic Indicator</h5>
@@ -144,7 +204,31 @@
 
         <!-- Benefits Tab -->
         <section id="benefits" class="tab-content">
-            <h2>Benefit Level Analysis</h2>
+            <span class="kicker">Benefits</span>
+            <h2>Benefits spiked with pandemic aid, then fell three years running — <span class="em">into rising food prices.</span></h2>
+
+            <div class="isotype" id="iso-meal">
+                <h4>What a benefit actually buys: about <span id="meal-amt-h" style="color:var(--accent)">$4</span> a meal</h4>
+                <div class="plates">
+                    <div class="plate">
+                        <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="none" stroke="#e4e2d4" stroke-width="3"/><circle cx="50" cy="50" r="30" fill="none" stroke="#e4e2d4" stroke-width="2"/></svg>
+                        <div class="pl">breakfast</div>
+                    </div>
+                    <div class="plate">
+                        <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="none" stroke="var(--accent)" stroke-width="3"/><circle cx="50" cy="50" r="30" fill="rgba(180,83,9,.12)" stroke="var(--accent)" stroke-width="2"/></svg>
+                        <div class="pl">lunch</div>
+                    </div>
+                    <div class="plate">
+                        <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="none" stroke="#e4e2d4" stroke-width="3"/><circle cx="50" cy="50" r="30" fill="none" stroke="#e4e2d4" stroke-width="2"/></svg>
+                        <div class="pl">dinner</div>
+                    </div>
+                    <div style="margin-left:8px">
+                        <div class="meal-amt" id="meal-amt">$4</div>
+                        <div class="pl" style="font-size:.85rem;color:var(--ink-2)">per person, per meal</div>
+                    </div>
+                </div>
+                <p class="iso-cap" id="meal-cap">Total monthly benefits ÷ people ÷ ~30 days ÷ 3 meals — among the highest per-meal benefits in the nation, because Hawai‘i’s allotments adjust for island food costs.</p>
+            </div>
 
             <div class="chart-container">
                 <h3>Average Monthly Benefit Per Household</h3>
@@ -159,7 +243,7 @@
             </div>
 
             <div class="insight-box">
-                <h4>💡 Implications</h4>
+                <h4>Implications</h4>
                 <div class="implication-grid">
                     <div class="implication-card">
                         <h5>Hawaii's Higher Costs</h5>
@@ -183,7 +267,8 @@
 
         <!-- COVID-19 Impact Tab -->
         <section id="covid" class="tab-content">
-            <h2>COVID-19 Pandemic Impact</h2>
+            <span class="kicker">COVID-19</span>
+            <h2>The pandemic proved SNAP can scale fast — and that <span class="em">the surge never fully receded.</span></h2>
 
             <div class="covid-stats-grid">
                 <div class="stat-card highlight">
@@ -210,7 +295,7 @@
             </div>
 
             <div class="insight-box">
-                <h4>💡 Implications</h4>
+                <h4>Implications</h4>
                 <div class="implication-grid">
                     <div class="implication-card">
                         <h5>Rapid Response Success</h5>
@@ -240,7 +325,7 @@
             </div>
 
             <div class="insight-box warning">
-                <h4>📉 Post-Pandemic Recovery Analysis (2019-2025)</h4>
+                <h4>Post-Pandemic Recovery Analysis (2019-2025)</h4>
                 <p><strong>Peak:</strong> July 2021 - 206,226 persons (111,900 households)</p>
                 <p><strong>Current:</strong> May 2025 - 163,576 persons (84,333 households)</p>
                 <p><strong>Decline from Peak:</strong> -20.7% in persons, -24.6% in households</p>
@@ -260,36 +345,37 @@
             </div>
 
             <div class="data-note">
-                <strong>✅ Complete Recovery Data:</strong> Data now includes the complete pandemic recovery period through May 2025, revealing benefit reduction impacts and participation stabilization following emergency measure wind-down. Full analysis available in <a href="https://github.com/supersistence/Hawaii-SNAP/blob/main/ANALYSIS_SUMMARY_2025.md" target="_blank">ANALYSIS_SUMMARY_2025.md</a>.
+                <strong>Complete Recovery Data:</strong> Data now includes the complete pandemic recovery period through May 2025, revealing benefit reduction impacts and participation stabilization following emergency measure wind-down. Full analysis available in <a href="https://github.com/supersistence/Hawaii-SNAP/blob/main/ANALYSIS_SUMMARY_2025.md" target="_blank">ANALYSIS_SUMMARY_2025.md</a>.
             </div>
         </section>
 
         <!-- Federal Shutdown Tab -->
         <section id="shutdown" class="tab-content">
-            <h2>2025 Federal Shutdown Impact</h2>
+            <span class="kicker">2025 Federal Shutdown</span>
+            <h2>A shutdown would pull <span class="em">$50M a month</span> from 165,000 people already near the edge.</h2>
             <p class="section-description">Analysis of potential federal government shutdown impacts on SNAP and food security in Hawaii, and state response measures.</p>
 
             <div class="stats-grid">
                 <div class="stat-card highlight">
-                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-icon"></div>
                     <div class="stat-value">165,000</div>
                     <div class="stat-label">People on SNAP</div>
                     <div class="stat-date">85,000 households</div>
                 </div>
                 <div class="stat-card highlight">
-                    <div class="stat-icon">🏛️</div>
+                    <div class="stat-icon"></div>
                     <div class="stat-value">31,000</div>
                     <div class="stat-label">Federal Employee Households</div>
                     <div class="stat-date">24K civilian + 44K military</div>
                 </div>
                 <div class="stat-card highlight">
-                    <div class="stat-icon">💵</div>
+                    <div class="stat-icon"></div>
                     <div class="stat-value">$110M</div>
                     <div class="stat-label">State Relief Program</div>
                     <div class="stat-date">~2 month cushion</div>
                 </div>
                 <div class="stat-card highlight">
-                    <div class="stat-icon">📦</div>
+                    <div class="stat-icon"></div>
                     <div class="stat-value">30%</div>
                     <div class="stat-label">Food Insecurity Rate</div>
                     <div class="stat-date">1 in 3 households (2023)</div>
@@ -297,7 +383,7 @@
             </div>
 
             <div class="insight-box warning">
-                <h4>🚨 Immediate Shutdown Threats (As of October 2025)</h4>
+                <h4>Immediate Shutdown Threats (As of October 2025)</h4>
                 <p><strong>Timeline:</strong> SNAP benefits may stop as early as <strong>November 1, 2025</strong> if Congress doesn't reopen the government</p>
 
                 <div class="implication-grid" style="margin-top: 1rem;">
@@ -333,7 +419,7 @@
             </div>
 
             <div class="insight-box">
-                <h4>🏛️ Hawaii State Response: $110 Million Relief Program</h4>
+                <h4>Hawaii State Response: $110 Million Relief Program</h4>
                 <p><strong>Governor Josh Green's emergency plan taps TANF funds to provide temporary assistance</strong></p>
 
                 <div class="implication-grid" style="margin-top: 1rem;">
@@ -373,7 +459,7 @@
             </div>
 
             <div class="insight-box">
-                <h4>📊 Food Insecurity in Hawaii (2023 Hawaii Foodbank Study)</h4>
+                <h4>Food Insecurity in Hawaii (2023 Hawaii Foodbank Study)</h4>
 
                 <div class="implication-grid">
                     <div class="implication-card">
@@ -411,7 +497,7 @@
             </div>
 
             <div class="insight-box">
-                <h4>🏪 Hawaii's Food Bank Network Response</h4>
+                <h4>Hawaii's Food Bank Network Response</h4>
 
                 <div class="implication-grid">
                     <div class="implication-card">
@@ -455,7 +541,7 @@
             </div>
 
             <div class="insight-box">
-                <h4>📉 Recent SNAP Policy Changes Adding to Pressure</h4>
+                <h4>Recent SNAP Policy Changes Adding to Pressure</h4>
 
                 <div class="implication-grid">
                     <div class="implication-card">
@@ -487,7 +573,7 @@
             </div>
 
             <div class="insight-box warning">
-                <h4>⚠️ Nutrition Program Status During Federal Shutdown</h4>
+                <h4>Nutrition Program Status During Federal Shutdown</h4>
 
                 <div class="implication-grid">
                     <div class="implication-card">
@@ -514,7 +600,7 @@
             </div>
 
             <div class="insight-box">
-                <h4>🎯 Estimated Total Population at Risk</h4>
+                <h4>Estimated Total Population at Risk</h4>
                 <p style="font-size: 0.95em; margin-bottom: 1rem;"><strong>Hawaii Foodbank planning estimates (October 2025):</strong></p>
 
                 <div class="implication-grid">
@@ -549,7 +635,7 @@
             </div>
 
             <div class="insight-box">
-                <h4>💰 SNAP's Economic Impact on Hawaii Food Retailers</h4>
+                <h4>SNAP's Economic Impact on Hawaii Food Retailers</h4>
                 <p style="font-size: 0.95em; margin-bottom: 1rem;"><strong>Understanding SNAP's role in Hawaii's retail food economy:</strong></p>
 
                 <div class="implication-grid">
@@ -620,30 +706,27 @@
             </div>
 
             <div class="data-note">
-                <strong>📰 Sources:</strong>
+                <strong>Sources:</strong>
                 <a href="https://www.hawaiinewsnow.com/2025/10/23/hawaii-set-offer-aid-snap-families-federal-shutdown-threatens-disrupt-food-stamp-program/" target="_blank">Hawaii News Now (Oct 23, 2025)</a> |
                 <a href="https://www.kitv.com/news/hawaii-food-banks-prepare-for-the-worst-as-federal-cuts-loom-workers-miss-paychecks/article_b6243a4a-a902-47d4-9b62-0e60ef35b950.html" target="_blank">KITV (Oct 2025)</a> |
                 <a href="https://www.capitol.hawaii.gov/CommitteeFiles/senate/JDC/JDCfiles/INFO_TESTIMONY_JDC-AEN_10-16-25_FOODBANK.pdf" target="_blank">Hawaii Foodbank Legislative Testimony (Oct 16, 2025)</a>
             </div>
 
             <div class="data-note warning" style="border-color: #e74c3c;">
-                <strong>⚠️ Current Status:</strong> This information reflects the situation as of late October 2025. Federal funding status may change rapidly. Check with Hawaii Department of Human Services and local news for latest updates on SNAP and WIC benefit status.
+                <strong>Current Status:</strong> This information reflects the situation as of late October 2025. Federal funding status may change rapidly. Check with Hawaii Department of Human Services and local news for latest updates on SNAP and WIC benefit status.
             </div>
 
             <div class="cta-box" style="margin-top: 2rem; background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white; border: none;">
                 <h3 style="color: white;">Need SNAP Benefits?</h3>
                 <p style="color: rgba(255,255,255,0.95); font-size: 1.05rem;">If you or your family are facing food insecurity, you may be eligible for SNAP assistance.</p>
                 <a href="https://pais-benefits.dhs.hawaii.gov" class="cta-button" target="_blank" rel="noopener noreferrer"
-                   style="background: white; color: #27ae60; font-weight: bold; padding: 1rem 2.5rem; font-size: 1.1rem;">
-                    Apply for SNAP Benefits →
+                   style="background: white; color: #27ae60; font-weight: bold; padding: 1rem 2.5rem; font-size: 1.1rem;">Apply for SNAP Benefits 
                 </a>
-                <p class="cta-note" style="color: rgba(255,255,255,0.9); margin-top: 1rem;">
-                    <strong>Hawaii DHS Online Application Portal</strong><br>
+                <p class="cta-note" style="color: rgba(255,255,255,0.9); margin-top: 1rem;"><strong>Hawaii DHS Online Application Portal</strong><br>
                     Check eligibility, apply online, and manage your benefits at pais-benefits.dhs.hawaii.gov
                 </p>
                 <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.3);">
-                    <p style="color: rgba(255,255,255,0.95); font-size: 0.95rem; margin-bottom: 0.75rem;">
-                        <strong>Other Resources:</strong>
+                    <p style="color: rgba(255,255,255,0.95); font-size: 0.95rem; margin-bottom: 0.75rem;"><strong>Other Resources:</strong>
                     </p>
                     <ul style="color: rgba(255,255,255,0.9); text-align: left; max-width: 600px; margin: 0 auto;">
                         <li><strong>Hawaii Foodbank:</strong> Call 2-1-1 or visit <a href="https://hawaiifoodbank.org" target="_blank" style="color: white; text-decoration: underline;">hawaiifoodbank.org</a></li>
@@ -656,30 +739,31 @@
 
         <!-- Retailer Network Tab -->
         <section id="retailers" class="tab-content">
-            <h2>SNAP Retailer Network Analysis</h2>
+            <span class="kicker">Retailers</span>
+            <h2>The store network barely grew — but <span class="em">local-food sales through it grew eightfold.</span></h2>
             <p class="section-description">Analysis of authorized SNAP retailers in Hawaii from 2004-2024, showing network evolution and food access patterns.</p>
 
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-icon">🏪</div>
+                    <div class="stat-icon"></div>
                     <div class="stat-value">2,641</div>
                     <div class="stat-label">Total Retailer Records</div>
                     <div class="stat-date">2004-2024</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">📍</div>
+                    <div class="stat-icon"></div>
                     <div class="stat-value">94.8%</div>
                     <div class="stat-label">Valid Hawaii Coordinates</div>
                     <div class="stat-date">2,503 locations</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">📈</div>
+                    <div class="stat-icon"></div>
                     <div class="stat-value">+6</div>
                     <div class="stat-label">Net Change (2020-2024)</div>
                     <div class="stat-date">370 new, 364 closed</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">🌾</div>
+                    <div class="stat-icon"></div>
                     <div class="stat-value">19</div>
                     <div class="stat-label">New Farmers' Markets</div>
                     <div class="stat-date">5.1% of new authorizations</div>
@@ -693,7 +777,7 @@
             </div>
 
             <div class="insight-box">
-                <h4>🌾 Food Hubs & Local Food Access</h4>
+                <h4>Food Hubs & Local Food Access</h4>
                 <div class="implication-grid">
                     <div class="implication-card">
                         <h5>Rapid Growth in Local Food Access</h5>
@@ -713,12 +797,12 @@
                     </div>
                 </div>
                 <div class="data-note" style="margin-top: 1rem;">
-                    <strong>📊 Data Source:</strong> Fardkhales, Lincoln, and Heaivilin (forthcoming). Food hub sales data includes SNAP EBT transactions and Double Bucks incentive matching funds across Hawaii's food hub network.
+                    <strong>Data Source:</strong> Fardkhales, Lincoln, and Heaivilin (forthcoming). Food hub sales data includes SNAP EBT transactions and Double Bucks incentive matching funds across Hawaii's food hub network.
                 </div>
             </div>
 
             <div class="insight-box">
-                <h4>📊 Retailer Network Evolution (2020-2024)</h4>
+                <h4>Retailer Network Evolution (2020-2024)</h4>
                 <div class="implication-grid">
                     <div class="implication-card">
                         <h5>High Turnover, Stable Size</h5>
@@ -740,7 +824,7 @@
             </div>
 
             <div class="insight-box">
-                <h4>🎯 Policy Implications</h4>
+                <h4>Policy Implications</h4>
                 <ul>
                     <li><strong>Food Desert Monitoring:</strong> High closure rates require ongoing monitoring to prevent food deserts, especially in rural areas dependent on single stores</li>
                     <li><strong>Healthy Food Access:</strong> Convenience store dominance raises questions about access to fresh, healthy options vs. processed foods</li>
@@ -751,14 +835,24 @@
             </div>
 
             <div class="data-note">
-                <strong>📌 Data Source:</strong> Historical SNAP Retailer Locator Data from USDA FNS, extracted via Wayback Machine (archived September 2024). Dataset includes store name, type, address, authorization dates, and coordinates for all Hawaii SNAP-authorized retailers.
+                <strong>Data Source:</strong> Historical SNAP Retailer Locator Data from USDA FNS, extracted via Wayback Machine (archived September 2024). Dataset includes store name, type, address, authorization dates, and coordinates for all Hawaii SNAP-authorized retailers.
             </div>
         </section>
 
         <!-- Counties Tab -->
         <section id="counties" class="tab-content">
-            <h2>County-Level Comparison</h2>
+            <span class="kicker">Counties</span>
+            <h2>Counts follow population; <span class="em">need does not.</span> The Big Island carries double Honolulu's per-capita burden.</h2>
             <p class="section-description">Distribution of SNAP participation across Hawaii's four counties (through January 2025).</p>
+
+            <div class="isotype" id="iso-counties">
+                <h4>The same program, a very different burden</h4>
+                <div class="iso-classrooms">
+                    <div><div class="iso-cl-lab" id="cl-a-lab">—</div><div class="iso-grid" id="cl-a" aria-hidden="true"></div></div>
+                    <div><div class="iso-cl-lab" id="cl-b-lab">—</div><div class="iso-grid" id="cl-b" aria-hidden="true"></div></div>
+                </div>
+                <p class="iso-cap">Each figure = 1% of that county’s residents. The Big Island carries more than double O‘ahu’s per-capita SNAP rate — counts follow population, but need does not. Source: USDA FNS county data ÷ 2024 census population.</p>
+            </div>
 
             <div class="chart-container">
                 <h3>Participation by County</h3>
@@ -772,7 +866,7 @@
             </div>
 
             <div class="insight-box">
-                <h4>📋 Understanding Public Assistance (PA) vs. Non-Public Assistance (Non-PA)</h4>
+                <h4>Understanding Public Assistance (PA) vs. Non-Public Assistance (Non-PA)</h4>
                 <p style="margin-bottom: 1rem;">SNAP recipients are categorized based on whether they receive other forms of public assistance in addition to SNAP benefits:</p>
 
                 <div class="implication-grid">
@@ -813,7 +907,7 @@
             </div>
 
             <div class="insight-box">
-                <h4>💡 Implications</h4>
+                <h4>Implications</h4>
                 <div class="implication-grid">
                     <div class="implication-card">
                         <h5>Volume vs. Per-Capita Need</h5>
@@ -835,13 +929,14 @@
             </div>
 
             <div class="data-note">
-                <strong>✓ County Data Updated:</strong> County bi-annual data now current through January 2025. Statewide monthly data is current through May 2025. This updated data reveals pandemic recovery patterns across all four islands.
+                <strong>County Data Updated:</strong> County bi-annual data now current through January 2025. Statewide monthly data is current through May 2025. This updated data reveals pandemic recovery patterns across all four islands.
             </div>
         </section>
 
         <!-- DHS State Data Tab -->
         <section id="dhs" class="tab-content">
-            <h2>Hawaii DHS State Data <span style="font-size:0.6em; color:var(--text-secondary);">(monthly, by island)</span></h2>
+            <span class="kicker">DHS State Data</span>
+            <h2>A second, more current series — <span class="em">monthly and by island, running a year ahead</span> of the federal data.</h2>
             <p class="section-description">Sourced directly from the <a href="https://humanservices.hawaii.gov/bessd/snap/" target="_blank" rel="noopener">Hawaii Department of Human Services</a>, this is a separate series from the USDA federal data — <strong>monthly, island-level, and more current (through May 2026)</strong>. Kept distinct because DHS uses its own State-Fiscal-Year reporting and methodology; figures may differ slightly from the USDA series.</p>
 
             <div class="chart-container">
@@ -861,17 +956,18 @@
             <div id="dhs-counties" class="county-details"></div>
 
             <div class="data-note">
-                <strong>✓ Most current data available:</strong> DHS publishes monthly by-island participation and application-timeliness data, currently through <strong>May 2026</strong> — about a year ahead of the USDA federal series.
+                <strong>Most current data available:</strong> DHS publishes monthly by-island participation and application-timeliness data, currently through <strong>May 2026</strong> — about a year ahead of the USDA federal series.
             </div>
         </section>
 
         <!-- Implications Tab -->
         <section id="implications" class="tab-content">
-            <h2>Key Insights & Implications</h2>
+            <span class="kicker">Key Insights</span>
+            <h2>What the data adds up to — <span class="em">and what it still can't tell us.</span></h2>
 
             <div class="insights-container">
                 <div class="insight-card featured">
-                    <div class="insight-icon">🎯</div>
+                    <div class="insight-icon"></div>
                     <h3>Policy & Planning</h3>
                     <ul>
                         <li><strong>Early Warning System:</strong> SNAP participation trends can signal economic distress 3-6 months before other indicators, valuable for state budget planning</li>
@@ -882,7 +978,7 @@
                 </div>
 
                 <div class="insight-card featured">
-                    <div class="insight-icon">💰</div>
+                    <div class="insight-icon"></div>
                     <h3>Economic Impact</h3>
                     <ul>
                         <li><strong>Local Multiplier Effect:</strong> Every $1 in SNAP benefits generates approximately $1.50-1.80 in local economic activity, supporting Hawaii retailers and farmers</li>
@@ -893,7 +989,7 @@
                 </div>
 
                 <div class="insight-card featured">
-                    <div class="insight-icon">🌺</div>
+                    <div class="insight-icon"></div>
                     <h3>Hawaii-Specific Considerations</h3>
                     <ul>
                         <li><strong>Island Geography:</strong> Inter-island disparities require tailored approaches; one-size-fits-all policies may not serve rural counties effectively</li>
@@ -906,7 +1002,7 @@
                 </div>
 
                 <div class="insight-card featured">
-                    <div class="insight-icon">📊</div>
+                    <div class="insight-icon"></div>
                     <h3>Data & Research Needs</h3>
                     <ul>
                         <li><strong>Current Data:</strong> Updated through May 2025, capturing complete post-pandemic recovery period and recent policy changes</li>
@@ -919,7 +1015,7 @@
                 </div>
 
                 <div class="insight-card featured">
-                    <div class="insight-icon">🔮</div>
+                    <div class="insight-icon"></div>
                     <h3>Future Outlook</h3>
                     <ul>
                         <li><strong>Benefit Trajectory:</strong> Three consecutive years of decreases (2024-2026) will test program adequacy against rising food costs</li>
@@ -931,7 +1027,7 @@
             </div>
 
             <div class="insight-card featured">
-                <div class="insight-icon">📈</div>
+                <div class="insight-icon"></div>
                 <h3>Recent Analyses (2025)</h3>
                 <p>Comprehensive analysis reports now available:</p>
                 <ul>
@@ -944,8 +1040,7 @@
             <div class="cta-box">
                 <h3>Access the Data</h3>
                 <p>All data, analysis tools, and update procedures are available on GitHub:</p>
-                <a href="https://github.com/supersistence/Hawaii-SNAP" class="cta-button" target="_blank">
-                    View Repository →
+                <a href="https://github.com/supersistence/Hawaii-SNAP" class="cta-button" target="_blank">View Repository 
                 </a>
                 <p class="cta-note">Includes automated tools to download and integrate data through May 2025, plus analysis scripts and comprehensive documentation</p>
             </div>
@@ -980,8 +1075,7 @@
             <div class="footer-bottom">
                 <p>&copy; 2025 Hawaii SNAP Data Project | Data compiled from public government sources</p>
                 <div style="margin-top: 1rem;">
-                    <a href="https://supersistence.com" target="_blank" rel="noopener noreferrer">
-                        <img src="Supersistence_logo.svg" alt="Supersistence" style="height: 40px; opacity: 0.8; transition: opacity 0.3s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8">
+                    <a href="https://supersistence.com" target="_blank" rel="noopener noreferrer"><img src="Supersistence_logo.svg" alt="Supersistence" style="height: 40px; opacity: 0.8; transition: opacity 0.3s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8">
                     </a>
                 </div>
             </div>

@@ -12,35 +12,187 @@ const charts = {};
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
-    setupTabs();
+    setupNav();
     await loadData();
     hideLoading();
+    themeChartDefaults();
     initializeCharts();
+    themeCharts();
     populateStats();
+    buildIsotypes();
+    setupScrolly();
 });
 
-// Tab navigation
-function setupTabs() {
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
+// ---- Isotype pictographs (human-scale, data-driven) -------------------
+const PERSON_PATH = 'M12 2c1.7 0 3 1.3 3 3s-1.3 3-3 3-3-1.3-3-3 1.3-3 3-3zm-5 20v-7c0-2.2 2.2-4 5-4s5 1.8 5 4v7h-3v-1h-4v1z';
+function personSVG(fill) {
+    return `<svg viewBox="0 0 24 24"><path d="${PERSON_PATH}" fill="${fill}"/></svg>`;
+}
 
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const tabName = button.dataset.tab;
+function buildIsotypes() {
+    // --- Overview: "1 in N" prevalence headline above the island map.
+    const shareEl = document.getElementById('iso-share');
+    if (shareEl && countyData) {
+        const totalPop = countyData.counties.reduce((s, c) => s + (c.population || 0), 0);
+        const snap = monthlyData.metadata.latestPersons;
+        shareEl.textContent = `1 in ${Math.round(totalPop / snap)}`;
+    }
 
-            // Update buttons
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
+    // --- Counties: highest- vs lowest-rate county, 100-figure classrooms
+    const clA = document.getElementById('cl-a');
+    if (clA && countyData) {
+        const ranked = [...countyData.counties].filter(c => c.participationRate != null)
+            .sort((a, b) => b.participationRate - a.participationRate);
+        const hi = ranked[0], lo = ranked[ranked.length - 1];
+        const grid = (id, labId, county, accent) => {
+            const pct = Math.round(county.participationRate);
+            let h = '';
+            for (let i = 0; i < 100; i++) h += personSVG(i < pct ? accent : '#e0dfd2');
+            document.getElementById(id).innerHTML = h;
+            document.getElementById(labId).innerHTML =
+                `${county.name === 'HAWAII' ? 'Hawai‘i Island' : county.name.charAt(0) + county.name.slice(1).toLowerCase()} · <b>${county.participationRate}%</b> — about 1 in ${Math.round(100 / county.participationRate)}`;
+        };
+        grid('cl-a', 'cl-a-lab', hi, '#075985');
+        grid('cl-b', 'cl-b-lab', lo, '#075985');
+    }
 
-            // Update content
-            tabContents.forEach(content => {
-                content.classList.remove('active');
-                if (content.id === tabName) {
-                    content.classList.add('active');
-                }
-            });
+    // --- Benefits: $ per person per meal
+    const mealEl = document.getElementById('meal-amt');
+    if (mealEl) {
+        const cost = monthlyData.metadata.latestTotalCost;
+        const people = monthlyData.metadata.latestPersons;
+        const perMeal = cost / people / 30 / 3;
+        const txt = '$' + perMeal.toFixed(2);
+        mealEl.textContent = txt;
+        document.getElementById('meal-amt-h').textContent = '$' + perMeal.toFixed(2);
+    }
+}
+
+// Sticky jump-nav: highlight the link for whichever section is in view.
+// All sections are visible at once (single-page scroll), so this is a
+// scroll-spy, not a tab switcher. Smooth scrolling is handled in CSS.
+function setupNav() {
+    const links = [...document.querySelectorAll('.tab-button')];
+    const byId = new Map(links.map(a => [a.getAttribute('href')?.slice(1), a]));
+    const sections = document.querySelectorAll('.tab-content');
+
+    const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                links.forEach(l => l.classList.remove('active'));
+                byId.get(e.target.id)?.classList.add('active');
+            }
         });
+    }, { rootMargin: '-25% 0px -65% 0px' });
+
+    sections.forEach(s => obs.observe(s));
+}
+
+// ---- Brand chart theming ----------------------------------------------
+// Tufte-informed: thin lines, faint gridlines, no chart junk. Series use a
+// restrained brand palette (taro green leads every primary series).
+const SERIES = ['#1d6b3f', '#b45309', '#075985', '#6243a4', '#b3201f'];
+function hexA(hex, a) {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+}
+
+function themeChartDefaults() {
+    if (typeof Chart === 'undefined') return;
+    Chart.defaults.font.family = "Inter, system-ui, sans-serif";
+    Chart.defaults.font.size = 12;
+    Chart.defaults.color = '#54544c';
+    Chart.defaults.borderColor = '#f1efe4';
+    Chart.defaults.elements.point.radius = 0;
+    Chart.defaults.elements.point.hoverRadius = 4;
+    Chart.defaults.elements.line.tension = 0.25;
+    Chart.defaults.plugins.legend.position = 'bottom';
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+    Chart.defaults.plugins.legend.labels.boxWidth = 8;
+    Chart.defaults.plugins.legend.labels.boxHeight = 8;
+    Chart.defaults.plugins.legend.labels.padding = 16;
+}
+
+// Re-color every instantiated chart from the brand palette and strip junk.
+function themeCharts() {
+    Object.values(charts).forEach(ch => {
+        const isBar = ch.config.type === 'bar';
+        ch.data.datasets.forEach((ds, i) => {
+            const c = SERIES[i % SERIES.length];
+            if (ds.type === 'line' || (!isBar)) {
+                ds.borderColor = c;
+                ds.backgroundColor = hexA(c, ds.fill === false ? 0 : 0.06);
+                ds.borderWidth = ds.type === 'line' ? 2.4 : 1.8;
+                ds.pointRadius = 0;
+                ds.pointHoverRadius = 4;
+                ds.tension = 0.25;
+            } else {
+                ds.backgroundColor = hexA(c, 0.85);
+                ds.borderColor = c;
+                ds.borderWidth = 0;
+                ds.borderRadius = 2;
+                ds.categoryPercentage = 0.7;
+                ds.maxBarThickness = 46;
+            }
+        });
+        const o = ch.options;
+        Object.values(o.scales || {}).forEach(sc => {
+            sc.grid = { ...(sc.grid || {}), drawTicks: false, color: '#f1efe4',
+                        lineWidth: 1, drawBorder: false };
+            sc.border = { ...(sc.border || {}), display: false };
+            sc.ticks = { ...(sc.ticks || {}), color: '#86867a', padding: 8 };
+            if (sc.title) { sc.title.color = '#86867a';
+                sc.title.font = { size: 11, weight: '600' }; }
+        });
+        // x gridlines off for line charts (keep horizontal reference only)
+        if (!isBar && o.scales && o.scales.x) o.scales.x.grid.display = false;
+        if (o.plugins && o.plugins.title) o.plugins.title.display = false;
+        ch.update('none');
     });
+}
+
+// ---- Scrollytelling driver for the Overview hero ----------------------
+function setupScrolly() {
+    const scrolly = document.getElementById('overview-scrolly');
+    if (!scrolly || !charts.overview) return;
+
+    const latest = monthlyData.metadata.latestPersons;
+    const acts = [
+        { range: ['1989-01-01', '2008-01-01'], n: '~110K',  note: 'stable',  noteL: '1989–2008 floor' },
+        { range: ['2008-01-01', '2014-06-01'], n: '188K',   note: '+70%',    noteL: 'recession climb'   },
+        { range: ['2020-03-01', '2021-12-01'], n: '206,226',note: 'peak',    noteL: 'July 2021'         },
+        { range: ['2022-01-01', '2025-05-01'], n: formatNumber(latest), note: '+13%', noteL: 'vs. 2019 baseline' },
+    ];
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const setAct = (i) => {
+        const a = acts[i];
+        document.getElementById('ro-persons').textContent = a.n;
+        document.getElementById('ro-note').textContent = a.note;
+        document.getElementById('ro-note-l').textContent = a.noteL;
+        const ch = charts.overview;
+        ch.options.plugins.annotation = { annotations: {
+            band: { type: 'box', xMin: a.range[0], xMax: a.range[1],
+                    backgroundColor: hexA('#1d6b3f', 0.10), borderWidth: 0 },
+        }};
+        if (i === 2) ch.options.plugins.annotation.annotations.peak = {
+            type: 'point', xValue: '2021-07-01', yValue: 206226, radius: 4,
+            backgroundColor: '#1d6b3f', borderColor: '#fffff8', borderWidth: 1.5 };
+        ch.update('none');
+    };
+
+    document.querySelectorAll('#overview-scrolly .step').forEach(step => {
+        if (reduce) { step.classList.add('is-active'); return; }
+        new IntersectionObserver((entries) => entries.forEach(e => {
+            if (e.isIntersecting) {
+                document.querySelectorAll('#overview-scrolly .step')
+                    .forEach(s => s.classList.remove('is-active'));
+                e.target.classList.add('is-active');
+                setAct(+e.target.dataset.step);
+            }
+        }), { rootMargin: '-45% 0px -45% 0px' }).observe(step);
+    });
+    setAct(reduce ? 3 : 0);
 }
 
 // Load data from JSON files
@@ -296,32 +448,18 @@ const chartDefaults = {
 function createOverviewChart() {
     const ctx = document.getElementById('overviewChart').getContext('2d');
 
-    // Filter data to start from 1999
-    const startIndex = monthlyData.labels.findIndex(date => date >= '1999-01-01');
-    const labels = monthlyData.labels.slice(startIndex);
-    const households = monthlyData.datasets.households.slice(startIndex);
-    const persons = monthlyData.datasets.persons.slice(startIndex);
-
+    // Full 1989–2025 range: the scrollytelling hero walks the whole story.
     charts.overview = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels,
+            labels: monthlyData.labels,
             datasets: [
                 {
-                    label: 'Persons',
-                    data: persons,
-                    borderColor: '#2563eb',
-                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    yAxisID: 'y',
-                },
-                {
-                    label: 'Households',
-                    data: households,
-                    borderColor: '#7c3aed',
-                    backgroundColor: 'rgba(124, 58, 237, 0.1)',
-                    borderWidth: 2,
+                    label: 'Persons receiving SNAP',
+                    data: monthlyData.datasets.persons,
+                    borderColor: '#1d6b3f',
+                    backgroundColor: 'rgba(29, 107, 63, 0.06)',
+                    borderWidth: 2.2,
                     fill: true,
                     yAxisID: 'y',
                 }
@@ -329,45 +467,27 @@ function createOverviewChart() {
         },
         options: {
             ...chartDefaults,
-            scales: {
-                x: {
-                    type: 'time',
-                    time: {
-                        unit: 'year',
-                        displayFormats: {
-                            year: 'yyyy'
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: 'Year'
-                    }
-                },
-                y: {
-                    beginAtZero: false,
-                    title: {
-                        display: true,
-                        text: 'Count'
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return formatNumber(value);
-                        }
-                    }
-                }
-            },
             plugins: {
                 ...chartDefaults.plugins,
+                legend: { display: false },
+                annotation: { annotations: {} },
                 tooltip: {
                     ...chartDefaults.plugins.tooltip,
                     callbacks: {
-                        title: function(context) {
-                            return formatDate(context[0].parsed.x);
-                        },
-                        label: function(context) {
-                            return context.dataset.label + ': ' + formatNumber(context.parsed.y);
-                        }
+                        title: (context) => formatDate(context[0].parsed.x),
+                        label: (context) => formatNumber(context.parsed.y) + ' persons',
                     }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: { unit: 'year', displayFormats: { year: 'yyyy' } },
+                    ticks: { maxTicksLimit: 8 },
+                },
+                y: {
+                    beginAtZero: false,
+                    ticks: { callback: (value) => formatNumber(value) }
                 }
             }
         }
