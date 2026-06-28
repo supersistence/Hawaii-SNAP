@@ -46,7 +46,10 @@
     "coverageEnd": "2022-04-01",
     "status": "discontinued-with-successor",
     "provenanceSource": "investigated-2026-06-22",
-    "supersededBy": ["dhs_participation", "dhs_timeliness"],
+    "supersededBy": [
+      "dhs_participation",
+      "dhs_timeliness"
+    ],
     "note": "A COVID-era *weekly, by-county* series of applications received AND approved; the 4/1/2022 file still resolves but the next week (4/8/2022) and all later dates 404. That specific weekly/by-county slice ended. However DHS DOES publish ongoing monthly data on https://humanservices.hawaii.gov/bessd/snap/ : by-island participation (see dhs_participation) and application timeliness incl. applications received (see dhs_timeliness), both back to ~2009. So only the weekly cadence + by-county 'approved' counts are truly gone."
   },
   "dhs_participation": {
@@ -60,7 +63,8 @@
     "coverageEnd": "2026-05-01",
     "granularity": "monthly, by island/branch",
     "provenanceSource": "automated-pull + backfill",
-    "note": "Monthly by-island participation, SFY 2009-2026 (213 months). History backfilled from the DHS archive via scripts/extract_dhs_snap.py (.xls via xlrd, PDF via pdftotext). Cross-validated: the July-2021 peak (206,226) matches USDA's all-time max exactly, and island parts sum to the STATE row. May/June 2021 missing (the SFY2021 release was partial)."
+    "note": "Monthly by-island participation, SFY 2009-2026. History backfilled from the DHS archive via scripts/extract_dhs_snap.py (.xls via xlrd, PDF via pdftotext). Cross-validated: the July-2021 peak (206,226) matches USDA's all-time max exactly, and island parts sum to STATE. May/June 2021 missing (the SFY2021 release was partial).",
+    "latestSourceFile": "Partic-SFY-2026-WCAG.xlsx"
   },
   "dhs_timeliness": {
     "dataset": "dhs_snap_application_timeliness.csv",
@@ -73,6 +77,6 @@
     "coverageEnd": "2026-05-01",
     "granularity": "monthly, statewide",
     "provenanceSource": "automated-pull + backfill",
-    "note": "Application processing timeliness + applications received, FFY 2009-2026 (180 months). Backfilled from the DHS archive (.xls 'STATE SUMMARY' sheets via xlrd; PDF 'State TOTAL' rows via pdftotext). Partly recovers the discontinued weekly applications series (monthly statewide instead of weekly by-county). Remaining gaps are source-side: FFY2025 was never published, and FFY2018/2020/2021 are mid-year partials while FFY2023 is an August-only snapshot."
+    "note": "Application processing timeliness + applications received, FFY 2009-2026. Backfilled from the DHS archive (.xls 'STATE SUMMARY' sheets via xlrd; PDF 'State TOTAL' rows via pdftotext). Remaining gaps are source-side: FFY2025 unpublished; FFY2018/2020/2021 are mid-year partials; FFY2023 is an August-only snapshot."
   }
 }

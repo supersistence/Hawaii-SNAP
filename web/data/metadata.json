@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-27T18:58:18.077515",
+  "generated": "2026-06-27T19:05:58.181100",
   "dataVersion": "2025-05",
   "note": "Monthly statewide data current through May 2025. County bi-annual data current through January 2025.",
   "repository": "https://github.com/supersistence/Hawaii-SNAP",
@@ -67,7 +67,8 @@
       "coverageEnd": "2026-05-01",
       "granularity": "monthly, by island/branch",
       "provenanceSource": "automated-pull + backfill",
-      "note": "Monthly by-island participation, SFY 2009-2026 (213 months). History backfilled from the DHS archive via scripts/extract_dhs_snap.py (.xls via xlrd, PDF via pdftotext). Cross-validated: the July-2021 peak (206,226) matches USDA's all-time max exactly, and island parts sum to the STATE row. May/June 2021 missing (the SFY2021 release was partial)."
+      "note": "Monthly by-island participation, SFY 2009-2026. History backfilled from the DHS archive via scripts/extract_dhs_snap.py (.xls via xlrd, PDF via pdftotext). Cross-validated: the July-2021 peak (206,226) matches USDA's all-time max exactly, and island parts sum to STATE. May/June 2021 missing (the SFY2021 release was partial).",
+      "latestSourceFile": "Partic-SFY-2026-WCAG.xlsx"
     },
     "dhs_timeliness": {
       "dataset": "dhs_snap_application_timeliness.csv",
@@ -80,7 +81,7 @@
       "coverageEnd": "2026-05-01",
       "granularity": "monthly, statewide",
       "provenanceSource": "automated-pull + backfill",
-      "note": "Application processing timeliness + applications received, FFY 2009-2026 (172 months). Backfilled from the DHS archive (.xls 'STATE SUMMARY' sheets via xlrd; PDF 'State TOTAL' rows via pdftotext). Partly recovers the discontinued weekly applications series (monthly statewide instead of weekly by-county). Gaps: FFY2021 (DHS published an image-only scan, no extractable text), FFY2025 (no file published), and partial FFY2018/2020/2023 (mid-year or single-month source files)."
+      "note": "Application processing timeliness + applications received, FFY 2009-2026. Backfilled from the DHS archive (.xls 'STATE SUMMARY' sheets via xlrd; PDF 'State TOTAL' rows via pdftotext). Remaining gaps are source-side: FFY2025 unpublished; FFY2018/2020/2021 are mid-year partials; FFY2023 is an August-only snapshot."
     }
   },
   "summary": {

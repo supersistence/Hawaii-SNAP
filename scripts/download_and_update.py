@@ -103,6 +103,10 @@ def write_provenance(key, entry):
         manifest = json.loads(SOURCES_PATH.read_text()) if SOURCES_PATH.exists() else {}
     except Exception:
         manifest = {}
+    # Drop None-valued fields so a routine pull can refresh volatile fields
+    # (downloadedAt, coverageEnd, ...) without clobbering curated descriptive
+    # fields (note, fiscalYear) set by the backfill.
+    entry = {k: v for k, v in entry.items() if v is not None}
     manifest[key] = {**manifest.get(key, {}), **entry}
     SOURCES_PATH.write_text(json.dumps(manifest, indent=2) + "\n")
     print(f"✓ Recorded provenance in {SOURCES_PATH.name} "
@@ -667,32 +671,25 @@ def update_dhs_data():
     print(f"✓ {part_csv.name}: {len(part)} rows ({part['Date'].min()}..{part['Date'].max()})")
     print(f"✓ {tl_csv.name}: {len(tl)} rows ({tl['Date'].min()}..{tl['Date'].max()})")
 
+    # A routine pull only refreshes volatile fields; note/fiscalYear/coverageStart
+    # are owned by backfill_dhs_data() and preserved (None values are skipped).
     write_provenance("dhs_participation", {
         "dataset": part_csv.name,
         "publisher": "Hawaii DHS (Department of Human Services)",
         "sourcePage": URLS["dhs"],
-        "sourceFile": part_link[1].rsplit("/", 1)[-1],
-        "fiscalYear": f"SFY {part_link[0]}",
+        "latestSourceFile": part_link[1].rsplit("/", 1)[-1],
         "downloadedAt": datetime.now().strftime("%Y-%m-%d"),
         "coverageEnd": str(part['Date'].max()),
         "granularity": "monthly, by island/branch",
-        "provenanceSource": "automated-pull",
-        "note": "Monthly by-island participation; only machine-readable releases "
-                "are auto-extracted (PDF-era SFY 2016-2024 require manual handling).",
     })
     write_provenance("dhs_timeliness", {
         "dataset": tl_csv.name,
         "publisher": "Hawaii DHS (Department of Human Services)",
         "sourcePage": URLS["dhs"],
-        "sourceFile": tl_link[1].rsplit("/", 1)[-1],
-        "fiscalYear": f"FFY {tl_link[0]}",
+        "latestSourceFile": tl_link[1].rsplit("/", 1)[-1],
         "downloadedAt": datetime.now().strftime("%Y-%m-%d"),
         "coverageEnd": str(tl['Date'].max()),
         "granularity": "monthly, statewide",
-        "provenanceSource": "automated-pull",
-        "note": "Application processing timeliness + applications received. "
-                "Partly recovers the discontinued weekly applications series "
-                "(monthly statewide instead of weekly by-county).",
     })
 
 
@@ -739,6 +736,27 @@ def backfill_dhs_data():
     tdf = tdf.drop_duplicates(['Date'], keep='first').sort_values('Date')
     tdf.to_csv(tl_csv, index=False)
     print(f"✓ {tl_csv.name}: {len(tdf)} months, {tdf['Date'].min()}..{tdf['Date'].max()}")
+
+    # Record the descriptive provenance the backfill owns (routine --dhs pulls
+    # preserve these; they only refresh downloadedAt/coverageEnd).
+    write_provenance("dhs_participation", {
+        "coverageStart": str(st['Date'].min()), "coverageEnd": str(st['Date'].max()),
+        "fiscalYear": "SFY 2009-2026", "provenanceSource": "automated-pull + backfill",
+        "note": "Monthly by-island participation, SFY 2009-2026. History backfilled "
+                "from the DHS archive via scripts/extract_dhs_snap.py (.xls via xlrd, "
+                "PDF via pdftotext). Cross-validated: the July-2021 peak (206,226) "
+                "matches USDA's all-time max exactly, and island parts sum to STATE. "
+                "May/June 2021 missing (the SFY2021 release was partial).",
+    })
+    write_provenance("dhs_timeliness", {
+        "coverageStart": str(tdf['Date'].min()), "coverageEnd": str(tdf['Date'].max()),
+        "fiscalYear": "FFY 2009-2026", "provenanceSource": "automated-pull + backfill",
+        "note": "Application processing timeliness + applications received, FFY "
+                "2009-2026. Backfilled from the DHS archive (.xls 'STATE SUMMARY' "
+                "sheets via xlrd; PDF 'State TOTAL' rows via pdftotext). Remaining "
+                "gaps are source-side: FFY2025 unpublished; FFY2018/2020/2021 are "
+                "mid-year partials; FFY2023 is an August-only snapshot.",
+    })
 
 
 def rebuild_web_data():
