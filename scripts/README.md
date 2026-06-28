@@ -18,8 +18,16 @@ pip install -r requirements.txt
 - pandas >= 2.0.0
 - numpy >= 1.24.0
 - openpyxl >= 3.1.0 (for .xlsx files)
-- xlrd (for .xls files)
+- xlrd >= 2.0.0 (for legacy .xls files, incl. DHS archives)
 - requests >= 2.31.0
+- `pdftotext` (Poppler CLI) and `curl` — system tools used to extract DHS PDF archives and as an HTTP fallback for hosts whose TLS breaks Python `requests`
+
+### Quick start (automated)
+```bash
+python scripts/download_and_update.py --all          # pull latest USDA + DHS, merge, rebuild dashboard
+python scripts/download_and_update.py --dhs-backfill  # one-time: rebuild DHS history (2009–present)
+```
+No manual downloads or prompts. Every pull merges forward-only and records provenance to `Data/SOURCES.json`.
 
 ## 📜 Production Scripts
 
@@ -113,27 +121,44 @@ Total records: 440
 ---
 
 ### 4. `download_and_update.py`
-**Purpose**: Automated data download and update workflow
+**Purpose**: Fully automated data download, merge, provenance, and dashboard rebuild
 
 **Usage**:
 ```bash
-python scripts/download_and_update.py
+python scripts/download_and_update.py --all          # everything
+python scripts/download_and_update.py --monthly      # USDA monthly only
+python scripts/download_and_update.py --retailers    # USDA retailers only
+python scripts/download_and_update.py --dhs          # Hawaii DHS participation + timeliness
+python scripts/download_and_update.py --dhs-backfill # one-time DHS history rebuild (2009–present)
+python scripts/download_and_update.py --report       # status report only
 ```
 
-**Features**:
-- Downloads latest SNAP data from USDA FNS
-- Handles both monthly participation and retailer data
-- Validates downloads before processing
-- Updates existing datasets with new data
-- Creates backup before updating
+**What it does** (no manual steps):
+- Auto-discovers and downloads the current USDA and Hawaii DHS files (scrapes the source pages for the current resource link; `curl` fallback for hosts that break Python TLS)
+- Extracts Hawaii records and **merges forward-only** — a regressed/older upstream release can never overwrite newer local data
+- **Unions** retailer releases (to keep history beyond USDA's rolling ~20-year window) and DHS monthly pulls (onto the backfilled history)
+- Backs up existing files, writes provenance to `Data/SOURCES.json`, and rebuilds `web/data/*.json`
 
-**Note**: Due to network restrictions, manual download may be required. See [DOWNLOAD_INSTRUCTIONS.md](../DOWNLOAD_INSTRUCTIONS.md) for details.
+**Note**: USDA's site (Akamai) may rate-limit automated requests; on failure the pull aborts safely (no data change) — retry later or from another network. County bi-annual data has no auto-discoverable file and is skipped with instructions.
+
+---
+
+### 5. `extract_dhs_snap.py`
+**Purpose**: Parse Hawaii DHS monthly SNAP releases into tidy CSVs (used by `download_and_update.py`)
+
+**Outputs**:
+- `Data/dhs_snap_participation_by_island.csv` — monthly participation by island/branch
+- `Data/dhs_snap_application_timeliness.csv` — monthly statewide applications received + on-time rates
+
+**Handles three archive eras**: current `.xlsx` (dated month sheets), legacy `.xls` (`xlrd`), and PDF summaries (`pdftotext`). Maps each State/Federal Fiscal Year's months to calendar dates and normalizes the differing column layouts across years. Archive URL lists for the one-time backfill live in this module (`DHS_PARTICIPATION_ARCHIVE`, `DHS_TIMELINESS_ARCHIVE`).
 
 ---
 
 ## 🔄 Typical Workflow
 
-### Updating Monthly SNAP Data
+> **Preferred:** `python scripts/download_and_update.py --all` does everything below automatically (download → extract → merge → provenance → rebuild dashboard). The manual steps below are a fallback for when you already have source files in hand or USDA is rate-limiting.
+
+### Updating Monthly SNAP Data (manual fallback)
 
 1. **Download source data**:
    - Visit: https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap
@@ -288,6 +313,6 @@ for dataset in datasets:
 
 ---
 
-**Last Updated**: October 23, 2025
+**Last Updated**: June 2026
 **Maintainer**: Hawaii SNAP Data Project
 **Questions?** Open an issue on GitHub

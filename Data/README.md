@@ -1,135 +1,66 @@
 # Hawaii SNAP Data Directory
 
-This directory contains processed Hawaii SNAP (Supplemental Nutrition Assistance Program) data files.
+Processed Hawaii SNAP (Supplemental Nutrition Assistance Program) data files. Every dataset's origin is recorded in **[`SOURCES.json`](SOURCES.json)** (publisher, source file, "data as of" date, coverage), which the pipeline writes automatically and the dashboard surfaces in `web/data/metadata.json`.
 
 ## 📊 Current/Active Data Files
 
-### Monthly Participation Data
-- **`Statewide Monthly SNAP FY 89-25.csv`** (24KB)
-  - **Use this for**: Monthly SNAP participation analysis
-  - **Date range**: October 1988 - May 2025
-  - **Records**: 440 monthly observations
-  - **Updated**: October 2025
-  - **Columns**: Date, Household, Persons, Per Household, Per Person, Cost
-  - **Source**: USDA FNS National Data Bank (processed from FY Excel files)
+### USDA federal data
+- **`Statewide Monthly SNAP FY 89-25.csv`** — monthly statewide participation, **Oct 1988 – May 2025** (440 months). Columns: Date, Household, Persons, Per Household, Per Person, Cost. Source: USDA FNS National Data Bank.
+- **`County Bi-Annual SNAP 89-25.csv`** — county-level Jan/Jul participation & issuance, **FY1989 – Jan 2025**. Source: USDA FNS.
+- **`hawaii_snap_retailers_2004-2025_valid_coords.csv`** ⭐ — SNAP retailers with validated Hawaii coordinates (2,548 records). Use for mapping.
+- **`hawaii_snap_retailers_2004-2025_all.csv`** — full retailer record incl. invalid/missing coords (2,686 records), **2004 – 2025**. Unioned across USDA releases to preserve history beyond USDA's rolling ~20-year window.
 
-### Retailer Location Data
-- **`hawaii_snap_retailers_2004-2024_valid_coords.csv`** (336KB) ⭐ **RECOMMENDED**
-  - **Use this for**: Mapping and geographic analysis
-  - **Records**: 2,503 retailers with validated Hawaii coordinates
-  - **Geographic validation**: 94.8% accuracy within Hawaii bounds
-  - **Coordinates**: Latitude (18.9° to 22.2°N), Longitude (-160.2° to -154.8°W)
+### Hawaii DHS state data (monthly, more current than USDA)
+- **`dhs_snap_participation_by_island.csv`** — monthly participation by island/branch (Oahu, Hawaii, Kauai, Maui, Molokai, Lanai, + State) with program breakdown, **SFY 2009 – May 2026** (213 months, backfilled). Columns: Date, Island, Participants, Households, BenefitsIssued, ParticipantsSNAPOnly.
+- **`dhs_snap_application_timeliness.csv`** — monthly statewide applications received + on-time processing rates, **FFY 2009 – May 2026** (180 months; some source-side gaps, see `SOURCES.json`).
 
-- **`hawaii_snap_retailers_2004-2024_all.csv`** (349KB)
-  - **Use this for**: Complete historical record (includes invalid/missing coordinates)
-  - **Records**: 2,641 total Hawaii retailer records
-  - **Date range**: 1967 - December 31, 2024
-  - **Active stores**: 896 currently authorized
+### Supplemental / reference
+- **`county_population.csv`** — 2024 Hawaii State Census county populations; used to compute per-capita `participationRate`.
+- **`County Weekly Applications 4:2020-3:2022.csv`** — COVID-era weekly applications by county (Apr 2020 – Apr 2022). **Discontinued**; partly succeeded by the DHS participation/timeliness data above.
+- **`hawaii_snap_extracted_fy89-fy25.csv`** — intermediate raw extract from the USDA FY Excel files.
+- **`SOURCES.json`** — provenance manifest for every dataset.
 
-### Supplemental Data
-- **`County Bi-Annual SNAP 89-21.csv`** (20KB)
-  - County-level bi-annual data (FY1989-FY2021)
+## 🔄 Updating the data
 
-- **`County Weekly Applications 4:2020-3:2022.csv`** (108KB)
-  - Weekly application data during COVID period
+Updates are automated — no manual downloads:
 
-- **`hawaii_snap_extracted_fy89-fy25.csv`** (22KB)
-  - Raw extracted data from source Excel files (intermediate processing file)
+```bash
+python scripts/download_and_update.py --all        # USDA monthly/retailer + DHS, forward-only
+python scripts/download_and_update.py --dhs-backfill   # one-time: rebuild DHS history from archives
+```
 
-## 📁 Directory Structure
+The pipeline auto-discovers the current source files, extracts Hawaii records, merges **forward-only** (a regressed upstream release can never overwrite newer local data), records provenance to `SOURCES.json`, and rebuilds the dashboard JSON. See the main [README](../README.md#automated-pipeline--provenance) and [scripts/README.md](../scripts/README.md).
+
+> **Note:** USDA's site (Akamai) may rate-limit automated requests; if discovery fails, retry later or from another network. County bi-annual has no auto-discoverable file and is updated manually.
+
+## 📁 Directory structure
 
 ```
 Data/
-├── README.md                                    # This file
-├── source/                                      # Large source files (gitignored)
-│   ├── Historical SNAP Retailer Locator Data 2004-2024.csv (90MB)
-│   └── snap-zip-fy69tocurrent-8/               # 37 Excel files (FY89-FY25)
-├── archive/                                     # Old/superseded files (gitignored)
-│   ├── Statewide Monthly SNAP FY 89-22.csv     # Superseded by FY 89-25
-│   ├── Statewide SNAP Retailer Locations 2005-2020.csv
-│   └── Statewide SNAP Retailers Historical- FNS.csv
-└── [current data files listed above]
+├── README.md / SOURCES.json
+├── Statewide Monthly SNAP FY 89-25.csv
+├── County Bi-Annual SNAP 89-25.csv
+├── hawaii_snap_retailers_2004-2025_{all,valid_coords}.csv
+├── dhs_snap_participation_by_island.csv
+├── dhs_snap_application_timeliness.csv
+├── county_population.csv
+├── County Weekly Applications 4:2020-3:2022.csv
+├── source/      # large source files (gitignored)
+└── backups/     # timestamped pre-update backups (gitignored)
 ```
 
-## 🔄 Data Sources & Download Instructions
+## 📈 Latest figures
 
-### Monthly SNAP Participation Data
-**Source**: USDA FNS National Data Bank
-**URL**: https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap
+- **USDA statewide (May 2025):** 163,576 persons · 84,333 households · $59.2M/mo · $701.72/household.
+- **DHS statewide (May 2026):** 157,954 participants · 78,458 households (a year more current than USDA).
+- **Per-capita (latest):** Hawaii County 18–19% of residents on SNAP (highest) vs Honolulu ~9% (lowest); statewide ~11%.
 
-**How to update**:
-1. Download ZIP file containing state-level monthly data (FY89-current)
-2. Extract individual FY Excel files
-3. Run: `python scripts/extract_hawaii_snap.py`
-4. Output: `Data/hawaii_snap_extracted_fy89-fy25.csv`
+## 📝 Version history
 
-### Retailer Location Data
-**Source**: USDA FNS SNAP Retailer Locator Historical Data
-**Primary URL**: https://www.fns.usda.gov/snap/retailer-locator/data
-**Wayback Machine URL** (if primary fails):
-https://web.archive.org/web/20250908155349/https://www.fns.usda.gov/sites/default/files/resource-files/snap-historical-retailer-locator-data-2004to2024.zip
-
-**Note**: The primary USDA download may have issues. If the ZIP file won't extract, try the Wayback Machine link above.
-
-**File format**: CSV with columns:
-- Record ID, Store Name, Store Type, Street Number, Street Name, City, State, Zip Code
-- County, Latitude, Longitude, Authorization Date, End Date
-
-## 📈 Data Statistics (as of October 2025)
-
-### Current SNAP Participation (May 2025)
-- **Households**: 84,333
-- **Individuals**: 163,576
-- **Total Monthly Benefits**: $59,178,123
-- **Average per Household**: $701.72
-- **Average per Person**: $361.78
-
-### Retailer Network (December 2024)
-- **Total Historical Records**: 2,641
-- **Currently Active**: 896 retailers
-- **By County**:
-  - Honolulu: 540
-  - Hawaii: 168
-  - Maui: 124
-  - Kauai: 64
-
-### Top Store Types (Active Only)
-1. Convenience Store: 381
-2. Super Store: 122
-3. Combination Grocery/Other: 112
-4. Medium Grocery Store: 60
-5. Small Grocery Store: 55
-
-## ⚠️ Important Notes
-
-### Geographic Coordinate Quality
-- **Valid coordinates**: 94.8% of records have coordinates within Hawaii
-- **Invalid/Outside bounds**: 0.9% (24 records)
-- **Missing coordinates**: 4.3% (114 records)
-- **Use `hawaii_snap_retailers_2004-2024_valid_coords.csv` for mapping**
-
-### Data Updates
-- Monthly participation data updated through **May 2025**
-- Retailer data current through **December 31, 2024**
-- Last updated: **October 23, 2025**
-
-### File Size Notes
-Large source files (>10MB) are stored in `Data/source/` and excluded from git.
-Download from original sources using instructions above.
-
-## 🛠️ Processing Scripts
-
-See `scripts/` directory:
-- `extract_hawaii_snap.py` - Extract Hawaii data from FY Excel files
-- `prepare_web_data.py` - Prepare data for web visualization
-- `validate_data.py` - Data quality validation
-
-## 📝 Version History
-
-- **v3.0** (Oct 2025): Updated monthly data through May 2025, retailer data through Dec 2024
-- **v2.0** (May 2022): Added retailer location data through 2021
-- **v1.0** (May 2022): Initial dataset through January 2022
+- **v4.0** (Jun 2026): Integrated Hawaii DHS by-island participation + application timeliness (2009–2026); retailer union to 2025; per-capita layer; provenance manifest; automated pipeline.
+- **v3.0** (Oct 2025): Monthly through May 2025, retailer through Dec 2024.
+- **v1.0–2.0** (2022): Initial dataset + retailer data.
 
 ---
 
-**Questions or issues?** Check the main repository README or open an issue on GitHub.
+**Questions?** See the main [README](../README.md) or open an issue.

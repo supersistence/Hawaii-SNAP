@@ -1,6 +1,8 @@
 # Quick Start: Updating Hawaii SNAP Data
 **Last Updated:** October 23, 2025
 
+> **⚠️ Mostly superseded (June 2026).** Updates are now automated — run `python scripts/download_and_update.py --all`, which downloads, extracts, merges forward-only, records provenance, and rebuilds the dashboard with no manual download step. See the main [README](README.md#data-update-tools) and [scripts/README.md](scripts/README.md). The manual instructions below remain a fallback for when USDA is rate-limiting automated requests.
+
 ## TL;DR - What You Need to Do
 
 1. **Download 2 files manually** (links below)

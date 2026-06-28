@@ -3,6 +3,8 @@
 **Date:** October 23, 2025
 **Status:** Unable to download automatically due to network restrictions
 
+> **⚠️ Mostly superseded (June 2026).** Manual downloads are no longer required — `python scripts/download_and_update.py --all` auto-discovers and downloads the current USDA and Hawaii DHS files. These instructions remain useful only as a fallback when USDA's site (Akamai) rate-limits automated requests.
+
 ## Issue Summary
 
 Automated download attempts from USDA FNS websites are blocked by network restrictions (403 Forbidden errors). The following methods were attempted and failed:
