@@ -235,12 +235,16 @@ function setupScrolly() {
         return mx;
     };
     const latest = monthlyData.metadata.latestPersons;
+    const popLatest = monthlyData.datasets.population[monthlyData.datasets.population.length - 1];
+    const rate = Math.round(monthlyData.metadata.latestParticipationRate);
     const baseline = trendsData.periods.preCovidAvg.persons;
     const recPeak = peakIn('2008-01-01', '2014-06-01');
     const octPeak = at('2025-10-01') || peakIn('2025-08-01', '2025-12-01');
 
-    // The unified arc: stable floor → recession → COVID → Maui → shutdown → today.
+    // Act 0 sets the scale (both lines on one axis); Acts 1–6 zoom into the slice.
     const acts = [
+        { range: null, scale: 'shared', n: formatNumber(latest),
+          note: '≈ ' + rate + '%', noteL: 'of ' + formatNumber(popLatest) + ' residents' },
         { range: ['1989-01-01', '2008-01-01'], n: '~110K', note: 'stable', noteL: '1989–2008 floor' },
         { range: ['2008-01-01', '2014-06-01'], n: formatNumber(recPeak),
           note: '+' + Math.round((recPeak / at('2008-01-01') - 1) * 100) + '%', noteL: 'recession climb' },
@@ -258,13 +262,25 @@ function setupScrolly() {
         document.getElementById('ro-persons').textContent = a.n;
         document.getElementById('ro-note').textContent = a.note;
         document.getElementById('ro-note-l').textContent = a.noteL;
+        const ch = charts.overview;
+        // Act 0: population shares the left axis (shows the slice). Else: own right axis.
+        const popDs = ch.data.datasets[1];
+        if (a.scale === 'shared') {
+            popDs.yAxisID = 'y';
+            ch.options.scales.y.min = 0; ch.options.scales.y.max = 1500000;
+            ch.options.scales.yPop.display = false;
+        } else {
+            popDs.yAxisID = 'yPop';
+            ch.options.scales.y.min = undefined; ch.options.scales.y.max = undefined;
+            ch.options.scales.yPop.display = true;
+        }
         const ann = {};
         if (a.range) ann.band = { type: 'box', xMin: a.range[0], xMax: a.range[1],
             backgroundColor: hexA('#1d6b3f', 0.10), borderWidth: 0 };
-        if (i === 2) ann.peak = { type: 'point', xValue: '2021-07-01', yValue: 206226, radius: 4,
+        if (i === 3) ann.peak = { type: 'point', xValue: '2021-07-01', yValue: 206226, radius: 4,
             backgroundColor: '#1d6b3f', borderColor: '#fffff8', borderWidth: 1.5 };
-        charts.overview.options.plugins.annotation = { annotations: ann };
-        charts.overview.update('none');
+        ch.options.plugins.annotation = { annotations: ann };
+        ch.update('none');
     };
 
     document.querySelectorAll('#overview-scrolly .step').forEach(step => {
@@ -278,7 +294,7 @@ function setupScrolly() {
             }
         }), { rootMargin: '-45% 0px -45% 0px' }).observe(step);
     });
-    setAct(reduce ? 5 : 0);
+    setAct(reduce ? 6 : 0);
 }
 
 // Load data from JSON files
