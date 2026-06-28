@@ -161,6 +161,53 @@ class DataValidator:
                 else:
                     self.info.append(f"✓ Calculated totals match stated totals")
 
+    def validate_time_series_outliers(self, date_column='Date', value_columns=None,
+                                      threshold=0.35, reversal=True):
+        """Flag single-month outliers in an ordered time series.
+
+        Catches the failure mode that range/zero/NaN checks miss: a value that
+        is positive and non-null but swings wildly for one month and snaps back
+        (e.g. the corrupt Feb-2019 persons count, 159k -> 7k -> 156k).
+
+        A point is flagged when it differs from the PREVIOUS point by more than
+        `threshold` (fractional). When `reversal` is set, an isolated spike that
+        reverts the next month (the classic bad-data-point shape) is reported as
+        a stronger 'isolated' anomaly vs. a sustained level shift.
+        """
+        if date_column not in self.df.columns:
+            return
+        if value_columns is None:
+            value_columns = self.df.select_dtypes(include=[np.number]).columns.tolist()
+
+        try:
+            ordered = self.df.sort_values(date_column).reset_index(drop=True)
+        except Exception:
+            ordered = self.df
+
+        for col in value_columns:
+            if col not in ordered.columns:
+                continue
+            s = pd.to_numeric(ordered[col], errors='coerce')
+            for i in range(1, len(s)):
+                prev, cur = s[i - 1], s[i]
+                if pd.isna(prev) or pd.isna(cur) or prev == 0:
+                    continue
+                delta = (cur - prev) / abs(prev)
+                if abs(delta) <= threshold:
+                    continue
+                date = ordered[date_column].iloc[i]
+                # isolated spike? next month reverts toward prev
+                isolated = False
+                if reversal and i + 1 < len(s) and not pd.isna(s[i + 1]) and cur != 0:
+                    nxt_delta = (s[i + 1] - cur) / abs(cur)
+                    if abs(nxt_delta) > threshold and (delta > 0) != (nxt_delta > 0):
+                        isolated = True
+                kind = "ISOLATED single-month outlier" if isolated else "level shift"
+                msg = (f"⚠ {col}: {kind} at {date} "
+                       f"({prev:,.0f} → {cur:,.0f}, {delta*100:+.0f}%)")
+                # isolated reversals are almost always bad data -> louder
+                (self.warnings if not isolated else self.warnings).append(msg)
+
     def check_data_currency(self, date_column='Date'):
         """Check how current the data is."""
         if date_column not in self.df.columns:
@@ -242,6 +289,9 @@ def validate_monthly_data(file_path):
     validator.validate_columns(expected_columns)
     validator.validate_dates('Date')
     validator.validate_numeric_columns(['Household', 'Persons', 'Per Household', 'Per Person', 'Cost'])
+    # Counts shouldn't swing wildly month-to-month; benefit/cost legitimately
+    # can (e.g. 2019 shutdown early-issuance), so only flag Household/Persons.
+    validator.validate_time_series_outliers('Date', ['Household', 'Persons'])
     validator.check_data_currency('Date')
 
     return validator.generate_report()

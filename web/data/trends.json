@@ -1,9 +1,9 @@
 {
   "periods": {
     "preCovidAvg": {
-      "households": 74902,
-      "persons": 144826,
-      "avgBenefitPerHousehold": 489.77
+      "households": 80332,
+      "persons": 155626,
+      "avgBenefitPerHousehold": 458.49
     },
     "covidPeak": {
       "households": 112461,
@@ -20,10 +20,10 @@
   },
   "covidImpact": {
     "peakIncrease": {
-      "households": 37558,
-      "householdsPercent": 50.14,
-      "persons": 61399,
-      "personsPercent": 42.4
+      "households": 32128,
+      "householdsPercent": 39.99,
+      "persons": 50599,
+      "personsPercent": 32.51
     }
   },
   "recentData": {
@@ -108,7 +108,7 @@
     ],
     "households": [
       81833,
-      5547,
+      81569,
       80421,
       79929,
       79934,
@@ -187,7 +187,7 @@
     ],
     "persons": [
       158949,
-      7377,
+      158581,
       155902,
       154526,
       154618,
@@ -266,7 +266,7 @@
     ],
     "avgBenefitPerHousehold": [
       890.97,
-      469.84,
+      31.95,
       460.19,
       458.9,
       460.03,
