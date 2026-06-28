@@ -6,6 +6,7 @@ let countyData = null;
 let trendsData = null;
 let metadata = null;
 let dhsData = null;
+let retailerData = null;
 
 // Chart instances
 const charts = {};
@@ -320,6 +321,14 @@ async function loadData() {
             console.warn('DHS data not available:', e);
         }
 
+        // Retailer data (locations + store types) is optional too.
+        try {
+            const rRes = await fetch('data/retailers.json');
+            if (rRes.ok) retailerData = await rRes.json();
+        } catch (e) {
+            console.warn('Retailer data not available:', e);
+        }
+
         console.log('Data loaded successfully');
     } catch (error) {
         console.error('Error loading data:', error);
@@ -444,6 +453,7 @@ function initializeCharts() {
     createCountyChart();
     createPAChart();
     createFoodHubsChart();
+    if (retailerData) { createRetailerMap(); createRetailerTypeChart(); }
     // The statewide DHS line is now part of the spliced main charts; the DHS
     // section is gone. Only its unique pieces remain: timeliness (in Recipients)
     // and latest-month-by-county (in Counties).
@@ -1168,6 +1178,76 @@ function formatDate(dateString) {
         year: 'numeric',
         month: 'long',
         day: undefined
+    });
+}
+
+// ---- SNAP retailer network: dot map + store-type breakdown -----------
+const RETAIL_CAT = {
+    grocery:     { label: 'Grocery & supermarket',          color: '#1d6b3f' },
+    convenience: { label: 'Convenience store',              color: '#b45309' },
+    local:       { label: "Farmers' market / produce",      color: '#0f766e' },
+    specialty:   { label: 'Specialty (meat, seafood, etc.)', color: '#9a9a8c' },
+};
+function retailCat(t) {
+    t = String(t).toLowerCase();
+    if (t.includes('convenience')) return 'convenience';
+    if (t.includes("farmers") || t.includes('fruits') || t.includes('veg')) return 'local';
+    if (['grocery', 'super', 'supermarket'].some(k => t.includes(k))) return 'grocery';
+    return 'specialty';
+}
+
+function createRetailerMap() {
+    const el = document.getElementById('retailerMap');
+    if (!el || !retailerData) return;
+    const m = retailerData.map;
+    const order = ['grocery', 'convenience', 'specialty', 'local']; // local on top
+    let svg = `<svg viewBox="0 0 ${m.w} ${m.h}" xmlns="http://www.w3.org/2000/svg">`;
+    m.paths.forEach(p => { svg += `<path class="sea" d="${p}"/>`; });
+    order.forEach(c => {
+        const col = RETAIL_CAT[c].color;
+        m.points.filter(pt => pt.c === c).forEach(pt => {
+            svg += `<circle cx="${pt.x}" cy="${pt.y}" r="1.9" fill="${col}" fill-opacity="0.72"/>`;
+        });
+    });
+    svg += '</svg>';
+    el.innerHTML = svg;
+    const leg = document.getElementById('retailerLegend');
+    if (leg) leg.innerHTML = order.map(c => {
+        const n = m.points.filter(pt => pt.c === c).length;
+        return `<span class="item"><span class="dot" style="background:${RETAIL_CAT[c].color}"></span>${RETAIL_CAT[c].label} · ${n}</span>`;
+    }).join('');
+}
+
+function createRetailerTypeChart() {
+    const el = document.getElementById('retailerTypeChart');
+    if (!el || !retailerData) return;
+    const tc = retailerData.typeCounts.slice(0, 12);
+    charts.retailerType = new Chart(el.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: tc.map(x => x.type),
+            datasets: [{
+                data: tc.map(x => x.count),
+                backgroundColor: tc.map(x => RETAIL_CAT[retailCat(x.type)].color),
+                borderRadius: 2, maxBarThickness: 22, skipTheme: true,
+            }],
+        },
+        options: {
+            ...chartDefaults,
+            indexAxis: 'y',
+            plugins: {
+                ...chartDefaults.plugins,
+                legend: { display: false },
+                tooltip: {
+                    ...chartDefaults.plugins.tooltip,
+                    callbacks: { label: (c) => formatNumber(c.parsed.x) + ' stores' },
+                },
+            },
+            scales: {
+                x: { ticks: { callback: (v) => formatNumber(v) } },
+                y: { ticks: { font: { size: 11 }, autoSkip: false } },
+            },
+        },
     });
 }
 

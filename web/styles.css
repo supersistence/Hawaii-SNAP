@@ -269,6 +269,12 @@ footer{background:none;color:var(--ink-2);padding:48px 0 28px;margin-top:0;
 .iso-field svg{width:14px;height:14px;flex:none}
 .iso-map{margin:6px 0 2px}
 .iso-map svg{width:100%;max-width:600px;height:auto;display:block}
+/* retailer dot map */
+.retailer-map svg{width:100%;max-width:660px;height:auto;display:block;margin-top:6px}
+.retailer-map .sea{fill:#f3f1e6;stroke:#dcd8c6;stroke-width:1}
+.map-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;color:var(--ink-2);margin-top:14px}
+.map-legend .item{display:inline-flex;align-items:center;gap:7px}
+.map-legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
 .iso-map .sea{fill:#eceabe;fill-opacity:.5;stroke:#c9c6a8;stroke-width:1.2}
 .iso-map .maui{fill:var(--accent);stroke:#013a22;stroke-width:1.2}
 .iso-legend{display:flex;align-items:center;gap:8px;flex-wrap:wrap;

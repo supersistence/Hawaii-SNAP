@@ -344,6 +344,50 @@ def process_dhs_data():
     return result
 
 
+def process_retailers():
+    """Active SNAP retailers → store-type counts + a dot map. Points are
+    projected with the saved island params (hawaii_islands_proj.json) so the
+    map aligns with the same projection used elsewhere, without re-fetching the
+    county GeoJSON."""
+    proj_path = DATA_DIR / "hawaii_islands_proj.json"
+    csv_path = DATA_DIR / "hawaii_snap_retailers_2004-2025_valid_coords.csv"
+    if not proj_path.exists() or not csv_path.exists():
+        return None
+    print("Processing retailer network...")
+    pr = json.loads(proj_path.read_text())
+    LON0, LAT1, kx, minx, miny, scale = (pr['LON0'], pr['LAT1'], pr['kx'],
+                                         pr['minx'], pr['miny'], pr['scale'])
+
+    def cat(t):
+        t = str(t).lower()
+        if 'convenience' in t: return 'convenience'
+        if 'farmers' in t or 'fruits' in t or 'veg' in t: return 'local'
+        if any(k in t for k in ('grocery', 'super', 'supermarket')): return 'grocery'
+        return 'specialty'
+
+    df = pd.read_csv(csv_path)
+    active = df[df['End Date'].isna() | (df['End Date'].astype(str).str.strip() == '')]
+    points = []
+    for _, r in active.iterrows():
+        try:
+            lon, lat = float(r['Longitude']), float(r['Latitude'])
+        except (ValueError, TypeError):
+            continue
+        if not (LON0 <= lon <= -154.5 and 18.7 <= lat <= LAT1):
+            continue
+        x = ((lon - LON0) * kx - minx) * scale
+        y = ((LAT1 - lat) - miny) * scale
+        points.append({'x': round(x, 1), 'y': round(y, 1), 'c': cat(r['Store Type'])})
+    types = active['Store Type'].value_counts()
+    byco = active['County'].astype(str).str.title().value_counts()
+    return {
+        'asOf': '2025', 'activeCount': int(len(active)),
+        'byCounty': [{'county': c, 'count': int(n)} for c, n in byco.items()],
+        'typeCounts': [{'type': t, 'count': int(n)} for t, n in types.items()],
+        'map': {'w': pr['w'], 'h': pr['h'], 'paths': pr['paths'], 'points': points},
+    }
+
+
 def main():
     """Generate all JSON data files for web visualization."""
 
@@ -358,6 +402,7 @@ def main():
     county_data = process_county_data()
     trends_data = process_recent_trends()
     dhs_data = process_dhs_data()
+    retailer_data = process_retailers()
 
     # Save to JSON files
     with open(WEB_DIR / 'monthly.json', 'w') as f:
@@ -368,6 +413,11 @@ def main():
         with open(WEB_DIR / 'dhs.json', 'w') as f:
             json.dump(dhs_data, f, indent=2)
         print(f"✓ Saved dhs.json")
+
+    if retailer_data:
+        with open(WEB_DIR / 'retailers.json', 'w') as f:
+            json.dump(retailer_data, f)
+        print(f"✓ Saved retailers.json")
 
     with open(WEB_DIR / 'county.json', 'w') as f:
         json.dump(county_data, f, indent=2)

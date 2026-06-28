@@ -590,6 +590,42 @@
             </div>
 
             <div class="chart-container">
+                <h3>Where SNAP can be spent — and what kind of store</h3>
+                <p class="chart-description">All 867 currently-authorized SNAP retailers with valid coordinates. Most of the network sits on O‘ahu; islandwide, convenience stores rival full grocery stores in number while farmers' markets and produce stands are a thin slice.</p>
+                <div class="retailer-map" id="retailerMap" role="img" aria-label="Map of Hawai‘i SNAP retailers by store type"></div>
+                <div class="map-legend" id="retailerLegend"></div>
+            </div>
+
+            <div class="chart-container">
+                <h3>Authorized retailers by store type</h3>
+                <p class="chart-description">Currently-active SNAP retailers (2025). Grocery and convenience stores dominate the network; fresh-focused options — farmers' markets, produce stands — are scarce.</p>
+                <canvas id="retailerTypeChart"></canvas>
+            </div>
+            </div>
+
+            <div class="insight-box">
+                <h4>Retailer Network Evolution (2020-2024)</h4>
+                <div class="implication-grid">
+                    <div class="implication-card">
+                        <h5>High Turnover, Stable Size</h5>
+                        <p>Despite 370 new authorizations and 364 closures, the network remained essentially flat (+6 retailers, 0.7% growth). This indicates a mature, stable retailer network with natural business turnover.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Convenience Store Dominance</h5>
+                        <p><strong>48.6%</strong> of new authorizations were convenience stores (180 stores), reflecting Hawaii's dispersed geography and need for neighborhood food access. Only 31 new supermarkets were authorized.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Geographic Distribution</h5>
+                        <p>Retailers mirror population: <strong>Honolulu 56.2%</strong>, Hawaii County 19.7%, Maui 15.4%, Kauai 8.6%. Rural areas rely more heavily on convenience stores for SNAP access.</p>
+                    </div>
+                    <div class="implication-card">
+                        <h5>Local Food Systems Growth</h5>
+                        <p>Farmers' markets and direct-to-consumer options grew from 19 new authorizations, supporting local agriculture and fresher food options for SNAP recipients.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
                 <h3>Food Hubs SNAP & Double Bucks Sales Growth</h3>
                 <p class="chart-description">Growth in SNAP benefits and Double Bucks incentive program sales through Hawaii's food hub network (2021-2024).</p>
                 <canvas id="foodHubsChart"></canvas>
@@ -618,29 +654,6 @@
                 <div class="data-note" style="margin-top: 1rem;">
                     <strong>Data Source:</strong> Fardkhales, Lincoln, and Heaivilin (forthcoming). Food hub sales data includes SNAP EBT transactions and Double Bucks incentive matching funds across Hawaii's food hub network.
                 </div>
-            </div>
-
-            <div class="insight-box">
-                <h4>Retailer Network Evolution (2020-2024)</h4>
-                <div class="implication-grid">
-                    <div class="implication-card">
-                        <h5>High Turnover, Stable Size</h5>
-                        <p>Despite 370 new authorizations and 364 closures, the network remained essentially flat (+6 retailers, 0.7% growth). This indicates a mature, stable retailer network with natural business turnover.</p>
-                    </div>
-                    <div class="implication-card">
-                        <h5>Convenience Store Dominance</h5>
-                        <p><strong>48.6%</strong> of new authorizations were convenience stores (180 stores), reflecting Hawaii's dispersed geography and need for neighborhood food access. Only 31 new supermarkets were authorized.</p>
-                    </div>
-                    <div class="implication-card">
-                        <h5>Geographic Distribution</h5>
-                        <p>Retailers mirror population: <strong>Honolulu 56.2%</strong>, Hawaii County 19.7%, Maui 15.4%, Kauai 8.6%. Rural areas rely more heavily on convenience stores for SNAP access.</p>
-                    </div>
-                    <div class="implication-card">
-                        <h5>Local Food Systems Growth</h5>
-                        <p>Farmers' markets and direct-to-consumer options grew from 19 new authorizations, supporting local agriculture and fresher food options for SNAP recipients.</p>
-                    </div>
-                </div>
-            </div>
 
             <div class="insight-box">
                 <h4>Policy Implications</h4>
