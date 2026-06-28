@@ -56,6 +56,7 @@
     <nav class="nav-tabs">
         <div class="container">
             <a class="tab-button active" href="#overview" data-tab="overview">Overview</a>
+            <a class="tab-button" href="#arc" data-tab="arc">The arc</a>
             <a class="tab-button" href="#trends" data-tab="trends">Participation</a>
             <a class="tab-button" href="#benefits" data-tab="benefits">Benefits</a>
             <a class="tab-button" href="#disruptions" data-tab="disruptions">Disruptions</a>
@@ -77,7 +78,7 @@
         <section id="overview" class="tab-content active">
             <span class="kicker">Overview</span>
             <h2>One in nine residents relies on SNAP — and the rolls <span class="em">never returned to where they started.</span></h2>
-            <p class="section-description">Headline measures for the most recent reporting month, then the 37-year story behind them — scroll the line to walk through how Hawai‘i got here.</p>
+            <p class="section-description">Headline measures for the most recent reporting month. The 37-year story behind them is the next section.</p>
 
             <div class="stats-grid">
                 <div class="stat-card">
@@ -120,10 +121,26 @@
                 <p class="iso-cap">163,576 of 1,446,146 residents (USDA FNS, Apr 2025 ÷ Hawai‘i State Census, 2024). The shaded group — 1 in 9 — is essentially the entire population of Maui County (163,769).</p>
             </div>
 
-            <!-- Pinned scrollytelling hero -->
+            <div class="insight-box">
+                <h4>Key findings</h4>
+                <ul>
+                    <li>Hawaii's SNAP program has served an average of <strong id="avg-persons">--</strong> people per month over the past two decades</li>
+                    <li>Peak participation occurred in <strong id="peak-date">--</strong> with <strong id="peak-persons">--</strong> individuals</li>
+                    <li>The COVID-19 pandemic drove participation to historic highs, with significant increases in both enrollment and benefit levels</li>
+                    <li>As of May 2025, the program was serving <strong id="latest-persons">--</strong> individuals across <strong id="latest-households">--</strong> households</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- The arc: unified 1989–2026 scrollytelling sequence -->
+        <section id="arc" class="tab-content">
+            <span class="kicker">The arc</span>
+            <h2>Thirty-seven years in six acts — <span class="em">every shock left a higher floor.</span></h2>
+            <p class="section-description">One continuous line, 1989 to today (USDA federal, then Hawai‘i DHS). Scroll to walk it: a stable floor, then each crisis resetting participation upward and rarely falling back.</p>
+
             <div class="scrolly" id="overview-scrolly">
                 <div class="scrolly-graphic">
-                    <div class="figtitle">Persons receiving SNAP each month · 1989–2025</div>
+                    <div class="figtitle">Persons receiving SNAP each month · 1989–2026</div>
                     <canvas id="overviewChart"></canvas>
                     <div class="scrolly-readout">
                         <div class="ro"><div class="n" id="ro-persons">—</div><div class="l">persons this view</div></div>
@@ -138,32 +155,33 @@
                     </div>
                     <div class="step" data-step="1">
                         <div class="act">Act 2 · 2008–2013</div>
-                        <h3>The recession climb</h3>
-                        <p>The Great Recession pushed the line up and held it there. Participation rose past 180,000 and didn't fall back to its old floor — the first reset to a higher baseline.</p>
+                        <h3>The Great Recession</h3>
+                        <p>The downturn pushed the line past 190,000 and held it there. It never fell back to its old floor — the first reset to a higher baseline.</p>
                     </div>
                     <div class="step" data-step="2">
                         <div class="act">Act 3 · 2020–2021</div>
-                        <h3>The pandemic peak</h3>
-                        <p>When tourism collapsed in 2020, enrollment spiked to its all-time high — about 206,000 people in July 2021 — carried by federal emergency allotments.</p>
+                        <h3>COVID-19 &amp; emergency allotments</h3>
+                        <p>Tourism's collapse drove enrollment to an all-time peak — about 206,000 in July 2021 — while federal emergency allotments roughly doubled benefits.</p>
                     </div>
                     <div class="step" data-step="3">
-                        <div class="act">Act 4 · 2022–2025</div>
+                        <div class="act">Act 4 · 2023</div>
+                        <h3>The Maui wildfires</h3>
+                        <p>The Lahaina fire on August 8, 2023 drove a sharp, localized surge: Maui County enrollment climbed <strong>+25%</strong> in four months — nearly twice the statewide rate — peaking that November. Only the monthly DHS island data catches it.</p>
+                    </div>
+                    <div class="step" data-step="4">
+                        <div class="act">Act 5 · 2025–2026</div>
+                        <h3>The federal shutdown</h3>
+                        <p>The first disruption the data caught in real time: participation peaked in October 2025, then fell every month — about −7% by May 2026 — as the shutdown, a 2% benefit cut, and new work requirements compounded.</p>
+                    </div>
+                    <div class="step" data-step="5">
+                        <div class="act">Act 6 · Today</div>
                         <h3>A new, higher baseline</h3>
-                        <p>Emergency measures wound down and the line fell — but settled roughly 13% above where it began in 2019, not back to it. Each shock leaves a permanent step up.</p>
+                        <p>Step back and the staircase is the story: each shock settled into a floor higher than the last. Today's caseload sits roughly <strong>9% above</strong> its pre-pandemic level — not back to it.</p>
                     </div>
                 </div>
             </div>
-
-            <div class="insight-box">
-                <h4>Key findings</h4>
-                <ul>
-                    <li>Hawaii's SNAP program has served an average of <strong id="avg-persons">--</strong> people per month over the past two decades</li>
-                    <li>Peak participation occurred in <strong id="peak-date">--</strong> with <strong id="peak-persons">--</strong> individuals</li>
-                    <li>The COVID-19 pandemic drove participation to historic highs, with significant increases in both enrollment and benefit levels</li>
-                    <li>As of May 2025, the program was serving <strong id="latest-persons">--</strong> individuals across <strong id="latest-households">--</strong> households</li>
-                </ul>
-            </div>
         </section>
+
 
         <!-- Trends Tab -->
         <section id="trends" class="tab-content">
@@ -266,37 +284,9 @@
 
         <!-- Disruptions (merged COVID-19 + 2025 Federal Shutdown) -->
         <section id="disruptions" class="tab-content">
-            <span class="kicker">Disruptions</span>
-            <h2>Three shocks in twenty years — and each one <span class="em">reset participation higher.</span></h2>
-            <p class="section-description">Recession, pandemic, shutdown. Scroll the line to see how Hawai‘i's safety net absorbed each — drawn from the DHS state series, the only one current enough to show 2025–26.</p>
-
-            <div class="scrolly" id="disruptions-scrolly">
-                <div class="scrolly-graphic">
-                    <div class="figtitle">SNAP participants · Hawai‘i DHS · 2008–2026</div>
-                    <canvas id="disruptionsChart"></canvas>
-                    <div class="scrolly-readout">
-                        <div class="ro"><div class="n" id="dro-persons">—</div><div class="l">participants</div></div>
-                        <div class="ro"><div class="n accent" id="dro-note">—</div><div class="l" id="dro-note-l">period</div></div>
-                    </div>
-                </div>
-                <div class="scrolly-steps">
-                    <div class="step is-active" data-step="0">
-                        <div class="act">Act 1 · 2008–2013</div>
-                        <h3>The Great Recession</h3>
-                        <p>As the downturn hit Hawai‘i's tourism economy, enrollment climbed for five straight years — and never fell back to its pre-2008 floor. The first shock that reset the baseline upward.</p>
-                    </div>
-                    <div class="step" data-step="1">
-                        <div class="act">Act 2 · 2020–2022</div>
-                        <h3>COVID-19 &amp; emergency allotments</h3>
-                        <p>Tourism's collapse drove participation to an all-time peak of 206,226 in July 2021, while federal emergency allotments roughly doubled benefits. Both unwound slowly — leaving a new, higher plateau.</p>
-                    </div>
-                    <div class="step" data-step="2">
-                        <div class="act">Act 3 · 2025–2026</div>
-                        <h3>The federal shutdown</h3>
-                        <p>The first disruption the data caught in real time: participation peaked at 169,604 in October 2025, then fell every month — down 6.9% by May 2026 — as the shutdown, a 2% benefit cut, and new work requirements compounded. Application processing slipped from 91% to 86% on-time.</p>
-                    </div>
-                </div>
-            </div>
+            <span class="kicker">Shocks in depth</span>
+            <h2>The shocks, <span class="em">up close.</span></h2>
+            <p class="section-description">The arc above hits each shock as an act; here is the detail behind them — pandemic recovery, the 2025 shutdown’s real toll, and the policy changes still in motion.</p>
 
             <h3 class="sub-divider">COVID-19 in depth</h3>
 
