@@ -409,9 +409,12 @@ DHS_TIMELINESS_ARCHIVE = {
     2018: "https://humanservices.hawaii.gov/wp-content/uploads/2018/08/SNAP-Timeliness.FFY-2018-SUMMARY.-as-of-June.pdf",
     2019: "https://humanservices.hawaii.gov/wp-content/uploads/2020/06/Application-Timeliness-complete-FFY-2019.pdf",
     2020: "https://humanservices.hawaii.gov/wp-content/uploads/2020/08/Application-Timeliness-FFY-2020.pdf",
+    2021: "https://humanservices.hawaii.gov/bessd/files/2021/06/Application-Timeliness-FFY-2021.pdf",
     2022: "https://humanservices.hawaii.gov/wp-content/uploads/2022/12/Application-Timeliness-FFY-2022.pdf",
+    2023: "https://humanservices.hawaii.gov/wp-content/uploads/2023/10/Application-Timeliness-FFY-2023-aug.pdf",
     2024: "https://humanservices.hawaii.gov/wp-content/uploads/2025/03/Application-Timeliness-FFY-2024-1.pdf",
-    # FFY2021 is an image-only scan (no text layer); FFY2023 source is August-only.
+    # FFY2021/2018/2020 are partial (published mid-year); FFY2023 source is
+    # August-only; FFY2025 was never published.
 }
 
 

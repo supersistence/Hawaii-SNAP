@@ -73,6 +73,6 @@
     "coverageEnd": "2026-05-01",
     "granularity": "monthly, statewide",
     "provenanceSource": "automated-pull + backfill",
-    "note": "Application processing timeliness + applications received, FFY 2009-2026 (172 months). Backfilled from the DHS archive (.xls 'STATE SUMMARY' sheets via xlrd; PDF 'State TOTAL' rows via pdftotext). Partly recovers the discontinued weekly applications series (monthly statewide instead of weekly by-county). Gaps: FFY2021 (DHS published an image-only scan, no extractable text), FFY2025 (no file published), and partial FFY2018/2020/2023 (mid-year or single-month source files)."
+    "note": "Application processing timeliness + applications received, FFY 2009-2026 (180 months). Backfilled from the DHS archive (.xls 'STATE SUMMARY' sheets via xlrd; PDF 'State TOTAL' rows via pdftotext). Partly recovers the discontinued weekly applications series (monthly statewide instead of weekly by-county). Remaining gaps are source-side: FFY2025 was never published, and FFY2018/2020/2021 are mid-year partials while FFY2023 is an August-only snapshot."
   }
 }

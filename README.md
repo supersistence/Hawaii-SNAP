@@ -146,7 +146,7 @@ Monthly statewide applications received + on-time disposition rates. **~14 years
 - [CSV](https://github.com/supersistence/Hawaii-SNAP/blob/main/Data/dhs_snap_application_timeliness.csv)
 - Source: Hawaii DHS "Application Processing Timeliness Report" (FFY), via `scripts/extract_dhs_snap.py`
 
-> **Note:** Both DHS series are backfilled to 2009 (`.xls` via `xlrd`, PDFs via `pdftotext`). A one-time rebuild from the archives is `python scripts/download_and_update.py --dhs-backfill`; routine monthly pulls (`--dhs`) union new months onto this history. A few timeliness months are unavailable at source (FFY2021 is an image-only scan; FFY2025 unpublished; FFY2018/2020/2023 partial).
+> **Note:** Both DHS series are backfilled to 2009 (`.xls` via `xlrd`, PDFs via `pdftotext`). A one-time rebuild from the archives is `python scripts/download_and_update.py --dhs-backfill`; routine monthly pulls (`--dhs`) union new months onto this history. A few timeliness months are unavailable at source (FFY2025 unpublished; FFY2018/2020/2021 mid-year partials; FFY2023 August-only).
 
 ### County Daily Application Received and Approved Data, 4/26/20-4/1/22
 > **⏹️ Discontinued (with partial successor).** This specific COVID-era series was *weekly* and *by county*, tracking applications received **and approved**. It ended at the 4/1/2022 release (later dates 404). The *weekly cadence and by-county "approved" counts* are gone, but ongoing monthly DHS participation and application-timeliness data (above) cover most of the same ground.
