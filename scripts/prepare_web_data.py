@@ -360,6 +360,40 @@ def main():
     print(f"  Date range: {monthly_data['metadata']['startDate']} to {monthly_data['metadata']['endDate']}")
     print(f"  Total counties: {len(county_data['counties'])}")
 
+    run_validation_gate()
+
+
+def run_validation_gate():
+    """Run data validation as an automatic gate after every regeneration.
+
+    Previously validate_data.py was a separate manual step, so the corrupt
+    Feb-2019 row was never flagged. Running it here means every refresh of the
+    web JSON surfaces outliers/anomalies in the source CSVs. Non-fatal by
+    design (warnings, not a hard stop) so a known artifact doesn't block a
+    legitimate update — but it's now impossible to regenerate silently.
+    """
+    try:
+        from validate_data import validate_monthly_data, validate_county_data
+    except ImportError:
+        print("\n(validate_data.py not importable — skipping validation gate)")
+        return
+    print("\n" + "=" * 60)
+    print("VALIDATION GATE")
+    print("=" * 60)
+    for label, fn, path in [
+        ("Monthly", validate_monthly_data, DATA_DIR / "Statewide Monthly SNAP FY 89-25.csv"),
+        ("County",  validate_county_data,  DATA_DIR / "County Bi-Annual SNAP 89-25.csv"),
+    ]:
+        report = fn(str(path))
+        flagged = [ln for ln in report.splitlines()
+                   if "outlier" in ln.lower() or "level shift" in ln.lower()]
+        if flagged:
+            print(f"\n⚠ {label}: {len(flagged)} time-series anomalies — review:")
+            for ln in flagged:
+                print(f"   {ln.strip()}")
+        else:
+            print(f"✓ {label}: no time-series anomalies")
+
 
 if __name__ == "__main__":
     main()

@@ -6,6 +6,7 @@ Combines with existing data to create updated CSV
 
 import pandas as pd
 import glob
+import os
 import re
 from datetime import datetime
 
@@ -170,11 +171,18 @@ def main():
         # Reorder columns to match existing CSV format
         df = df[['Date', 'Household', 'Persons', 'Per Household', 'Per Person', 'Cost']]
 
-        # Save the extracted data
-        output_file = 'Data/hawaii_snap_extracted_fy89-fy25.csv'
+        # Save the extracted data to a SCRATCH location, not Data/.
+        # The canonical monthly series is Data/Statewide Monthly SNAP FY 89-25.csv,
+        # maintained by download_and_update.py (safe forward-merge + provenance)
+        # and consumed by prepare_web_data.py. This standalone run is a raw debug
+        # dump; it must not create a competing file in Data/ (that divergence is
+        # how the corrupt Feb-2019 row went unnoticed for so long).
+        os.makedirs('downloads', exist_ok=True)
+        output_file = 'downloads/hawaii_snap_extracted_raw.csv'
         df.to_csv(output_file, index=False)
 
-        print(f"Data saved to: {output_file}")
+        print(f"Raw extract saved to: {output_file}  (scratch — not the web source)")
+        print("Canonical updater: scripts/download_and_update.py --monthly")
         print(f"\nDate range: {df['Date'].min()} to {df['Date'].max()}")
         print(f"Total months: {len(df)}")
         print(f"\nSample of extracted data:")

@@ -32,11 +32,20 @@ No manual downloads or prompts. Every pull merges forward-only and records prove
 ## 📜 Production Scripts
 
 ### 1. `extract_hawaii_snap.py`
-**Purpose**: Extract Hawaii SNAP monthly participation data from USDA FNS fiscal year Excel files
+**Purpose**: Library of USDA FNS fiscal-year file parsers. Its functions are
+reused by `download_and_update.py` (the canonical updater). Run standalone, it
+produces only a **raw scratch dump** for debugging — it does *not* write the
+web source file.
+
+> ⚠️ The canonical monthly series is `Data/Statewide Monthly SNAP FY 89-25.csv`,
+> maintained by `download_and_update.py` (safe forward-merge + provenance) and
+> consumed by `prepare_web_data.py`. Don't treat a standalone extract as
+> authoritative — a divergent extract is how the corrupt Feb-2019 row hid.
 
 **Usage**:
 ```bash
-python scripts/extract_hawaii_snap.py
+python scripts/extract_hawaii_snap.py        # debug dump only
+python scripts/download_and_update.py --monthly   # the real update path
 ```
 
 **Input**:
@@ -44,7 +53,7 @@ python scripts/extract_hawaii_snap.py
 - Reads both .xls (older) and .xlsx (newer) formats
 
 **Output**:
-- `Data/hawaii_snap_extracted_fy89-fy25.csv` - Raw extracted Hawaii data
+- `downloads/hawaii_snap_extracted_raw.csv` - scratch debug dump (gitignored)
 
 **Features**:
 - Automatically detects column order differences between old/new files
