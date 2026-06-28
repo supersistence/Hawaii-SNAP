@@ -58,8 +58,7 @@
             <a class="tab-button active" href="#overview" data-tab="overview">Overview</a>
             <a class="tab-button" href="#trends" data-tab="trends">Participation</a>
             <a class="tab-button" href="#benefits" data-tab="benefits">Benefits</a>
-            <a class="tab-button" href="#covid" data-tab="covid">COVID-19</a>
-            <a class="tab-button" href="#shutdown" data-tab="shutdown">2025 Shutdown</a>
+            <a class="tab-button" href="#disruptions" data-tab="disruptions">Disruptions</a>
             <a class="tab-button" href="#retailers" data-tab="retailers">Retailers</a>
             <a class="tab-button" href="#counties" data-tab="counties">Counties</a>
             <a class="tab-button" href="#dhs" data-tab="dhs">DHS State Data</a>
@@ -265,10 +264,41 @@
             </div>
         </section>
 
-        <!-- COVID-19 Impact Tab -->
-        <section id="covid" class="tab-content">
-            <span class="kicker">COVID-19</span>
-            <h2>The pandemic proved SNAP can scale fast — and that <span class="em">the surge never fully receded.</span></h2>
+        <!-- Disruptions (merged COVID-19 + 2025 Federal Shutdown) -->
+        <section id="disruptions" class="tab-content">
+            <span class="kicker">Disruptions</span>
+            <h2>Three shocks in twenty years — and each one <span class="em">reset participation higher.</span></h2>
+            <p class="section-description">Recession, pandemic, shutdown. Scroll the line to see how Hawai‘i's safety net absorbed each — drawn from the DHS state series, the only one current enough to show 2025–26.</p>
+
+            <div class="scrolly" id="disruptions-scrolly">
+                <div class="scrolly-graphic">
+                    <div class="figtitle">SNAP participants · Hawai‘i DHS · 2008–2026</div>
+                    <canvas id="disruptionsChart"></canvas>
+                    <div class="scrolly-readout">
+                        <div class="ro"><div class="n" id="dro-persons">—</div><div class="l">participants</div></div>
+                        <div class="ro"><div class="n accent" id="dro-note">—</div><div class="l" id="dro-note-l">period</div></div>
+                    </div>
+                </div>
+                <div class="scrolly-steps">
+                    <div class="step is-active" data-step="0">
+                        <div class="act">Act 1 · 2008–2013</div>
+                        <h3>The Great Recession</h3>
+                        <p>As the downturn hit Hawai‘i's tourism economy, enrollment climbed for five straight years — and never fell back to its pre-2008 floor. The first shock that reset the baseline upward.</p>
+                    </div>
+                    <div class="step" data-step="1">
+                        <div class="act">Act 2 · 2020–2022</div>
+                        <h3>COVID-19 &amp; emergency allotments</h3>
+                        <p>Tourism's collapse drove participation to an all-time peak of 206,226 in July 2021, while federal emergency allotments roughly doubled benefits. Both unwound slowly — leaving a new, higher plateau.</p>
+                    </div>
+                    <div class="step" data-step="2">
+                        <div class="act">Act 3 · 2025–2026</div>
+                        <h3>The federal shutdown</h3>
+                        <p>The first disruption the data caught in real time: participation peaked at 169,604 in October 2025, then fell every month — down 6.9% by May 2026 — as the shutdown, a 2% benefit cut, and new work requirements compounded. Application processing slipped from 91% to 86% on-time.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="sub-divider">COVID-19 in depth</h3>
 
             <div class="covid-stats-grid">
                 <div class="stat-card highlight">
@@ -347,13 +377,8 @@
             <div class="data-note">
                 <strong>Complete Recovery Data:</strong> Data now includes the complete pandemic recovery period through May 2025, revealing benefit reduction impacts and participation stabilization following emergency measure wind-down. Full analysis available in <a href="https://github.com/supersistence/Hawaii-SNAP/blob/main/ANALYSIS_SUMMARY_2025.md" target="_blank">ANALYSIS_SUMMARY_2025.md</a>.
             </div>
-        </section>
-
-        <!-- Federal Shutdown Tab -->
-        <section id="shutdown" class="tab-content">
-            <span class="kicker">2025 Federal Shutdown</span>
-            <h2>A shutdown would pull <span class="em">$50M a month</span> from 165,000 people already near the edge.</h2>
-            <p class="section-description">Analysis of potential federal government shutdown impacts on SNAP and food security in Hawaii, and state response measures.</p>
+            <h3 class="sub-divider">2025 Federal Shutdown — what actually happened</h3>
+            <p class="section-description">The chart above already shows it: participation peaked in October 2025, then fell 6.9% through May 2026 as the shutdown, a 2% benefit cut, and new work requirements compounded — the first disruption the data caught in real time. The detailed planning analysis below was written as the shutdown loomed in October 2025.</p>
 
             <div class="stats-grid">
                 <div class="stat-card highlight">

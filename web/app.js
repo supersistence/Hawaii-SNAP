@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     buildIsotypes();
     updateDataCurrency();
     setupScrolly();
+    setupDisruptionsScrolly();
 });
 
 // Data-currency labels, source-attributed so the two series read as
@@ -92,6 +93,93 @@ function annotateEvents() {
         };
     }));
     Object.values(charts).forEach(c => c.update('none'));
+}
+
+// ---- Disruptions: DHS participation 2008–2026 + Act scrollytelling ----
+function createDisruptionsChart() {
+    const el = document.getElementById('disruptionsChart');
+    if (!el || !dhsData) return;
+    const s = dhsData.statewideMonthly;
+    charts.disruptions = new Chart(el.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: s.dates,
+            datasets: [{
+                label: 'Participants', data: s.participants,
+                borderColor: '#1d6b3f', backgroundColor: 'rgba(29,107,63,0.06)',
+                borderWidth: 2.2, fill: true, pointRadius: 0,
+            }],
+        },
+        options: {
+            ...chartDefaults,
+            plugins: {
+                ...chartDefaults.plugins,
+                legend: { display: false },
+                annotation: { annotations: {} },
+                tooltip: {
+                    ...chartDefaults.plugins.tooltip,
+                    callbacks: {
+                        title: (c) => formatDate(c[0].parsed.x),
+                        label: (c) => formatNumber(c.parsed.y) + ' participants',
+                    },
+                },
+            },
+            scales: {
+                x: { type: 'time', time: { unit: 'year', displayFormats: { year: 'yyyy' } },
+                     ticks: { maxTicksLimit: 8 } },
+                y: { beginAtZero: false, ticks: { callback: (v) => formatNumber(v) } },
+            },
+        },
+    });
+}
+
+function setupDisruptionsScrolly() {
+    const sc = document.getElementById('disruptions-scrolly');
+    if (!sc || !charts.disruptions || !dhsData) return;
+    const s = dhsData.statewideMonthly;
+    const at = (d) => { const i = s.dates.indexOf(d); return i >= 0 ? s.participants[i] : null; };
+    const peakIn = (a, b) => {
+        let mx = -1, md = a;
+        s.dates.forEach((d, i) => { if (d >= a && d <= b && s.participants[i] > mx) { mx = s.participants[i]; md = d; } });
+        return { v: mx, d: md };
+    };
+    const pct = (a, b) => (((b / a) - 1) * 100).toFixed(1).replace(/\.0$/, '');
+    const rec = peakIn('2008-07-01', '2014-06-01');
+    const covid = peakIn('2020-03-01', '2022-06-01');
+    const shutPeak = peakIn('2025-08-01', '2025-12-01');
+    const latest = { v: s.participants[s.participants.length - 1], d: s.dates[s.dates.length - 1] };
+
+    const acts = [
+        { range: ['2008-07-01', '2014-06-01'], n: formatNumber(rec.v),   note: '+' + pct(at('2008-07-01'), rec.v) + '%', noteL: '2008–13 climb' },
+        { range: ['2020-03-01', '2022-06-01'], n: formatNumber(covid.v), note: 'all-time peak',                          noteL: formatDate(covid.d) },
+        { range: ['2025-08-01', latest.d],     n: formatNumber(latest.v),note: pct(shutPeak.v, latest.v) + '%',          noteL: 'since Oct 2025 peak' },
+    ];
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const setAct = (i) => {
+        const a = acts[i];
+        document.getElementById('dro-persons').textContent = a.n;
+        document.getElementById('dro-note').textContent = a.note;
+        document.getElementById('dro-note-l').textContent = a.noteL;
+        charts.disruptions.config.options.plugins.annotation = { annotations: {
+            band: { type: 'box', xMin: a.range[0], xMax: a.range[1],
+                    backgroundColor: hexA('#b3201f', 0.08), borderWidth: 0 },
+        }};
+        charts.disruptions.update('none');
+    };
+
+    document.querySelectorAll('#disruptions-scrolly .step').forEach(step => {
+        if (reduce) { step.classList.add('is-active'); return; }
+        new IntersectionObserver((es) => es.forEach(e => {
+            if (e.isIntersecting) {
+                document.querySelectorAll('#disruptions-scrolly .step')
+                    .forEach(x => x.classList.remove('is-active'));
+                e.target.classList.add('is-active');
+                setAct(+e.target.dataset.step);
+            }
+        }), { rootMargin: '-45% 0px -45% 0px' }).observe(step);
+    });
+    setAct(reduce ? 2 : 0);
 }
 
 // ---- Isotype pictographs (human-scale, data-driven) -------------------
@@ -313,18 +401,28 @@ function showError(message) {
 function populateStats() {
     const { metadata: meta, summary, yearOverYear } = monthlyData;
 
-    // Overview stats
-    document.getElementById('stat-persons').textContent = formatNumber(meta.latestPersons);
-    document.getElementById('stat-persons-date').textContent = `as of ${formatDate(meta.endDate)}`;
+    // Overview stats — caseload counts lead with the most-current series (DHS,
+    // through May 2026); benefit/cost stay on USDA (DHS doesn't publish them).
+    // Each card's date sub-label names its source so the mix is explicit.
+    const dhsCur = (dhsData && dhsData.statewideMonthly) ? {
+        persons: dhsData.statewideMonthly.participants[dhsData.statewideMonthly.participants.length - 1],
+        households: dhsData.statewideMonthly.households[dhsData.statewideMonthly.households.length - 1],
+        date: dhsData.asOfDate || dhsData.statewideMonthly.dates[dhsData.statewideMonthly.dates.length - 1],
+    } : null;
+    const cur = dhsCur || { persons: meta.latestPersons, households: meta.latestHouseholds, date: meta.endDate };
+    const curSrc = dhsCur ? 'DHS' : 'USDA';
 
-    document.getElementById('stat-households').textContent = formatNumber(meta.latestHouseholds);
-    document.getElementById('stat-households-date').textContent = `as of ${formatDate(meta.endDate)}`;
+    document.getElementById('stat-persons').textContent = formatNumber(cur.persons);
+    document.getElementById('stat-persons-date').textContent = `${curSrc} · ${formatDate(cur.date)}`;
+
+    document.getElementById('stat-households').textContent = formatNumber(cur.households);
+    document.getElementById('stat-households-date').textContent = `${curSrc} · ${formatDate(cur.date)}`;
 
     document.getElementById('stat-benefit').textContent = `$${formatNumber(meta.latestAvgBenefitPerHousehold)}`;
-    document.getElementById('stat-benefit-date').textContent = `per month`;
+    document.getElementById('stat-benefit-date').textContent = `USDA · ${formatDate(meta.endDate)}`;
 
     document.getElementById('stat-cost').textContent = `$${formatMoney(meta.latestTotalCost)}`;
-    document.getElementById('stat-cost-date').textContent = `total benefits`;
+    document.getElementById('stat-cost-date').textContent = `USDA · ${formatDate(meta.endDate)}`;
 
     // Populate text content
     document.getElementById('avg-persons').textContent = formatNumber(summary.averages.persons);
@@ -408,7 +506,7 @@ function initializeCharts() {
     createCountyChart();
     createPAChart();
     createFoodHubsChart();
-    if (dhsData) { createDHSChart(); createDHSTimelinessChart(); populateDHSCounties(); }
+    if (dhsData) { createDHSChart(); createDHSTimelinessChart(); createDisruptionsChart(); populateDHSCounties(); }
 }
 
 // DHS application timeliness: applications received (bars) + % timely (line)
@@ -1061,7 +1159,11 @@ function formatMoney(amount) {
 
 function formatDate(dateString) {
     if (!dateString) return '--';
-    const date = new Date(dateString);
+    // Parse date-only strings (YYYY-MM-DD) at local noon so the UTC-midnight
+    // value doesn't slip to the previous month in Hawai‘i time (UTC-10).
+    const s = (typeof dateString === 'string' && dateString.length === 10)
+        ? dateString + 'T12:00:00' : dateString;
+    const date = new Date(s);
     return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',

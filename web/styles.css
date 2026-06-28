@@ -27,6 +27,7 @@
 #benefits     {--accent:#b45309;--accent-soft:#d97706}  /* amber       5.0:1 */
 #covid        {--accent:#6243a4;--accent-soft:#8b6fc4}  /* SNAP purple 6.7:1 */
 #shutdown     {--accent:#b3201f;--accent-soft:#d6453f}  /* alert red   5.7:1 */
+#disruptions  {--accent:#b3201f;--accent-soft:#d6453f}  /* alert red   5.7:1 */
 #retailers    {--accent:#1d6b3f;--accent-soft:#4f9268}  /* green       */
 #counties     {--accent:#075985;--accent-soft:#3b82a6}  /* ocean blue  */
 #dhs          {--accent:#6243a4;--accent-soft:#8b6fc4}  /* purple      */
@@ -94,6 +95,9 @@ main.container{max-width:none;padding:0}
   color:var(--accent);font-weight:700}
 .kicker::before{content:"";width:22px;height:2px;background:var(--accent)}
 .section-description{color:var(--ink-2);font-size:1.06rem;max-width:64ch;margin-bottom:30px}
+/* in-section divider (e.g. Disruptions → "COVID-19 in depth") */
+.sub-divider{margin-top:52px;padding-top:18px;border-top:1px solid var(--ink);
+  font-size:.82rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--accent)}
 h3{font-weight:600;font-size:1.12rem;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px}
 h4{font-weight:600;font-size:1.02rem;color:var(--ink);margin-bottom:10px}
 h5{font-weight:600;font-size:.96rem;color:var(--ink);margin-bottom:6px}
