@@ -189,6 +189,7 @@ function themeCharts() {
     Object.values(charts).forEach(ch => {
         const isBar = ch.config.type === 'bar';
         ch.data.datasets.forEach((ds, i) => {
+            if (ds.skipTheme) return;   // e.g. the faint population context line
             const c = SERIES[i % SERIES.length];
             if (ds.type === 'line' || (!isBar)) {
                 ds.borderColor = c;
@@ -555,6 +556,18 @@ function createOverviewChart() {
                     borderWidth: 2.2,
                     fill: true,
                     yAxisID: 'y',
+                },
+                {
+                    // Faint context line: resident population (own right axis).
+                    // Climbs steadily while SNAP swings — the divergence is the point.
+                    label: 'Hawai‘i population',
+                    data: monthlyData.datasets.population,
+                    borderColor: '#b8b3a0',
+                    borderWidth: 1.3,
+                    borderDash: [4, 3],
+                    fill: false,
+                    yAxisID: 'yPop',
+                    skipTheme: true,
                 }
             ]
         },
@@ -568,7 +581,9 @@ function createOverviewChart() {
                     ...chartDefaults.plugins.tooltip,
                     callbacks: {
                         title: (context) => formatDate(context[0].parsed.x),
-                        label: (context) => formatNumber(context.parsed.y) + ' persons',
+                        label: (c) => c.datasetIndex === 1
+                            ? formatNumber(c.parsed.y) + ' residents'
+                            : formatNumber(c.parsed.y) + ' persons',
                     }
                 }
             },
@@ -581,6 +596,14 @@ function createOverviewChart() {
                 y: {
                     beginAtZero: false,
                     ticks: { callback: (value) => formatNumber(value) }
+                },
+                yPop: {
+                    position: 'right', beginAtZero: false,
+                    grid: { drawOnChartArea: false },
+                    ticks: { color: '#b8b3a0', maxTicksLimit: 5,
+                             callback: (v) => (v / 1e6).toFixed(1) + 'M' },
+                    title: { display: true, text: 'population', color: '#b8b3a0',
+                             font: { size: 10 } },
                 }
             }
         }
