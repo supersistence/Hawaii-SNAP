@@ -227,7 +227,7 @@ canvas{max-height:420px}
 .cta-button:hover{transform:none;opacity:.88}
 .cta-note{margin-top:12px;font-size:.85rem;color:var(--ink-3)!important;opacity:1}
 .cta-box ul{color:var(--ink-2)!important}
-.cta-box a{color:var(--accent)!important}
+.cta-box a:not(.cta-button){color:var(--accent)!important}
 
 /* ---------------------------------------------------------------- Loading */
 .loading{text-align:center;padding:4rem 2rem;max-width:var(--maxw);margin:0 auto}
