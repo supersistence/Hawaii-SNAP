@@ -77,3 +77,6 @@ Data/**/*FY*89-22.csv
 
 # Script archives
 scripts/archive/
+
+# Local editor workspace
+*.code-workspace

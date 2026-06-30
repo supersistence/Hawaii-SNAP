@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Hubs SNAP & Double Bucks Sales Growth (2021-2024)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4187d2;
+            padding-bottom: 10px;
+        }
+        .description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin: 30px 0;
+        }
+        .insights {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 30px;
+        }
+        .insights h2 {
+            color: #4187d2;
+            margin-top: 0;
+        }
+        .insight-card {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #4187d2;
+            border-radius: 4px;
+        }
+        .insight-card h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 1.1em;
+        }
+        .insight-card p {
+            margin: 0;
+            color: #666;
+            line-height: 1.6;
+        }
+        .data-source {
+            margin-top: 30px;
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #856404;
+        }
+        strong {
+            color: #4187d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Food Hubs SNAP & Double Bucks Sales Growth</h1>
+        <p class="description">
+            Growth in SNAP benefits and Double Bucks incentive program sales through Hawaii's food hub network (2021-2024).
+            This analysis demonstrates the rapid expansion of local food access for SNAP recipients and the economic impact on Hawaii's agricultural community.
+        </p>
+
+        <div class="chart-container">
+            <canvas id="foodHubsChart"></canvas>
+        </div>
+
+        <div class="insights">
+            <h2>🌾 Key Insights</h2>
+
+            <div class="insight-card">
+                <h3>Rapid Growth in Local Food Access</h3>
+                <p>Food hub SNAP sales grew from <strong>$136,000 in 2021 to $1.1 million in 2024</strong>, representing an <strong>8.2x increase</strong> in just three years. This demonstrates growing demand for locally-sourced food among SNAP recipients.</p>
+            </div>
+
+            <div class="insight-card">
+                <h3>Double Bucks Impact</h3>
+                <p>The Double Bucks incentive program contributed <strong>$479,000 in 2024</strong>, effectively increasing SNAP purchasing power by 43% at food hubs. This shows the multiplier effect of incentive programs on local food access.</p>
+            </div>
+
+            <div class="insight-card">
+                <h3>Total Economic Impact</h3>
+                <p>Combined SNAP and Double Bucks sales reached <strong>$1.6 million in 2024</strong>, supporting local farmers and providing fresh, healthy food options to SNAP households. Food hubs serve as crucial bridges between local agriculture and food assistance programs.</p>
+            </div>
+
+            <div class="insight-card">
+                <h3>Scaling Opportunity</h3>
+                <p>While food hub sales grew rapidly, they still represent a small fraction of Hawaii's $720M+ annual SNAP spending. Expanding food hub infrastructure and Double Bucks funding could significantly increase local food access and support Hawaii's farmers.</p>
+            </div>
+        </div>
+
+        <div class="data-source">
+            <strong>📊 Data Source:</strong> Fardkhales, Lincoln, and Heaivilin (forthcoming). Food hub sales data includes SNAP EBT transactions and Double Bucks incentive matching funds across Hawaii's food hub network.
+        </div>
+    </div>
+
+    <script>
+        // Food hubs data from Fardkhales, Lincoln, and Heaivilin (forthcoming)
+        const foodHubsData = {
+            labels: ['2021', '2022', '2023', '2024'],
+            snapBenefits: [136000, 723000, 931000, 1117000],
+            doubleBucks: [109000, 261000, 358000, 479000],
+            totalImpact: [245000, 984000, 1289000, 1596000]
+        };
+
+        const ctx = document.getElementById('foodHubsChart');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: foodHubsData.labels,
+                datasets: [
+                    {
+                        label: 'SNAP Benefits',
+                        data: foodHubsData.snapBenefits,
+                        backgroundColor: 'rgba(65, 135, 210, 0.8)',
+                        borderColor: 'rgba(65, 135, 210, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Double Bucks',
+                        data: foodHubsData.doubleBucks,
+                        backgroundColor: 'rgba(76, 175, 80, 0.8)',
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Total Impact',
+                        data: foodHubsData.totalImpact,
+                        type: 'line',
+                        borderColor: 'rgba(255, 152, 0, 1)',
+                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointBackgroundColor: 'rgba(255, 152, 0, 1)',
+                        fill: false,
+                        yAxisID: 'y'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Food Hubs SNAP & Double Bucks Sales Growth (2021-2024)',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += '$' + context.parsed.y.toLocaleString();
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: 'Year'
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Sales ($)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + (value / 1000) + 'K';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
