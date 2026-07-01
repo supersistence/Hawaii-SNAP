@@ -80,3 +80,6 @@ scripts/archive/
 
 # Local editor workspace
 *.code-workspace
+
+# Wrangler local state/cache
+.wrangler/
