@@ -1,0 +1,4 @@
+# SPA-style fallback (parity with the old netlify.toml /* -> /index.html 200).
+# Cloudflare Pages serves an existing static asset first, so this only applies
+# to paths with no matching file.
+/*  /index.html  200
