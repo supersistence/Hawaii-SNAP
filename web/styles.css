@@ -307,6 +307,12 @@ footer{background:none;color:var(--ink-2);padding:48px 0 28px;margin-top:0;
 /* retailer dot map */
 .retailer-map svg{width:100%;max-width:660px;height:auto;display:block;margin-top:6px}
 .retailer-map .sea{fill:#f3f1e6;stroke:#dcd8c6;stroke-width:1}
+/* map color-mode toggle */
+.map-toggle{display:inline-flex;gap:0;margin:4px 0 2px;border:1px solid var(--rule);border-radius:0}
+.map-toggle .mt-btn{font:inherit;font-size:.8rem;font-weight:500;color:var(--ink-2);
+  background:none;border:none;padding:6px 14px;cursor:pointer;border-right:1px solid var(--rule)}
+.map-toggle .mt-btn:last-child{border-right:none}
+.map-toggle .mt-btn.active{background:var(--accent);color:#fff}
 .map-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;color:var(--ink-2);margin-top:14px}
 .map-legend .item{display:inline-flex;align-items:center;gap:7px}
 .map-legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block}

@@ -1233,31 +1233,50 @@ const FOODBANK_NET = {
     maui:   { label: 'Maui Food Bank (Maui County)',      color: '#b45309' },
     basket: { label: 'The Food Basket (Hawai‘i Island)',  color: '#6243a4' },
 };
+const FOODBANK_CAT = {
+    pantry:  { label: 'Food pantry / groceries',   color: '#b45309' },
+    produce: { label: 'Fresh produce distribution', color: '#1d6b3f' },
+    meals:   { label: 'Prepared meals / soup kitchen', color: '#6243a4' },
+    mobile:  { label: 'Mobile pantry',              color: '#075985' },
+};
+let foodbankMode = 'net';   // 'net' = by food bank, 'cat' = by program type
 function createFoodbankMap() {
     const el = document.getElementById('foodbankMap');
     if (!el || !foodbankData) return;
-    const m = foodbankData;
-    let svg = `<svg viewBox="0 0 ${m.w} ${m.h}" xmlns="http://www.w3.org/2000/svg">`;
-    m.paths.forEach(p => { svg += `<path class="sea" d="${p}"/>`; });
-    // partner sites
-    Object.keys(FOODBANK_NET).forEach(net => {
-        const col = FOODBANK_NET[net].color;
-        m.sites.filter(s => s.n === net).forEach(s => {
-            svg += `<circle cx="${s.x}" cy="${s.y}" r="2" fill="${col}" fill-opacity="0.72"/>`;
+    const render = () => {
+        const m = foodbankData;
+        const scheme = foodbankMode === 'net' ? FOODBANK_NET : FOODBANK_CAT;
+        const keyOf = s => foodbankMode === 'net' ? s.n : s.c;
+        let svg = `<svg viewBox="0 0 ${m.w} ${m.h}" xmlns="http://www.w3.org/2000/svg">`;
+        m.paths.forEach(p => { svg += `<path class="sea" d="${p}"/>`; });
+        Object.keys(scheme).forEach(k => {
+            const col = scheme[k].color;
+            m.sites.filter(s => keyOf(s) === k).forEach(s => {
+                svg += `<circle cx="${s.x}" cy="${s.y}" r="2" fill="${col}" fill-opacity="0.72"/>`;
+            });
         });
-    });
-    // food banks themselves — star markers on top
-    (m.banks || []).forEach(b => {
-        const col = FOODBANK_NET[b.n].color;
-        svg += `<path transform="translate(${b.x},${b.y})" d="M0,-6 L1.8,-1.9 L6,-1.9 L2.6,1.1 L3.9,5.6 L0,3 L-3.9,5.6 L-2.6,1.1 L-6,-1.9 L-1.8,-1.9 Z" fill="${col}" stroke="#141414" stroke-width="0.6"/>`;
-    });
-    svg += '</svg>';
-    el.innerHTML = svg;
-    const leg = document.getElementById('foodbankLegend');
-    if (leg) leg.innerHTML = Object.keys(FOODBANK_NET).map(net => {
-        const n = m.sites.filter(s => s.n === net).length;
-        return `<span class="item"><span class="dot" style="background:${FOODBANK_NET[net].color}"></span>${FOODBANK_NET[net].label} · ${n}</span>`;
-    }).join('') + `<span class="item"><span class="dot" style="background:#141414;clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)"></span>food bank</span>`;
+        // food banks themselves — star markers on top (colored by network in both modes)
+        (m.banks || []).forEach(b => {
+            svg += `<path transform="translate(${b.x},${b.y})" d="M0,-6 L1.8,-1.9 L6,-1.9 L2.6,1.1 L3.9,5.6 L0,3 L-3.9,5.6 L-2.6,1.1 L-6,-1.9 L-1.8,-1.9 Z" fill="${FOODBANK_NET[b.n].color}" stroke="#141414" stroke-width="0.6"/>`;
+        });
+        svg += '</svg>';
+        el.innerHTML = svg;
+        const leg = document.getElementById('foodbankLegend');
+        if (leg) leg.innerHTML = Object.keys(scheme).map(k => {
+            const n = m.sites.filter(s => keyOf(s) === k).length;
+            return `<span class="item"><span class="dot" style="background:${scheme[k].color}"></span>${scheme[k].label} · ${n}</span>`;
+        }).join('') + `<span class="item"><span class="dot" style="background:#141414;clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)"></span>food bank</span>`;
+    };
+    render();
+    const toggle = document.getElementById('foodbankToggle');
+    if (toggle && !toggle.dataset.wired) {
+        toggle.dataset.wired = '1';
+        toggle.querySelectorAll('.mt-btn').forEach(btn => btn.addEventListener('click', () => {
+            foodbankMode = btn.dataset.mode;
+            toggle.querySelectorAll('.mt-btn').forEach(b => b.classList.toggle('active', b === btn));
+            render();
+        }));
+    }
 }
 
 function createRetailerMap() {

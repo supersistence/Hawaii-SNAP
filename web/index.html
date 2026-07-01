@@ -32,7 +32,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 
     <!-- Styles -->
-    <link rel="stylesheet" href="styles.css?v=20260630c">
+    <link rel="stylesheet" href="styles.css?v=20260701a">
 </head>
 <body>
     <header>
@@ -864,10 +864,14 @@
 
             <div class="chart-container">
                 <h3>Where to get food: the three food banks and their pantry partners</h3>
-                <p class="chart-description">Every pantry, produce distribution, and meal site in the three island food-bank networks — <strong>243 mapped locations</strong>, colored by which food bank runs them. Stars mark the food banks themselves. The dots cluster where people are (urban O‘ahu) but also reach deep into rural Hawai‘i Island, Kaua‘i, and Maui County, including Moloka‘i.</p>
+                <p class="chart-description">Every pantry, produce distribution, and meal site in the three island food-bank networks — <strong>266 mapped locations</strong>. Stars mark the food banks themselves. The dots cluster where people are (urban O‘ahu) but also reach deep into rural Hawai‘i Island, Kaua‘i, and Maui County, including Moloka‘i. Toggle the coloring:</p>
+                <div class="map-toggle" id="foodbankToggle">
+                    <button class="mt-btn active" data-mode="net" type="button">By food bank</button>
+                    <button class="mt-btn" data-mode="cat" type="button">By program type</button>
+                </div>
                 <div class="retailer-map" id="foodbankMap" role="img" aria-label="Map of Hawai‘i food banks and their pantry partner sites"></div>
                 <div class="map-legend" id="foodbankLegend"></div>
-                <p class="iso-cap">Sites pulled from the Hawai‘i Foodbank, Maui Food Bank, and The Food Basket live locators (2026) and geocoded (US Census + OpenStreetMap). ~24 mobile, multi-site, and on-base distributions without a fixed public address are omitted.</p>
+                <p class="iso-cap">Sites pulled from the Hawai‘i Foodbank, Maui Food Bank, and The Food Basket live locators (2026) and geocoded (US Census + OpenStreetMap, a few by hand). One online/multi-school program without a fixed address is omitted.</p>
             </div>
 
             <div class="insight-box">
@@ -1059,6 +1063,6 @@
         </div>
     </footer>
 
-    <script src="app.js?v=20260630c"></script>
+    <script src="app.js?v=20260701a"></script>
 </body>
 </html>
