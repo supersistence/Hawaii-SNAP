@@ -1247,11 +1247,79 @@ function attachMapTooltip(mapEl) {
         tip.style.left = Math.max(0, x) + 'px'; tip.style.top = y + 'px';
     };
     svg.addEventListener('mousemove', (e) => {
+        if (svg.classList.contains('dragging')) { tip.style.display = 'none'; return; }
         const t = e.target;
         if ((t.tagName === 'circle' || t.tagName === 'path') && t.hasAttribute('data-name')) show(t, e);
         else tip.style.display = 'none';
     });
     svg.addEventListener('mouseleave', () => tip.style.display = 'none');
+}
+
+// Pan + zoom for the SVG dot maps — Tufte-minimal chrome: drag to pan,
+// wheel / double-click to zoom to the cursor, one hairline ⌂ button (shown
+// only while zoomed) to restore. Zoom state persists on the element across
+// re-renders (e.g. the food-bank color toggle).
+function attachPanZoom(mapEl) {
+    const svg = mapEl.querySelector('svg');
+    if (!svg) return;
+    const a = (svg.getAttribute('viewBox') || '0 0 760 495').split(/\s+/).map(Number);
+    const orig = { x: a[0], y: a[1], w: a[2], h: a[3] };
+    let vb = mapEl._vb ? { ...mapEl._vb } : { ...orig };
+
+    let home = mapEl.querySelector('.map-home');
+    if (!home) {
+        home = document.createElement('button');
+        home.className = 'map-home'; home.type = 'button';
+        home.title = 'Reset view'; home.setAttribute('aria-label', 'Reset map view');
+        home.textContent = '⌂';
+        mapEl.appendChild(home);
+    }
+    const clamp = () => {
+        if (vb.w >= orig.w) { vb.x = orig.x; vb.y = orig.y; return; }
+        vb.x = Math.min(Math.max(vb.x, orig.x), orig.x + orig.w - vb.w);
+        vb.y = Math.min(Math.max(vb.y, orig.y), orig.y + orig.h - vb.h);
+    };
+    const apply = () => {
+        svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+        mapEl._vb = { ...vb };
+        home.style.display = (vb.w < orig.w - 0.5) ? 'flex' : 'none';
+    };
+    home.onclick = () => { vb = { ...orig }; apply(); };
+
+    const toSvg = (e) => {
+        const r = svg.getBoundingClientRect();
+        return { x: vb.x + (e.clientX - r.left) / r.width * vb.w,
+                 y: vb.y + (e.clientY - r.top) / r.height * vb.h };
+    };
+    const zoomAt = (p, factor) => {
+        let nw = vb.w * factor, nh = vb.h * factor;
+        if (nw > orig.w) { nw = orig.w; nh = orig.h; }
+        const minW = orig.w / 12;
+        if (nw < minW) { nw = minW; nh = orig.h * (minW / orig.w); }
+        vb.x = p.x - (p.x - vb.x) * (nw / vb.w);
+        vb.y = p.y - (p.y - vb.y) * (nh / vb.h);
+        vb.w = nw; vb.h = nh; clamp(); apply();
+    };
+    svg.onwheel = (e) => { e.preventDefault(); zoomAt(toSvg(e), e.deltaY < 0 ? 0.82 : 1 / 0.82); };
+    svg.ondblclick = (e) => { e.preventDefault(); zoomAt(toSvg(e), 0.6); };
+
+    let dragging = false, last = null, moved = false;
+    svg.addEventListener('pointerdown', (e) => {
+        dragging = true; moved = false; last = { x: e.clientX, y: e.clientY };
+        svg.setPointerCapture(e.pointerId);
+    });
+    svg.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - last.x, dy = e.clientY - last.y;
+        if (Math.abs(dx) + Math.abs(dy) > 2) { moved = true; svg.classList.add('dragging'); }
+        const r = svg.getBoundingClientRect();
+        vb.x -= dx * vb.w / r.width; vb.y -= dy * vb.h / r.height;
+        last = { x: e.clientX, y: e.clientY }; clamp(); apply();
+    });
+    const end = () => { dragging = false; svg.classList.remove('dragging'); };
+    svg.addEventListener('pointerup', end);
+    svg.addEventListener('pointercancel', end);
+    apply();
 }
 
 // ---- Food-bank network map (Community section) ----------------------------
@@ -1292,6 +1360,7 @@ function createFoodbankMap() {
         svg += '</svg>';
         el.innerHTML = svg;
         attachMapTooltip(el);
+        attachPanZoom(el);
         const leg = document.getElementById('foodbankLegend');
         if (leg) leg.innerHTML = Object.keys(scheme).map(k => {
             const n = m.sites.filter(s => keyOf(s) === k).length;
@@ -1326,6 +1395,7 @@ function createRetailerMap() {
     svg += '</svg>';
     el.innerHTML = svg;
     attachMapTooltip(el);
+    attachPanZoom(el);
     const leg = document.getElementById('retailerLegend');
     if (leg) leg.innerHTML = order.map(c => {
         const n = m.points.filter(pt => pt.c === c).length;

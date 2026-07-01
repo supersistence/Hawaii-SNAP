@@ -308,8 +308,16 @@ footer{background:none;color:var(--ink-2);padding:48px 0 28px;margin-top:0;
 .retailer-map{position:relative}
 .retailer-map svg{width:100%;max-width:660px;height:auto;display:block;margin-top:6px}
 .retailer-map .sea{fill:#f3f1e6;stroke:#dcd8c6;stroke-width:1}
+.retailer-map svg{cursor:grab;touch-action:none}
+.retailer-map svg.dragging{cursor:grabbing}
 .retailer-map circle{cursor:pointer;transition:fill-opacity .1s}
 .retailer-map circle:hover{fill-opacity:1;stroke:#141414;stroke-width:.6}
+/* pan-zoom home button — hairline square, appears only when zoomed */
+.map-home{position:absolute;top:8px;right:8px;display:none;width:24px;height:24px;
+  align-items:center;justify-content:center;background:var(--paper);border:1px solid var(--ink);
+  border-radius:0;color:var(--ink);font-size:15px;line-height:1;cursor:pointer;padding:0;z-index:16;
+  box-shadow:none}
+.map-home:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
 .retailer-map path[data-name]{cursor:pointer}
 /* hover tooltip */
 .map-tip{position:absolute;display:none;z-index:20;pointer-events:none;max-width:250px;
