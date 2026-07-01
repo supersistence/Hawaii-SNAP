@@ -1225,6 +1225,35 @@ function retailCat(t) {
     return 'specialty';
 }
 
+// Shared hover tooltip for the SVG dot maps (retailers + food banks).
+function escAttr(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function attachMapTooltip(mapEl) {
+    if (!mapEl) return;
+    let tip = mapEl.querySelector('.map-tip');
+    if (!tip) { tip = document.createElement('div'); tip.className = 'map-tip'; mapEl.appendChild(tip); }
+    const svg = mapEl.querySelector('svg');
+    if (!svg) return;
+    const show = (t, e) => {
+        const name = t.getAttribute('data-name'); if (!name) { tip.style.display = 'none'; return; }
+        const sub = t.getAttribute('data-sub'), addr = t.getAttribute('data-addr');
+        tip.innerHTML = `<strong>${name}</strong>` + (sub ? `<span>${sub}</span>` : '') + (addr ? `<span class="addr">${addr}</span>` : '');
+        tip.style.display = 'block';
+        const r = mapEl.getBoundingClientRect();
+        let x = e.clientX - r.left + 14, y = e.clientY - r.top + 14;
+        if (x + tip.offsetWidth > r.width) x = e.clientX - r.left - tip.offsetWidth - 8;
+        tip.style.left = Math.max(0, x) + 'px'; tip.style.top = y + 'px';
+    };
+    svg.addEventListener('mousemove', (e) => {
+        const t = e.target;
+        if ((t.tagName === 'circle' || t.tagName === 'path') && t.hasAttribute('data-name')) show(t, e);
+        else tip.style.display = 'none';
+    });
+    svg.addEventListener('mouseleave', () => tip.style.display = 'none');
+}
+
 // ---- Food-bank network map (Community section) ----------------------------
 // Dots = pantry / distribution partner sites, colored by which of the three
 // island food banks operates the network; stars = the food banks themselves.
@@ -1252,15 +1281,17 @@ function createFoodbankMap() {
         Object.keys(scheme).forEach(k => {
             const col = scheme[k].color;
             m.sites.filter(s => keyOf(s) === k).forEach(s => {
-                svg += `<circle cx="${s.x}" cy="${s.y}" r="2" fill="${col}" fill-opacity="0.72"/>`;
+                const sub = `${FOODBANK_CAT[s.c].label} · ${FOODBANK_NET[s.n].label.split(' (')[0]}`;
+                svg += `<circle cx="${s.x}" cy="${s.y}" r="2" fill="${col}" fill-opacity="0.72" data-name="${escAttr(s.name)}" data-sub="${escAttr(sub)}" data-addr="${escAttr(s.addr)}"/>`;
             });
         });
         // food banks themselves — star markers on top (colored by network in both modes)
         (m.banks || []).forEach(b => {
-            svg += `<path transform="translate(${b.x},${b.y})" d="M0,-6 L1.8,-1.9 L6,-1.9 L2.6,1.1 L3.9,5.6 L0,3 L-3.9,5.6 L-2.6,1.1 L-6,-1.9 L-1.8,-1.9 Z" fill="${FOODBANK_NET[b.n].color}" stroke="#141414" stroke-width="0.6"/>`;
+            svg += `<path transform="translate(${b.x},${b.y})" d="M0,-6 L1.8,-1.9 L6,-1.9 L2.6,1.1 L3.9,5.6 L0,3 L-3.9,5.6 L-2.6,1.1 L-6,-1.9 L-1.8,-1.9 Z" fill="${FOODBANK_NET[b.n].color}" stroke="#141414" stroke-width="0.6" data-name="${escAttr(b.name)}" data-sub="Food bank"/>`;
         });
         svg += '</svg>';
         el.innerHTML = svg;
+        attachMapTooltip(el);
         const leg = document.getElementById('foodbankLegend');
         if (leg) leg.innerHTML = Object.keys(scheme).map(k => {
             const n = m.sites.filter(s => keyOf(s) === k).length;
@@ -1289,11 +1320,12 @@ function createRetailerMap() {
     order.forEach(c => {
         const col = RETAIL_CAT[c].color;
         m.points.filter(pt => pt.c === c).forEach(pt => {
-            svg += `<circle cx="${pt.x}" cy="${pt.y}" r="1.9" fill="${col}" fill-opacity="0.72"/>`;
+            svg += `<circle cx="${pt.x}" cy="${pt.y}" r="1.9" fill="${col}" fill-opacity="0.72" data-name="${escAttr(pt.name)}" data-sub="${escAttr(pt.t || RETAIL_CAT[c].label)}"/>`;
         });
     });
     svg += '</svg>';
     el.innerHTML = svg;
+    attachMapTooltip(el);
     const leg = document.getElementById('retailerLegend');
     if (leg) leg.innerHTML = order.map(c => {
         const n = m.points.filter(pt => pt.c === c).length;

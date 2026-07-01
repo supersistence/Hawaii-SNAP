@@ -305,8 +305,19 @@ footer{background:none;color:var(--ink-2);padding:48px 0 28px;margin-top:0;
 .iso-map{margin:6px 0 2px}
 .iso-map svg{width:100%;max-width:600px;height:auto;display:block}
 /* retailer dot map */
+.retailer-map{position:relative}
 .retailer-map svg{width:100%;max-width:660px;height:auto;display:block;margin-top:6px}
 .retailer-map .sea{fill:#f3f1e6;stroke:#dcd8c6;stroke-width:1}
+.retailer-map circle{cursor:pointer;transition:fill-opacity .1s}
+.retailer-map circle:hover{fill-opacity:1;stroke:#141414;stroke-width:.6}
+.retailer-map path[data-name]{cursor:pointer}
+/* hover tooltip */
+.map-tip{position:absolute;display:none;z-index:20;pointer-events:none;max-width:250px;
+  background:var(--paper);border:1px solid var(--ink);padding:7px 10px;font-size:.8rem;line-height:1.35;
+  color:var(--ink);box-shadow:0 2px 8px rgba(20,20,20,.12)}
+.map-tip strong{display:block;font-weight:600;color:var(--ink)}
+.map-tip span{display:block;color:var(--ink-2);font-size:.76rem}
+.map-tip span.addr{color:var(--ink-3);margin-top:2px}
 /* map color-mode toggle */
 .map-toggle{display:inline-flex;gap:0;margin:4px 0 2px;border:1px solid var(--rule);border-radius:0}
 .map-toggle .mt-btn{font:inherit;font-size:.8rem;font-weight:500;color:var(--ink-2);
