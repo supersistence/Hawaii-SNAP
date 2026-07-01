@@ -313,7 +313,7 @@ footer{background:none;color:var(--ink-2);padding:48px 0 28px;margin-top:0;
 .retailer-map circle{cursor:pointer;transition:fill-opacity .1s}
 .retailer-map circle:hover{fill-opacity:1;stroke:#141414;stroke-width:.6}
 /* pan-zoom home button — hairline square, appears only when zoomed */
-.map-home{position:absolute;top:8px;right:8px;display:none;width:24px;height:24px;
+.map-home{position:absolute;top:8px;left:8px;display:none;width:24px;height:24px;
   align-items:center;justify-content:center;background:var(--paper);border:1px solid var(--ink);
   border-radius:0;color:var(--ink);font-size:15px;line-height:1;cursor:pointer;padding:0;z-index:16;
   box-shadow:none}
