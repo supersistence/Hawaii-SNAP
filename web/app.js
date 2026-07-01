@@ -7,6 +7,7 @@ let trendsData = null;
 let metadata = null;
 let dhsData = null;
 let retailerData = null;
+let foodbankData = null;
 
 // Chart instances
 const charts = {};
@@ -316,13 +317,14 @@ async function loadData() {
     // Everything in parallel. Core four are required (a rejection here bubbles
     // up and shows the error state); DHS + retailers are optional — their
     // .catch keeps a slow/missing file from blocking the rest of the page.
-    const [monthly, county, trends, meta, dhs, retailers] = await Promise.all([
+    const [monthly, county, trends, meta, dhs, retailers, foodbanks] = await Promise.all([
         fetchJSON('data/monthly.json'),
         fetchJSON('data/county.json'),
         fetchJSON('data/trends.json'),
         fetchJSON('data/metadata.json'),
         fetchJSON('data/dhs.json').catch(e => { console.warn('DHS data optional:', e); return null; }),
         fetchJSON('data/retailers.json').catch(e => { console.warn('Retailer data optional:', e); return null; }),
+        fetchJSON('data/foodbanks.json').catch(e => { console.warn('Food-bank data optional:', e); return null; }),
     ]);
 
     monthlyData = monthly;
@@ -331,6 +333,7 @@ async function loadData() {
     metadata = meta;
     if (dhs) dhsData = dhs;
     if (retailers) retailerData = retailers;
+    if (foodbanks) foodbankData = foodbanks;
 
     console.log('Data loaded successfully');
 }
@@ -455,6 +458,7 @@ function initializeCharts() {
     createPAChart();
     createFoodHubsChart();
     if (retailerData) { createRetailerMap(); createRetailerTypeChart(); }
+    if (foodbankData) createFoodbankMap();
     // The statewide DHS line is now part of the spliced main charts; the DHS
     // section is gone. Only its unique pieces remain: timeliness (in Recipients)
     // and latest-month-by-county (in Counties).
@@ -1219,6 +1223,41 @@ function retailCat(t) {
     if (t.includes("farmers") || t.includes('fruits') || t.includes('veg')) return 'local';
     if (['grocery', 'super', 'supermarket'].some(k => t.includes(k))) return 'grocery';
     return 'specialty';
+}
+
+// ---- Food-bank network map (Community section) ----------------------------
+// Dots = pantry / distribution partner sites, colored by which of the three
+// island food banks operates the network; stars = the food banks themselves.
+const FOODBANK_NET = {
+    hfb:    { label: 'Hawai‘i Foodbank (O‘ahu · Kaua‘i)', color: '#0f766e' },
+    maui:   { label: 'Maui Food Bank (Maui County)',      color: '#b45309' },
+    basket: { label: 'The Food Basket (Hawai‘i Island)',  color: '#6243a4' },
+};
+function createFoodbankMap() {
+    const el = document.getElementById('foodbankMap');
+    if (!el || !foodbankData) return;
+    const m = foodbankData;
+    let svg = `<svg viewBox="0 0 ${m.w} ${m.h}" xmlns="http://www.w3.org/2000/svg">`;
+    m.paths.forEach(p => { svg += `<path class="sea" d="${p}"/>`; });
+    // partner sites
+    Object.keys(FOODBANK_NET).forEach(net => {
+        const col = FOODBANK_NET[net].color;
+        m.sites.filter(s => s.n === net).forEach(s => {
+            svg += `<circle cx="${s.x}" cy="${s.y}" r="2" fill="${col}" fill-opacity="0.72"/>`;
+        });
+    });
+    // food banks themselves — star markers on top
+    (m.banks || []).forEach(b => {
+        const col = FOODBANK_NET[b.n].color;
+        svg += `<path transform="translate(${b.x},${b.y})" d="M0,-6 L1.8,-1.9 L6,-1.9 L2.6,1.1 L3.9,5.6 L0,3 L-3.9,5.6 L-2.6,1.1 L-6,-1.9 L-1.8,-1.9 Z" fill="${col}" stroke="#141414" stroke-width="0.6"/>`;
+    });
+    svg += '</svg>';
+    el.innerHTML = svg;
+    const leg = document.getElementById('foodbankLegend');
+    if (leg) leg.innerHTML = Object.keys(FOODBANK_NET).map(net => {
+        const n = m.sites.filter(s => s.n === net).length;
+        return `<span class="item"><span class="dot" style="background:${FOODBANK_NET[net].color}"></span>${FOODBANK_NET[net].label} · ${n}</span>`;
+    }).join('') + `<span class="item"><span class="dot" style="background:#141414;clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)"></span>food bank</span>`;
 }
 
 function createRetailerMap() {

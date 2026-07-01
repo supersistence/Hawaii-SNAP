@@ -32,7 +32,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 
     <!-- Styles -->
-    <link rel="stylesheet" href="styles.css?v=20260630b">
+    <link rel="stylesheet" href="styles.css?v=20260630c">
 </head>
 <body>
     <header>
@@ -861,6 +861,15 @@
             </div>
 
             <h3 class="sub-divider">The response · Hawai‘i’s food-bank network</h3>
+
+            <div class="chart-container">
+                <h3>Where to get food: the three food banks and their pantry partners</h3>
+                <p class="chart-description">Every pantry, produce distribution, and meal site in the three island food-bank networks — <strong>243 mapped locations</strong>, colored by which food bank runs them. Stars mark the food banks themselves. The dots cluster where people are (urban O‘ahu) but also reach deep into rural Hawai‘i Island, Kaua‘i, and Maui County, including Moloka‘i.</p>
+                <div class="retailer-map" id="foodbankMap" role="img" aria-label="Map of Hawai‘i food banks and their pantry partner sites"></div>
+                <div class="map-legend" id="foodbankLegend"></div>
+                <p class="iso-cap">Sites pulled from the Hawai‘i Foodbank, Maui Food Bank, and The Food Basket live locators (2026) and geocoded (US Census + OpenStreetMap). ~24 mobile, multi-site, and on-base distributions without a fixed public address are omitted.</p>
+            </div>
+
             <div class="insight-box">
                 <h4>How the network carries the load</h4>
                 <div class="implication-grid">
@@ -1050,6 +1059,6 @@
         </div>
     </footer>
 
-    <script src="app.js?v=20260630b"></script>
+    <script src="app.js?v=20260630c"></script>
 </body>
 </html>
