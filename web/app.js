@@ -1283,6 +1283,18 @@ function attachPanZoom(mapEl) {
         svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
         mapEl._vb = { ...vb };
         home.style.display = (vb.w < orig.w - 0.5) ? 'flex' : 'none';
+        // Keep dots/stars from ballooning with zoom: grow ~sqrt(zoom), capped.
+        const rect = svg.getBoundingClientRect();
+        if (rect.width) {
+            const z = orig.w / vb.w, pxPerUnit = rect.width / vb.w;
+            const dotPx = Math.min(1.7 * Math.pow(z, 0.5), 4.2);      // dot screen radius, capped
+            svg.style.setProperty('--dotr', (dotPx / pxPerUnit).toFixed(3) + 'px');
+            const starHalf = Math.min(5.2 * Math.pow(z, 0.4), 9) / pxPerUnit; // star half-size (user units)
+            const sc = (starHalf / 6).toFixed(3);
+            svg.querySelectorAll('path[data-x]').forEach(p => {
+                p.setAttribute('transform', `translate(${p.getAttribute('data-x')},${p.getAttribute('data-y')}) scale(${sc})`);
+            });
+        }
     };
     home.onclick = () => { vb = { ...orig }; apply(); };
 
@@ -1355,7 +1367,7 @@ function createFoodbankMap() {
         });
         // food banks themselves — star markers on top (colored by network in both modes)
         (m.banks || []).forEach(b => {
-            svg += `<path transform="translate(${b.x},${b.y})" d="M0,-6 L1.8,-1.9 L6,-1.9 L2.6,1.1 L3.9,5.6 L0,3 L-3.9,5.6 L-2.6,1.1 L-6,-1.9 L-1.8,-1.9 Z" fill="${FOODBANK_NET[b.n].color}" stroke="#141414" stroke-width="0.6" data-name="${escAttr(b.name)}" data-sub="Food bank"/>`;
+            svg += `<path data-x="${b.x}" data-y="${b.y}" transform="translate(${b.x},${b.y})" d="M0,-6 L1.8,-1.9 L6,-1.9 L2.6,1.1 L3.9,5.6 L0,3 L-3.9,5.6 L-2.6,1.1 L-6,-1.9 L-1.8,-1.9 Z" fill="${FOODBANK_NET[b.n].color}" stroke="#141414" stroke-width="0.6" data-name="${escAttr(b.name)}" data-sub="Food bank"/>`;
         });
         svg += '</svg>';
         el.innerHTML = svg;
