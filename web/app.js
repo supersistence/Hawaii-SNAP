@@ -14,16 +14,21 @@ const charts = {};
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
     setupNav();
-    await loadData();
-    hideLoading();
-    themeChartDefaults();
-    initializeCharts();
-    themeCharts();
-    annotateEvents();
-    populateStats();
-    buildIsotypes();
-    updateDataCurrency();
-    setupScrolly();
+    try {
+        await loadData();           // throws only if required (core) data fails
+        themeChartDefaults();
+        initializeCharts();
+        themeCharts();
+        annotateEvents();
+        populateStats();
+        buildIsotypes();
+        updateDataCurrency();
+        setupScrolly();
+        hideLoading();
+    } catch (error) {
+        console.error('Initialization failed:', error);
+        showError('Failed to load data. Please refresh the page.');
+    }
 });
 
 // Data-currency labels, source-attributed so the two series read as
@@ -293,41 +298,41 @@ function setupScrolly() {
 }
 
 // Load data from JSON files
-async function loadData() {
+// Fetch JSON with a hard timeout so one stalled request can never hang the
+// whole page (the spinner is gated behind this — no timeout = infinite spinner).
+async function fetchJSON(url, timeoutMs = 8000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
-        const [monthlyRes, countyRes, trendsRes, metadataRes] = await Promise.all([
-            fetch('data/monthly.json'),
-            fetch('data/county.json'),
-            fetch('data/trends.json'),
-            fetch('data/metadata.json')
-        ]);
-
-        monthlyData = await monthlyRes.json();
-        countyData = await countyRes.json();
-        trendsData = await trendsRes.json();
-        metadata = await metadataRes.json();
-
-        // DHS data is optional (separate source); don't fail the page if absent.
-        try {
-            const dhsRes = await fetch('data/dhs.json');
-            if (dhsRes.ok) dhsData = await dhsRes.json();
-        } catch (e) {
-            console.warn('DHS data not available:', e);
-        }
-
-        // Retailer data (locations + store types) is optional too.
-        try {
-            const rRes = await fetch('data/retailers.json');
-            if (rRes.ok) retailerData = await rRes.json();
-        } catch (e) {
-            console.warn('Retailer data not available:', e);
-        }
-
-        console.log('Data loaded successfully');
-    } catch (error) {
-        console.error('Error loading data:', error);
-        showError('Failed to load data. Please refresh the page.');
+        const res = await fetch(url, { signal: controller.signal });
+        if (!res.ok) throw new Error(`${url} → HTTP ${res.status}`);
+        return await res.json();
+    } finally {
+        clearTimeout(timer);
     }
+}
+
+async function loadData() {
+    // Everything in parallel. Core four are required (a rejection here bubbles
+    // up and shows the error state); DHS + retailers are optional — their
+    // .catch keeps a slow/missing file from blocking the rest of the page.
+    const [monthly, county, trends, meta, dhs, retailers] = await Promise.all([
+        fetchJSON('data/monthly.json'),
+        fetchJSON('data/county.json'),
+        fetchJSON('data/trends.json'),
+        fetchJSON('data/metadata.json'),
+        fetchJSON('data/dhs.json').catch(e => { console.warn('DHS data optional:', e); return null; }),
+        fetchJSON('data/retailers.json').catch(e => { console.warn('Retailer data optional:', e); return null; }),
+    ]);
+
+    monthlyData = monthly;
+    countyData = county;
+    trendsData = trends;
+    metadata = meta;
+    if (dhs) dhsData = dhs;
+    if (retailers) retailerData = retailers;
+
+    console.log('Data loaded successfully');
 }
 
 function hideLoading() {
