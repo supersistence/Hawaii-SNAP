@@ -8,6 +8,7 @@ let metadata = null;
 let dhsData = null;
 let retailerData = null;
 let foodbankData = null;
+let participationData = null;
 
 // Chart instances
 const charts = {};
@@ -267,6 +268,10 @@ function setupScrolly() {
         { range: null, n: formatNumber(latest),
           note: '+' + Math.round((latest / baseline - 1) * 100) + '%', noteL: 'vs 2019 baseline' },
     ];
+    // Keep the Act 6 prose in sync with the computed "vs 2019 baseline" figure.
+    const vb = document.getElementById('vs-baseline');
+    if (vb) vb.textContent = Math.round((latest / baseline - 1) * 100) + '%';
+
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const setAct = (i) => {
@@ -317,7 +322,7 @@ async function loadData() {
     // Everything in parallel. Core four are required (a rejection here bubbles
     // up and shows the error state); DHS + retailers are optional — their
     // .catch keeps a slow/missing file from blocking the rest of the page.
-    const [monthly, county, trends, meta, dhs, retailers, foodbanks] = await Promise.all([
+    const [monthly, county, trends, meta, dhs, retailers, foodbanks, participation] = await Promise.all([
         fetchJSON('data/monthly.json'),
         fetchJSON('data/county.json'),
         fetchJSON('data/trends.json'),
@@ -325,6 +330,7 @@ async function loadData() {
         fetchJSON('data/dhs.json').catch(e => { console.warn('DHS data optional:', e); return null; }),
         fetchJSON('data/retailers.json').catch(e => { console.warn('Retailer data optional:', e); return null; }),
         fetchJSON('data/foodbanks.json').catch(e => { console.warn('Food-bank data optional:', e); return null; }),
+        fetchJSON('data/participation.json').catch(e => { console.warn('Participation-rate data optional:', e); return null; }),
     ]);
 
     monthlyData = monthly;
@@ -334,6 +340,7 @@ async function loadData() {
     if (dhs) dhsData = dhs;
     if (retailers) retailerData = retailers;
     if (foodbanks) foodbankData = foodbanks;
+    if (participation) participationData = participation;
 
     console.log('Data loaded successfully');
 }
@@ -449,8 +456,6 @@ function initializeCharts() {
     createScaleChart();
     createOverviewChart();
     createHouseholdsChart();
-    createPersonsChart();
-    createRateChart();
     createBenefitChart();
     createCostChart();
     createCovidChart();
@@ -575,6 +580,25 @@ const chartDefaults = {
 function createScaleChart() {
     const el = document.getElementById('scaleChart');
     if (!el || !monthlyData.datasets.population) return;
+
+    // Residents ELIGIBLE for SNAP, implied per month as caseload ÷ that fiscal
+    // year's FNS participation rate — so the band tracks the caseload's shape,
+    // the vertical gap is exactly (1 − rate), and the band can never dip below
+    // enrollment (at a 100% rate they touch, as in 1998–99). Gaps (FY95–96,
+    // FY2021) are real — FNS published no estimate those years.
+    let eligibleSeries = null;
+    const byFY = new Map((participationData?.years || [])
+        .filter(y => y.hawaiiRate)
+        .map(y => [y.fiscalYear, y]));
+    if (byFY.size) {
+        eligibleSeries = monthlyData.labels.map((l, i) => {
+            const [yr, mo] = l.split('-').map(Number);
+            const fy = byFY.get(mo >= 10 ? yr + 1 : yr);
+            const persons = monthlyData.datasets.persons[i];
+            return fy && persons ? Math.round(persons / (fy.hawaiiRate / 100)) : null;
+        });
+    }
+
     charts.scale = new Chart(el.getContext('2d'), {
         type: 'line',
         data: {
@@ -586,12 +610,24 @@ function createScaleChart() {
                     borderColor: '#b8b3a0', borderWidth: 1.4, borderDash: [4, 3],
                     fill: false, pointRadius: 0, skipTheme: true,
                 },
+                ...(eligibleSeries ? [{
+                    label: 'Eligible for SNAP (implied by FNS annual rate)',
+                    data: eligibleSeries,
+                    borderColor: '#c47f17', borderWidth: 1.6, borderDash: [7, 4],
+                    fill: false, pointRadius: 0, spanGaps: false, skipTheme: true,
+                }] : []),
                 {
                     label: 'Persons receiving SNAP',
                     data: monthlyData.datasets.persons,
                     borderColor: '#1d6b3f', backgroundColor: 'rgba(29,107,63,0.08)',
                     borderWidth: 2.2, fill: true, pointRadius: 0, skipTheme: true,
                 },
+                ...(monthlyData.datasets.participationRate ? [{
+                    label: 'Share of residents on SNAP',
+                    data: monthlyData.datasets.participationRate,
+                    borderColor: '#075985', borderWidth: 1.6, fill: false, pointRadius: 0,
+                    yAxisID: 'y1', skipTheme: true,
+                }] : []),
             ],
         },
         options: {
@@ -603,7 +639,16 @@ function createScaleChart() {
                     ...chartDefaults.plugins.tooltip,
                     callbacks: {
                         title: (c) => formatDate(c[0].parsed.x),
-                        label: (c) => c.dataset.label + ': ' + formatNumber(c.parsed.y),
+                        label: (c) => c.dataset.yAxisID === 'y1'
+                            ? c.dataset.label + ': ' + c.parsed.y + '%'
+                            : c.dataset.label + ': ' + formatNumber(c.parsed.y),
+                        afterLabel: (c) => {
+                            if (!c.dataset.label.startsWith('Eligible for SNAP')) return undefined;
+                            const d = new Date(c.parsed.x);
+                            const fy = byFY.get(d.getMonth() >= 9 ? d.getFullYear() + 1 : d.getFullYear());
+                            return fy ? `FY${fy.fiscalYear}: ${fy.hawaiiRate}% of eligible enrolled ` +
+                                        `(90% CI ${fy.ciLow}–${fy.ciHigh}%; US ${fy.usRate}%)` : undefined;
+                        },
                     },
                 },
             },
@@ -612,6 +657,9 @@ function createScaleChart() {
                      ticks: { maxTicksLimit: 8 } },
                 y: { beginAtZero: true, max: 1500000,
                      ticks: { callback: (v) => v >= 1e6 ? (v / 1e6) + 'M' : formatNumber(v) } },
+                y1: { position: 'right', beginAtZero: true, grid: { drawOnChartArea: false },
+                      title: { display: true, text: 'Share of residents' },
+                      ticks: { callback: (v) => v + '%' } },
             },
         },
     });
@@ -674,52 +722,39 @@ function createHouseholdsChart() {
         type: 'line',
         data: {
             labels: monthlyData.labels.slice(startIndex),
-            datasets: [{
-                label: 'Households Participating',
-                data: monthlyData.datasets.households.slice(startIndex),
-                borderColor: '#7c3aed',
-                backgroundColor: 'rgba(124, 58, 237, 0.1)',
-                borderWidth: 2,
-                fill: true,
-            }]
+            datasets: [
+                {
+                    label: 'Persons participating',
+                    data: monthlyData.datasets.persons.slice(startIndex),
+                    borderColor: '#1d6b3f',
+                    backgroundColor: 'rgba(29, 107, 63, 0.07)',
+                    borderWidth: 2.2, fill: true, pointRadius: 0,
+                },
+                {
+                    label: 'Households participating',
+                    data: monthlyData.datasets.households.slice(startIndex),
+                    borderColor: '#075985',
+                    borderWidth: 1.8, fill: false, pointRadius: 0,
+                },
+            ]
         },
         options: {
             ...chartDefaults,
             scales: {
-                x: {
-                    type: 'time',
-                    time: {
-                        unit: 'year'
-                    },
-                    title: {
-                        display: true,
-                        text: 'Year'
-                    }
-                },
+                x: { type: 'time', time: { unit: 'year' }, ticks: { maxTicksLimit: 8 } },
                 y: {
                     beginAtZero: false,
-                    title: {
-                        display: true,
-                        text: 'Households'
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return formatNumber(value);
-                        }
-                    }
+                    ticks: { callback: (value) => formatNumber(value) }
                 }
             },
             plugins: {
                 ...chartDefaults.plugins,
+                legend: { ...chartDefaults.plugins.legend, display: true },
                 tooltip: {
                     ...chartDefaults.plugins.tooltip,
                     callbacks: {
-                        title: function(context) {
-                            return formatDate(context[0].parsed.x);
-                        },
-                        label: function(context) {
-                            return 'Households: ' + formatNumber(context.parsed.y);
-                        }
+                        title: (context) => formatDate(context[0].parsed.x),
+                        label: (c) => c.dataset.label + ': ' + formatNumber(c.parsed.y),
                     }
                 }
             }
@@ -727,102 +762,8 @@ function createHouseholdsChart() {
     });
 }
 
-// Participation as a share of Hawai‘i's resident population (1989–2026).
-function createRateChart() {
-    const el = document.getElementById('rateChart');
-    if (!el || !monthlyData.datasets.participationRate) return;
-    charts.rate = new Chart(el.getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: monthlyData.labels,
-            datasets: [{
-                label: '% of residents on SNAP',
-                data: monthlyData.datasets.participationRate,
-                borderWidth: 2.2, fill: true, pointRadius: 0,
-            }],
-        },
-        options: {
-            ...chartDefaults,
-            plugins: {
-                ...chartDefaults.plugins,
-                legend: { display: false },
-                tooltip: {
-                    ...chartDefaults.plugins.tooltip,
-                    callbacks: {
-                        title: (c) => formatDate(c[0].parsed.x),
-                        label: (c) => c.parsed.y + '% of residents',
-                    },
-                },
-            },
-            scales: {
-                x: { type: 'time', time: { unit: 'year', displayFormats: { year: 'yyyy' } },
-                     ticks: { maxTicksLimit: 8 } },
-                y: { ticks: { callback: (v) => v + '%' } },
-            },
-        },
-    });
-}
-
-function createPersonsChart() {
-    const ctx = document.getElementById('personsChart').getContext('2d');
-    const startIndex = 0;  // full spliced series (1989–2026)
-
-    charts.persons = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: monthlyData.labels.slice(startIndex),
-            datasets: [{
-                label: 'Persons Participating',
-                data: monthlyData.datasets.persons.slice(startIndex),
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                borderWidth: 2,
-                fill: true,
-            }]
-        },
-        options: {
-            ...chartDefaults,
-            scales: {
-                x: {
-                    type: 'time',
-                    time: {
-                        unit: 'year'
-                    },
-                    title: {
-                        display: true,
-                        text: 'Year'
-                    }
-                },
-                y: {
-                    beginAtZero: false,
-                    title: {
-                        display: true,
-                        text: 'Persons'
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return formatNumber(value);
-                        }
-                    }
-                }
-            },
-            plugins: {
-                ...chartDefaults.plugins,
-                tooltip: {
-                    ...chartDefaults.plugins.tooltip,
-                    callbacks: {
-                        title: function(context) {
-                            return formatDate(context[0].parsed.x);
-                        },
-                        label: function(context) {
-                            return 'Persons: ' + formatNumber(context.parsed.y);
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
+// ponytail: createRateChart + createPersonsChart removed — rate now rides the
+// Overview scale chart's right axis; persons + households share one chart.
 
 function createBenefitChart() {
     const ctx = document.getElementById('benefitChart').getContext('2d');

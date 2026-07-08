@@ -32,7 +32,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 
     <!-- Styles -->
-    <link rel="stylesheet" href="styles.css?v=20260701e">
+    <link rel="stylesheet" href="styles.css?v=20260701f">
 </head>
 <body>
     <header>
@@ -125,7 +125,7 @@
 
             <div class="chart-container">
                 <h3>A slice of the islands</h3>
-                <p class="chart-description">On one axis, Hawai‘i's whole resident population towers over the SNAP caseload below it — at any moment only about <strong>1 in 9</strong> residents receives benefits. The next section zooms into that slice.</p>
+                <p class="chart-description">On one axis, Hawai‘i's whole resident population towers over the SNAP caseload below it — at any moment only about <strong>1 in 9</strong> residents receives benefits. The dashed amber band is how many residents were <em>eligible</em>, implied by USDA's annual participation-rate estimates: the daylight between it and the green area is people who qualify but aren't enrolled. In FY2022, Hawai‘i reached <strong>81%</strong> of eligible residents — significantly below the national 88% — leaving roughly <strong>1 in 5</strong> eligible people unenrolled. (Estimates are model-based with wide uncertainty for a small state; gaps in the band are years USDA published no estimate.)</p>
                 <canvas id="scaleChart"></canvas>
             </div>
 
@@ -184,7 +184,7 @@
                     <div class="step" data-step="5">
                         <div class="act">Act 6 · Today</div>
                         <h3>A new, higher baseline</h3>
-                        <p>Step back and the staircase is the story: each shock settled into a floor higher than the last. Today's caseload sits roughly <strong>9% above</strong> its pre-pandemic level — not back to it.</p>
+                        <p>Step back and the staircase is the story: each shock settled into a floor higher than the last. Today's caseload sits roughly <strong id="vs-baseline">9%</strong> above its 2019 level — the 2025 shutdown and new work requirements have pulled it back toward the old floor.</p>
                     </div>
                 </div>
             </div>
@@ -197,21 +197,9 @@
             <h2>Households and individuals move together — and both sit <span class="em">well above their pre-pandemic floor.</span></h2>
 
             <div class="chart-container">
-                <h3>Households Participating in SNAP</h3>
-                <p class="chart-description">Monthly household participation across the full series (1989–2026), showing long-term trends and economic cycle impacts.</p>
+                <h3>Persons and households participating in SNAP</h3>
+                <p class="chart-description">Monthly persons and households across the full series (1989–2026). The two move together — roughly two people per household — and both reset to a higher floor after each economic shock. (Share of residents on SNAP now rides the right axis of “A slice of the islands” in the Overview.)</p>
                 <canvas id="householdsChart"></canvas>
-            </div>
-
-            <div class="chart-container">
-                <h3>Individual Participation</h3>
-                <p class="chart-description">Number of persons receiving SNAP benefits over time.</p>
-                <canvas id="personsChart"></canvas>
-            </div>
-
-            <div class="chart-container">
-                <h3>Share of Hawai‘i residents on SNAP</h3>
-                <p class="chart-description">Participation as a percent of the state's resident population, 1989–2026 (monthly enrollment ÷ annual Census population, interpolated). If enrollment simply tracked population growth this line would be flat — instead it swings from about 7% to a 14% pandemic peak, settling near 11%. Participation is driven by economic shocks, not population.</p>
-                <canvas id="rateChart"></canvas>
             </div>
 
             <div class="insight-box">
@@ -1063,6 +1051,6 @@
         </div>
     </footer>
 
-    <script src="app.js?v=20260701e"></script>
+    <script src="app.js?v=20260701f"></script>
 </body>
 </html>
